@@ -380,6 +380,18 @@ pub struct UnionGroup {
     pub duplicate: bool,
 }
 
+/// A film or a sound of the record, played on the page (docs/adr/0041).
+#[derive(Debug, Clone, Serialize)]
+pub struct ClipView {
+    pub id: String,
+    /// `video` or `audio`: the element that plays it.
+    pub media: &'static str,
+    /// Its caption, or its file name.
+    pub label: String,
+    pub document_type_label: String,
+    pub size_human: Option<String>,
+}
+
 /// A block of free text.
 #[derive(Debug, Clone, Serialize)]
 pub struct NoteView {
@@ -432,6 +444,9 @@ pub struct PersonView {
     pub documents: Vec<DocumentView>,
     /// Images among `documents`, for the gallery.
     pub images: Vec<DocumentView>,
+    /// Films and sounds among `documents` a browser plays, for the players
+    /// (docs/adr/0041).
+    pub clips: Vec<ClipView>,
     /// Portraits an AI reworked (`crate::ai_portrait`), oldest first and at
     /// most three: never among `documents` or `images`, never the avatar, and
     /// drawn in the masthead only for a reader who is signed in.
@@ -618,6 +633,20 @@ pub fn build_in(
         .filter(|d| d.is_image && d.has_payload)
         .cloned()
         .collect();
+    let clips: Vec<ClipView> = documents
+        .iter()
+        .filter(|d| d.has_payload)
+        .filter_map(|d| {
+            let media = crate::documents::plays_as(d.mime_type.as_deref()?)?;
+            Some(ClipView {
+                id: d.id.clone(),
+                media,
+                label: d.caption.clone().unwrap_or_else(|| d.filename.clone()),
+                document_type_label: d.document_type_label.clone(),
+                size_human: d.size_human.clone(),
+            })
+        })
+        .collect();
     let places = ctx.places_for(&birth, &death, &timeline, &occupations, &unions);
     let sources = ctx.sources_for(&timeline, &names, &links, &occupations, &unions);
     let notes = collect_notes(&ctx, person, &birth, &death, &timeline);
@@ -739,6 +768,7 @@ pub fn build_in(
         sources,
         documents,
         images,
+        clips,
         ai_portraits,
         header,
         notes,

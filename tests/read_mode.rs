@@ -393,6 +393,8 @@ const ALLOWED: &[&str] = &[
     "record-period-from",
     "record-period-until",
     "record-photographs",
+    // The films and sounds the record holds, played (docs/adr/0041).
+    "record-clips",
     "record-place-married",
     "record-place-married-to",
     "record-place-worked-as",

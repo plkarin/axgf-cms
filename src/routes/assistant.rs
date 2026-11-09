@@ -386,8 +386,8 @@ fn render_view(
             pack => pack_json(),
             limits => json!({
                 "files": assistant::FILES_PER_MESSAGE,
-                "file_mb": assistant::FILE_MAX / (1024 * 1024),
-                "message_mb": assistant::MESSAGE_FILES_MAX / (1024 * 1024),
+                "file_mb": state.limits().assistant_file_mb,
+                "message_mb": state.limits().assistant_message_mb,
                 "text": assistant::TEXT_MAX,
                 "conduct": assistant::CONDUCT_MAX,
                 "name": assistant::NAME_MAX,
@@ -843,7 +843,10 @@ struct Sent {
 }
 
 /// Why a message was refused, as a catalogue key.
-async fn read_sent(mut multipart: Multipart) -> Result<Sent, &'static str> {
+async fn read_sent(
+    mut multipart: Multipart,
+    limits: &crate::limits::Limits,
+) -> Result<Sent, &'static str> {
     let mut sent = Sent {
         text: String::new(),
         files: Vec::new(),
@@ -865,11 +868,11 @@ async fn read_sent(mut multipart: Multipart) -> Result<Sent, &'static str> {
                 if bytes.is_empty() {
                     continue;
                 }
-                if bytes.len() > assistant::FILE_MAX {
+                if bytes.len() > limits.assistant_file_bytes() {
                     return Err("assistant-error-file-big");
                 }
                 total += bytes.len();
-                if total > assistant::MESSAGE_FILES_MAX {
+                if total > limits.assistant_message_bytes() {
                     return Err("assistant-error-too-big");
                 }
                 sent.files.push((name, bytes.to_vec()));
@@ -1114,7 +1117,7 @@ pub async fn start_conversation(
     let Some(p) = m.space.project(&pid) else {
         return not_found(&m);
     };
-    let sent = match read_sent(multipart).await {
+    let sent = match read_sent(multipart, &state.limits()).await {
         Ok(s) => s,
         Err(key) => {
             return refused(
@@ -1207,7 +1210,7 @@ pub async fn send(
     let (Some(p), Some(c)) = (m.space.project(&pid), m.space.conversation(&pid, &cid)) else {
         return not_found(&m);
     };
-    let sent = match read_sent(multipart).await {
+    let sent = match read_sent(multipart, &state.limits()).await {
         Ok(s) => s,
         Err(key) => {
             return refused(

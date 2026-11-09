@@ -58,6 +58,7 @@ pub mod impact;
 pub mod journal;
 pub mod kinship;
 pub mod kinship_text;
+pub mod limits;
 pub mod living;
 pub mod lockfile;
 pub mod memory_backup;

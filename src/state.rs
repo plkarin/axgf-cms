@@ -764,6 +764,12 @@ impl AppState {
         self.acl_read(|acl| acl.site.clone())
     }
 
+    /// What a file sent to the site may weigh, and the kinds refused
+    /// (docs/adr/0041), within their bounds.
+    pub fn limits(&self) -> crate::limits::Limits {
+        self.acl_read(|acl| acl.site.uploads.clone()).bounded()
+    }
+
     /// Change the rules of entry and persist them with the accounts.
     pub fn site_mutate<T>(&self, f: impl FnOnce(&mut crate::site::Site) -> T) -> Result<T> {
         self.acl_mutate(|acl| f(&mut acl.site))

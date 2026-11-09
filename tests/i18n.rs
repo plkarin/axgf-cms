@@ -373,6 +373,14 @@ fn every_dynamic_key_family_is_fully_defined() {
     for role in ["viewer", "contributor", "admin"] {
         expected.push(format!("accounts-role-{role}"));
     }
+    // What a file sent to the site may weigh, and its kinds by family
+    // (docs/adr/0041).
+    for b in axgf_cms::limits::BOUNDS {
+        expected.push(format!("uploads-limit-{}", b.key));
+    }
+    for (family, _) in axgf_cms::limits::KINDS {
+        expected.push(format!("uploads-family-{family}"));
+    }
     // The export's checkboxes, and every notice that names what is withheld.
     for scope in axgf_cms::sensitive::Scope::ALL {
         expected.push(format!("scope-{}", scope.as_str()));

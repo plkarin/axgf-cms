@@ -66,7 +66,7 @@ pub async fn page(
             // The photographs a picture may have been made from: the
             // person's own images, as their gallery shows them.
             sources => view.images,
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
         },
     )
 }
@@ -88,7 +88,7 @@ struct Form {
     too_large: bool,
 }
 
-async fn read_form(mut multipart: Multipart) -> Form {
+async fn read_form(mut multipart: Multipart, most: usize) -> Form {
     let mut out = Form::default();
     loop {
         let field = match multipart.next_field().await {
@@ -102,7 +102,7 @@ async fn read_form(mut multipart: Multipart) -> Form {
         match field.name().unwrap_or_default().to_string().as_str() {
             "file" => {
                 let filename = field.file_name().unwrap_or("upload").to_string();
-                match super::uploads::read_capped(field, crate::documents::MAX_UPLOAD).await {
+                match super::uploads::read_capped(field, most).await {
                     // A slot left empty posts an empty part: not a picture.
                     Ok(Some(b)) if b.is_empty() => {}
                     Ok(Some(bytes)) => out.files.push(Upload { filename, bytes }),
@@ -160,7 +160,8 @@ pub async fn save(
         return no_person(&chrome);
     };
 
-    let form = read_form(multipart).await;
+    let limits = state.limits();
+    let form = read_form(multipart, limits.document_bytes()).await;
     let refuse = |status: StatusCode, key: &str, args: &[(&str, fluent::FluentValue<'_>)]| {
         render::error_page_back_in(
             &chrome,
@@ -178,10 +179,7 @@ pub async fn save(
         refuse(
             StatusCode::PAYLOAD_TOO_LARGE,
             "error-upload-too-large",
-            &[(
-                "mb",
-                ((crate::documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
-            )],
+            &[("mb", (limits.document_mb as i64).into())],
         )
     };
     if form.too_large {
@@ -204,11 +202,21 @@ pub async fn save(
     // read from the bytes and never from the name or the browser.
     let mut adds = Vec::new();
     for up in &form.files {
-        if up.bytes.len() > crate::documents::MAX_UPLOAD {
+        if up.bytes.len() > limits.document_bytes() {
             return too_large();
         }
         match crate::documents::sniff(&up.bytes) {
-            Some(kind) if kind.raster_image => adds.push((up, kind)),
+            Some(kind) if kind.raster_image && limits.allows(kind.mime) => adds.push((up, kind)),
+            Some(kind) if kind.raster_image => {
+                return refuse(
+                    StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                    "error-upload-kind-refused",
+                    &[(
+                        "kind",
+                        crate::limits::kind_name(kind.mime).to_string().into(),
+                    )],
+                )
+            }
             _ => {
                 return refuse(
                     StatusCode::UNSUPPORTED_MEDIA_TYPE,

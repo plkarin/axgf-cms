@@ -2025,7 +2025,7 @@ fn render_documents(
             files,
             problem,
             base_version => crate::state::version_of(person),
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
             document_types => crate::documents::document_type_options(chrome.lang),
         },
     )

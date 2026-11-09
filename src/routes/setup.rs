@@ -31,10 +31,14 @@ use crate::routes::Shared;
 use crate::state::{format_diagnostics, Adoption};
 use crate::{journal, render};
 
-/// The ceiling on an uploaded archive. A family's photographs make an `.axgf`
-/// far larger than its GEDCOM — the operator's is 433 MB — and it is
-/// streamed to disk, never held in memory, so the ceiling is about the disk.
-pub const MAX_ARCHIVE: usize = 4 * 1024 * 1024 * 1024;
+/// An archive's limit in gigabytes, as the page says it: `4`, or `1,5`.
+fn archive_gb(mb: u32, lang: &str) -> String {
+    if mb.is_multiple_of(1024) {
+        (mb / 1024).to_string()
+    } else {
+        crate::i18n::decimal(lang, &format!("{:.1}", mb as f64 / 1024.0))
+    }
+}
 
 macro_rules! admin_while_unset {
     ($state:expr, $headers:expr) => {{
@@ -57,8 +61,8 @@ pub async fn page(State(state): State<Shared>, headers: HeaderMap) -> Response {
         "admin_setup.html",
         context! {
             nav => "admin",
-            max_mb => crate::convert::MAX_UPLOAD / (1024 * 1024),
-            max_archive_gb => MAX_ARCHIVE / (1024 * 1024 * 1024),
+            max_mb => state.limits().gedcom_mb,
+            max_archive_gb => archive_gb(state.limits().archive_mb, chrome.lang),
             lang => chrome.lang,
         },
     )
@@ -148,16 +152,26 @@ pub async fn archive(
     ));
     let mut name = String::new();
     let mut total = 0usize;
+    // What the administration lets an archive weigh (docs/adr/0041); a body
+    // cut at that weight is said to be too large, not unreadable.
+    let most = state.limits().archive_bytes();
+    let too_large = |e: axum::extract::multipart::MultipartError| {
+        if e.status() == StatusCode::PAYLOAD_TOO_LARGE {
+            chrome.t("setup-archive-too-large")
+        } else {
+            e.to_string()
+        }
+    };
     let written: Result<(), String> = async {
         let mut file = std::fs::File::create(&part).map_err(|e| e.to_string())?;
-        while let Some(mut field) = multipart.next_field().await.map_err(|e| e.to_string())? {
+        while let Some(mut field) = multipart.next_field().await.map_err(too_large)? {
             if field.name() != Some("file") {
                 continue;
             }
             name = field.file_name().unwrap_or("family.axgf").to_string();
-            while let Some(chunk) = field.chunk().await.map_err(|e| e.to_string())? {
+            while let Some(chunk) = field.chunk().await.map_err(too_large)? {
                 total += chunk.len();
-                if total > MAX_ARCHIVE {
+                if total > most {
                     return Err(chrome.t("setup-archive-too-large"));
                 }
                 file.write_all(&chunk).map_err(|e| e.to_string())?;

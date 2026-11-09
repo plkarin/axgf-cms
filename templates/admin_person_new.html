@@ -73,7 +73,7 @@
     </div>
     <label class="field"><span class="field-label">{{ t("person-new-section-portrait") }}</span>
       <input type="file" name="portrait" accept="image/png,image/jpeg,image/gif,image/webp" data-max-bytes="{{ max_upload_bytes }}"
-             data-too-large="{{ t('error-upload-too-large', mb=max_upload_mb) }}"{% if error_field == "portrait" %} aria-invalid="true"{% endif %}></label>
+             data-too-large="{{ t('upload-file-too-large', mb=max_upload_mb) }}"{% if error_field == "portrait" %} aria-invalid="true"{% endif %}></label>
     <p class="hint">{{ t("person-new-portrait-hint", mb=max_upload_mb) }}</p>
   </section>
 

@@ -612,7 +612,7 @@ pub async fn tree(
             // The record sections inside the panel lay themselves out for a
             // clamped column rather than a page.
             compact => true,
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
                 document_types => crate::documents::document_type_options(chrome.lang),
         },
     )
@@ -681,7 +681,7 @@ pub async fn tree_panel(
                     root_kin,
                     status,
                     compact => true,
-                    max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                    max_upload_mb => state.limits().document_mb,
                     document_types => crate::documents::document_type_options(chrome.lang),
                     ..tab_ctx
                 },
@@ -964,7 +964,7 @@ pub async fn person(
                     // The standalone page has the width for the explanatory
                     // prose and the comparison tables; the panel does not.
                     compact => false,
-                    max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+                    max_upload_mb => state.limits().document_mb,
                     document_types => crate::documents::document_type_options(chrome.lang),
                     map => state.map().cloned(),
                     // Serialised here rather than by a template filter: the
@@ -1164,7 +1164,8 @@ pub async fn document_raw(
         );
     };
 
-    let disposition = if crate::documents::serve_inline(&doc.mime) {
+    let plays = crate::documents::plays_as(&doc.mime).is_some();
+    let disposition = if crate::documents::serve_inline(&doc.mime) || plays {
         format!("inline; filename=\"{}\"", sanitize_header(&doc.filename))
     } else {
         format!(
@@ -1185,10 +1186,50 @@ pub async fn document_raw(
         );
     };
     let len = file.metadata().await.map(|m| m.len()).ok();
-    let stream = tokio_util::io::ReaderStream::new(file);
-    let body = axum::body::Body::from_stream(stream);
+    // A piece of the file, as a player asks for one to start a film at once
+    // and to go anywhere in it (docs/adr/0041): one range, `bytes=a-b`,
+    // `bytes=a-` or `bytes=-n`.
+    let asked = len.and_then(|len| {
+        headers
+            .get(header::RANGE)
+            .and_then(|v| v.to_str().ok())
+            .map(|r| (byte_range(r, len), len))
+    });
+    let mut out = header::HeaderMap::new();
+    set_header(&mut out, header::ACCEPT_RANGES, "bytes");
+    let (status, body, sent) = match asked {
+        Some((None, len)) => {
+            set_header(&mut out, header::CONTENT_RANGE, &format!("bytes */{len}"));
+            return (StatusCode::RANGE_NOT_SATISFIABLE, out).into_response();
+        }
+        Some((Some((start, end)), len)) => {
+            use tokio::io::{AsyncReadExt, AsyncSeekExt};
+            let mut file = file;
+            if file.seek(std::io::SeekFrom::Start(start)).await.is_err() {
+                return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+            }
+            let n = end - start + 1;
+            set_header(
+                &mut out,
+                header::CONTENT_RANGE,
+                &format!("bytes {start}-{end}/{len}"),
+            );
+            let stream = tokio_util::io::ReaderStream::new(file.take(n));
+            (
+                StatusCode::PARTIAL_CONTENT,
+                axum::body::Body::from_stream(stream),
+                Some(n),
+            )
+        }
+        None => {
+            let stream = tokio_util::io::ReaderStream::new(file);
+            (StatusCode::OK, axum::body::Body::from_stream(stream), len)
+        }
+    };
+    let body = body;
+    let len = sent;
 
-    let mut headers = header::HeaderMap::new();
+    let mut headers = out;
     set_header(&mut headers, header::CONTENT_TYPE, &doc.mime);
     set_header(&mut headers, header::CONTENT_DISPOSITION, &disposition);
     set_header(
@@ -1202,7 +1243,36 @@ pub async fn document_raw(
     if let Some(len) = len {
         set_header(&mut headers, header::CONTENT_LENGTH, &len.to_string());
     }
-    (headers, body).into_response()
+    (status, headers, body).into_response()
+}
+
+/// The one range of `bytes=…` a file of `len` bytes can give, inclusive:
+/// `None` when it can give none (a range past its end, or one that is not a
+/// single byte range). Several ranges are not served piecewise.
+fn byte_range(header: &str, len: u64) -> Option<(u64, u64)> {
+    let spec = header.trim().strip_prefix("bytes=")?.trim();
+    if spec.contains(',') || len == 0 {
+        return None;
+    }
+    let (a, b) = spec.split_once('-')?;
+    let (a, b) = (a.trim(), b.trim());
+    let (start, end) = if a.is_empty() {
+        // The last `b` bytes.
+        let n: u64 = b.parse().ok()?;
+        if n == 0 {
+            return None;
+        }
+        (len.saturating_sub(n), len - 1)
+    } else {
+        let start: u64 = a.parse().ok()?;
+        let end = if b.is_empty() {
+            len - 1
+        } else {
+            b.parse::<u64>().ok()?.min(len - 1)
+        };
+        (start, end)
+    };
+    (start <= end && start < len).then_some((start, end))
 }
 
 /// Insert a header, silently skipping a value that cannot be a header value
@@ -2064,7 +2134,7 @@ pub async fn river(
             hidden => v.hidden,
             signed_in => viewer.signed_in(),
             compact => true,
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
             document_types => crate::documents::document_type_options(chrome.lang),
             ..tab_ctx
         },

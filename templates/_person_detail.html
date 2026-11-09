@@ -587,6 +587,22 @@
   </div>
   {% endif %}
 
+  {#- The films and sounds a browser plays, played here (docs/adr/0041):
+      the file is asked for a piece at a time, so a long film starts at once
+      and its slider goes anywhere in it. -#}
+  {% if p.clips and show_files %}
+  <h3>{{ t("record-clips") }}</h3>
+  <div class="clips">
+    {% for c in p.clips %}
+    <figure class="clip clip-{{ c.media }}">
+      {% if c.media == "video" %}<video controls preload="metadata" playsinline src="/document/{{ c.id }}/raw" aria-label="{{ c.label }}"></video>
+      {% else %}<audio controls preload="metadata" src="/document/{{ c.id }}/raw" aria-label="{{ c.label }}"></audio>{% endif %}
+      <figcaption>{{ c.label }} <span class="small muted">{{ c.document_type_label }}{% if c.size_human %} · {{ c.size_human }}{% endif %}</span></figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if p.documents and show_files %}
   <h3>{{ t("record-documents") }}</h3>
   <div class="table-wrap">

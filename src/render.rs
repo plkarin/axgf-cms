@@ -223,6 +223,7 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_conflict.html",
     "admin_dashboard.html",
     "admin_bundle.html",
+    "admin_uploads.html",
     "admin_infrastructure.html",
     "admin_connectivity.html",
     "register.html",

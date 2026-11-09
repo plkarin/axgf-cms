@@ -847,9 +847,9 @@ pub fn image_kind(bytes: &[u8]) -> Option<(&'static str, &'static str)> {
 impl PendingImages {
     /// Hold a picture; its token, or `None` when it is not a picture or
     /// there is no room.
-    pub fn put(&self, owner: &str, filename: &str, bytes: Vec<u8>) -> Option<String> {
+    pub fn put(&self, owner: &str, filename: &str, bytes: Vec<u8>, most: usize) -> Option<String> {
         let (mime, ext) = image_kind(&bytes)?;
-        if bytes.len() > MAX_IMAGE {
+        if bytes.len() > most {
             return None;
         }
         let mut guard = self.inner.lock().unwrap_or_else(|e| e.into_inner());
@@ -1019,12 +1019,15 @@ mod tests {
     #[test]
     fn only_pictures_wait_and_only_for_who_pasted_them() {
         let p = PendingImages::default();
-        assert!(p.put("ana", "x.txt", b"hello".to_vec()).is_none());
+        assert!(p
+            .put("ana", "x.txt", b"hello".to_vec(), MAX_IMAGE)
+            .is_none());
         let t = p
             .put(
                 "ana",
                 "C:\\photos\\mamie.png",
                 b"\x89PNG\r\n\x1a\nrest".to_vec(),
+                MAX_IMAGE,
             )
             .unwrap();
         assert!(p.get("bob", &t).is_none());

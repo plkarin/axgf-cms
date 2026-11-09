@@ -396,6 +396,8 @@ struct Ctx<'a> {
     lens: &'a crate::access::Lens,
     lang: &'a str,
     id: &'a str,
+    /// What a file attached here may weigh, in MB (docs/adr/0041).
+    document_mb: u32,
 }
 
 impl Ctx<'_> {
@@ -606,12 +608,14 @@ pub fn model(
     person: &Value,
     lists: &BTreeMap<String, Vec<Value>>,
 ) -> Model {
+    let document_mb = state.limits().document_mb;
     state.read_as(viewer.ceiling(), |flat, lens| {
         let cx = Ctx {
             flat,
             lens,
             lang,
             id,
+            document_mb,
         };
         let pick = |kind: EntityKind, entity: &Value, prefix: &str| {
             generic_fields(
@@ -920,10 +924,7 @@ pub fn model(
             add_label: cx.t("documents-upload"),
             subtitle: cx.t_args(
                 "documents-upload-help",
-                &[(
-                    "mb",
-                    (crate::documents::MAX_UPLOAD / (1024 * 1024)).to_string(),
-                )],
+                &[("mb", cx.document_mb.to_string())],
             ),
             fields: vec![
                 Field::new("file", "new.doc.file".into(), cx.t("record-file"), ""),
@@ -1419,6 +1420,7 @@ pub fn read_back(
     work: &mut Working,
 ) -> Result<(), Refusal> {
     let flat = state.read(|f| f.clone());
+    let limits = state.limits();
     let t = |key: &str| crate::i18n::translate(lang, key, None);
     let refuse = |tab: &'static str, key: &str| Refusal {
         tab,
@@ -1626,7 +1628,7 @@ pub fn read_back(
             }
             ("new", "doc") => {
                 let up = upload.take().unwrap_or_default();
-                if up.too_large || up.bytes.len() > crate::documents::MAX_UPLOAD {
+                if up.too_large || up.bytes.len() > limits.document_bytes() {
                     return Err(Refusal {
                         tab,
                         message: crate::i18n::translate(
@@ -1634,9 +1636,7 @@ pub fn read_back(
                             "error-upload-too-large",
                             Some(&fluent::FluentArgs::from_iter([(
                                 "mb",
-                                fluent::FluentValue::from(
-                                    (crate::documents::MAX_UPLOAD / (1024 * 1024)) as i64,
-                                ),
+                                fluent::FluentValue::from(limits.document_mb as i64),
                             )])),
                         ),
                     });
@@ -1648,6 +1648,20 @@ pub fn read_back(
                 let Some(kind) = crate::documents::sniff(&up.bytes) else {
                     return Err(refuse(tab, "error-upload-unsupported"));
                 };
+                // A kind the administration refuses (docs/adr/0041).
+                if !limits.allows(kind.mime) {
+                    return Err(Refusal {
+                        tab,
+                        message: crate::i18n::translate(
+                            lang,
+                            "error-upload-kind-refused",
+                            Some(&fluent::FluentArgs::from_iter([(
+                                "kind",
+                                fluent::FluentValue::from(crate::limits::kind_name(kind.mime)),
+                            )])),
+                        ),
+                    });
+                }
                 let doc_id = uuid::Uuid::new_v4().to_string();
                 let doc_type = match text(&sub, "document_type") {
                     Some(t) if crate::documents::DOCUMENT_TYPES.contains(&t) => t.to_string(),
@@ -2122,7 +2136,7 @@ pub fn render_editor(
             precisions => profile.precisions,
             is_admin => viewer.is_admin(),
             history => super::admin::history_json(state, "person", id, viewer.ceiling(), chrome.lang),
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
         },
     );
     *resp.status_mut() = status;
@@ -2140,7 +2154,7 @@ fn no_person(chrome: &render::Chrome) -> Response {
 
 /// Read the save's body: a form, or — when the Médias tab carries a file — a
 /// multipart form with the file in it.
-async fn read_body(req: Request) -> (Body, Option<Upload>) {
+async fn read_body(req: Request, most: usize) -> (Body, Option<Upload>) {
     let multipart = req
         .headers()
         .get(header::CONTENT_TYPE)
@@ -2170,7 +2184,7 @@ async fn read_body(req: Request) -> (Body, Option<Upload>) {
         let name = field.name().unwrap_or_default().to_string();
         if name == "new.doc.file" {
             upload.filename = field.file_name().unwrap_or("upload").to_string();
-            match super::uploads::read_capped(field, crate::documents::MAX_UPLOAD).await {
+            match super::uploads::read_capped(field, most).await {
                 Ok(Some(b)) => upload.bytes = b,
                 Ok(None) => upload.too_large = true,
                 Err(_) => {
@@ -2200,7 +2214,8 @@ pub async fn save(
     let Some(stored) = state.read(|f| f.get("persons").and_then(|c| c.get(&id)).cloned()) else {
         return no_person(&chrome);
     };
-    let (body, upload) = read_body(req).await;
+    let limits = state.limits();
+    let (body, upload) = read_body(req, limits.document_bytes()).await;
     if upload.as_ref().is_some_and(|u| u.too_large)
         && upload.as_ref().is_some_and(|u| u.bytes.is_empty())
     {
@@ -2211,10 +2226,7 @@ pub async fn save(
             StatusCode::PAYLOAD_TOO_LARGE,
             "error-upload-title",
             "error-upload-too-large",
-            &[(
-                "mb",
-                ((crate::documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
-            )],
+            &[("mb", (limits.document_mb as i64).into())],
         );
     }
     let mut form: HashMap<String, String> =

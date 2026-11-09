@@ -2624,18 +2624,16 @@ pub async fn upload_document(
         );
     }
 
-    let up = read_document_upload(multipart).await;
+    let limits = state.limits();
+    let up = read_document_upload(multipart, limits.document_bytes()).await;
 
-    if up.too_large || up.bytes.len() > documents::MAX_UPLOAD {
+    if up.too_large || up.bytes.len() > limits.document_bytes() {
         return upload_refused(
             &chrome,
             &id,
             StatusCode::PAYLOAD_TOO_LARGE,
             "error-upload-too-large",
-            &[(
-                "mb",
-                ((documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
-            )],
+            &[("mb", (limits.document_mb as i64).into())],
         );
     }
     if up.bytes.is_empty() {
@@ -2659,6 +2657,19 @@ pub async fn upload_document(
             &[],
         );
     };
+    // A kind the administration refuses (docs/adr/0041).
+    if !limits.allows(kind.mime) {
+        return upload_refused(
+            &chrome,
+            &id,
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "error-upload-kind-refused",
+            &[(
+                "kind",
+                crate::limits::kind_name(kind.mime).to_string().into(),
+            )],
+        );
+    }
 
     let sha256 = documents::sha256_hex(&up.bytes);
     let size = up.bytes.len() as u64;
@@ -2816,7 +2827,7 @@ pub(super) fn clean_filename(raw: &str, ext: &str) -> String {
 }
 
 /// Read the upload form, tolerating fields in any order.
-async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpload {
+async fn read_document_upload(mut multipart: axum::extract::Multipart, most: usize) -> DocUpload {
     let mut out = DocUpload::default();
     loop {
         let field = match multipart.next_field().await {
@@ -2832,7 +2843,7 @@ async fn read_document_upload(mut multipart: axum::extract::Multipart) -> DocUpl
         match field.name().unwrap_or_default().to_string().as_str() {
             "file" => {
                 out.filename = field.file_name().unwrap_or("upload").to_string();
-                match super::uploads::read_capped(field, documents::MAX_UPLOAD).await {
+                match super::uploads::read_capped(field, most).await {
                     Ok(Some(b)) => out.bytes = b,
                     Ok(None) => out.too_large = true,
                     Err(_) => {
@@ -3677,7 +3688,7 @@ pub async fn avatar_picker(
             },
             focal_x => focal.x,
             focal_y => focal.y,
-            max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb => state.limits().document_mb,
             base_version => stored.as_ref().map(crate::state::version_of).unwrap_or(0),
             // Opened from the record's editor (its Médias tab, to frame the
             // face): saving and cancelling both go back there.
@@ -4289,6 +4300,7 @@ fn emblem_page(
     version: (u64, String),
     back: Option<&str>,
     saved: bool,
+    max_upload_mb: u32,
 ) -> Response {
     let (choose_action, upload_action, cancel_href) = actions;
     let (chosen_id, focal) = match choice {
@@ -4319,7 +4331,7 @@ fn emblem_page(
             token => version.1,
             back,
             saved,
-            max_upload_mb => documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_mb,
         },
     )
 }
@@ -4390,6 +4402,7 @@ pub async fn family_emblem_picker(
         (version, String::new()),
         back,
         q.contains_key("saved"),
+        state.limits().document_mb,
     )
 }
 
@@ -4555,20 +4568,18 @@ fn emblem_refused(
 #[allow(clippy::result_large_err)]
 fn emblem_document(
     chrome: &render::Chrome,
+    limits: &crate::limits::Limits,
     back: &str,
     up: &DocUpload,
     linked_to: Value,
 ) -> Result<(Value, String), Response> {
-    if up.too_large || up.bytes.len() > documents::MAX_UPLOAD {
+    if up.too_large || up.bytes.len() > limits.document_bytes() {
         return Err(emblem_refused(
             chrome,
             back,
             StatusCode::PAYLOAD_TOO_LARGE,
             "error-upload-too-large",
-            &[(
-                "mb",
-                ((documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
-            )],
+            &[("mb", (limits.document_mb as i64).into())],
         ));
     }
     if up.bytes.is_empty() {
@@ -4589,6 +4600,18 @@ fn emblem_document(
             &[],
         ));
     };
+    if !limits.allows(kind.mime) {
+        return Err(emblem_refused(
+            chrome,
+            back,
+            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+            "error-upload-kind-refused",
+            &[(
+                "kind",
+                crate::limits::kind_name(kind.mime).to_string().into(),
+            )],
+        ));
+    }
     let doc_id = uuid::Uuid::new_v4().to_string();
     let mut entity = json!({
         "id": doc_id,
@@ -4642,14 +4665,15 @@ pub async fn family_emblem_upload(
     ) {
         return r;
     }
-    let up = read_document_upload(multipart).await;
+    let limits = state.limits();
+    let up = read_document_upload(multipart, limits.document_bytes()).await;
     let back = back_id(&up.back).map(str::to_string);
     let page = match &back {
         Some(b) => format!("/admin/family/{fid}/avatar?back={b}"),
         None => format!("/admin/family/{fid}/avatar"),
     };
     let linked = json!([{"entity_type": "family", "entity_id": fid, "role": crate::emblem::ROLE}]);
-    let (entity, _) = match emblem_document(&chrome, &page, &up, linked) {
+    let (entity, _) = match emblem_document(&chrome, &limits, &page, &up, linked) {
         Ok(e) => e,
         Err(r) => return r,
     };
@@ -4743,6 +4767,7 @@ pub async fn archive_emblem_picker(
         (0, token),
         None,
         q.contains_key("saved"),
+        state.limits().document_mb,
     )
 }
 
@@ -4818,11 +4843,13 @@ pub async fn archive_emblem_upload(
     multipart: axum::extract::Multipart,
 ) -> Response {
     let (viewer, chrome) = guard_admin!(state, headers);
-    let up = read_document_upload(multipart).await;
-    let (entity, _) = match emblem_document(&chrome, "/admin/bundle/emblem", &up, json!([])) {
-        Ok(e) => e,
-        Err(r) => return r,
-    };
+    let limits = state.limits();
+    let up = read_document_upload(multipart, limits.document_bytes()).await;
+    let (entity, _) =
+        match emblem_document(&chrome, &limits, "/admin/bundle/emblem", &up, json!([])) {
+            Ok(e) => e,
+            Err(r) => return r,
+        };
     let (out, new_id) = match state.add_document(&entity, &up.bytes) {
         Ok(o) => o,
         Err(e) => return io_error(&chrome, &e),

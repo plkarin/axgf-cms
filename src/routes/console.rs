@@ -224,6 +224,12 @@ fn render_bundle(state: &Shared, chrome: &render::Chrome, note: BundleNote) -> R
             recipient,
             recipient_text,
             family => family_context(state, chrome, note.family),
+            uploads => {
+                let l = state.limits();
+                let total = crate::limits::KINDS.iter().map(|(_, k)| k.len()).sum::<usize>();
+                json!({"document_mb": l.document_mb,
+                       "accepted": total - l.refused.len().min(total), "total": total})
+            },
             error => note.error,
             notice => note.notice,
         },

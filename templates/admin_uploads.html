@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{#- What a file sent to the site may weigh, and the kinds the archive refuses
+    (docs/adr/0041). The kinds sit in a disclosure: sixteen boxes would be
+    sixteen controls on a page whose business is six numbers. -#}
+{% block title %}{{ t("uploads-title") }} — {{ t("app-name") }}{% endblock %}
+{% block content %}
+
+{% include "_admin_nav.html" %}
+<h1>{{ t("uploads-title") }}</h1>
+<p class="lede">{{ t("uploads-lede") }}</p>
+
+{% if saved %}<div class="notice ok" role="status"><p>{{ t("uploads-saved") }}</p></div>{% endif %}
+{% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
+
+<form method="post" action="/admin/uploads" autocomplete="off">
+  <section class="rec-section" id="sizes">
+    <h2>{{ t("uploads-sizes") }}</h2>
+    <div class="note-form-grid">
+      {%- for b in bounds %}
+      <label class="field"><span class="field-label">{{ t("uploads-limit-" ~ b.key) }}</span>
+        <input type="number" name="{{ b.key }}" value="{{ b.value }}" min="{{ b.min }}" max="{{ b.max }}" step="1" inputmode="numeric" required>
+        <span class="hint">{{ t("uploads-limit-range", min=b.min, max=b.max, default=b.default) }}</span></label>
+      {%- endfor %}
+    </div>
+  </section>
+
+  <section class="rec-section" id="kinds">
+    <h2>{{ t("uploads-kinds") }}</h2>
+    <details class="menu-disclosure uploads-kinds">
+      <summary>{{ t("uploads-kinds-summary", accepted=accepted, total=total) }}</summary>
+      {%- for f in families %}
+      <fieldset class="uploads-family">
+        <legend>{{ t("uploads-family-" ~ f.key) }}</legend>
+        <div class="check-row">
+          {%- for k in f.kinds %}
+          <label class="inline"><input type="checkbox" name="kind" value="{{ k.mime }}"{% if k.accepted %} checked{% endif %}> {{ k.name }}</label>
+          {%- endfor %}
+        </div>
+      </fieldset>
+      {%- endfor %}
+      <p class="hint">{{ t("uploads-kinds-hint") }}</p>
+    </details>
+  </section>
+
+  <div class="cta-row">
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("uploads-save") }}</button>
+    <a class="btn" href="/admin/bundle">{{ t("admin-cancel") }}</a>
+  </div>
+</form>
+{% endblock %}

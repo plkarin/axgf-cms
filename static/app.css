@@ -3889,6 +3889,18 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
 .note-preview { min-block-size: 22rem; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
 .note-delete { margin-block-start: 1.5rem; }
 
+/* What a file may weigh and be (docs/adr/0041): the kinds, by family. */
+.uploads-kinds > summary { margin-block-end: 0.6rem; }
+.uploads-family { margin: 0 0 0.8rem; padding: 0; border: 0; min-inline-size: 0; }
+.uploads-family > legend { padding: 0; margin-block-end: 0.3rem; font-family: var(--mono); font-size: var(--type-label); letter-spacing: var(--label-track); text-transform: uppercase; color: var(--text-secondary); }
+
+/* The record's films and sounds, played on the page (docs/adr/0041). */
+.clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 1rem; margin-block: 0.5rem 1.25rem; }
+.clip { margin: 0; }
+.clip video { display: block; inline-size: 100%; max-block-size: 70vh; border-radius: var(--radius); background: var(--surface-sunken); }
+.clip audio { display: block; inline-size: 100%; }
+.clip figcaption { margin-block-start: 0.35rem; }
+
 /* A person created with what surrounds them (docs/adr/0039): rows that
    grow at need, and under each typed name what the save will make of it. */
 .pn-set { margin: 0.4rem 0 1rem; padding: 0; border: 0; min-inline-size: 0; }

@@ -170,16 +170,4 @@
     }
     bindRows(set);
   }
-
-  // A portrait larger than the server takes is refused here, before the
-  // whole page is sent for nothing.
-  var portrait = form.querySelector('input[type="file"][name="portrait"]');
-  if (portrait) portrait.addEventListener('change', function () {
-    var max = parseInt(portrait.getAttribute('data-max-bytes') || '0', 10);
-    var f = portrait.files && portrait.files[0];
-    if (max && f && f.size > max) {
-      window.alert(portrait.getAttribute('data-too-large') || '');
-      portrait.value = '';
-    }
-  });
 })();

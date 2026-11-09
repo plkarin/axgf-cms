@@ -178,6 +178,14 @@
 </section>
 {% endif %}
 
+{#- What a file sent to the site may weigh, and the kinds refused
+    (docs/adr/0041): said here, set on a page of its own. -#}
+<section class="rec-section" id="uploads">
+<h2>{{ t("uploads-title") }}</h2>
+<p class="small muted">{{ t("uploads-summary", document=uploads.document_mb, accepted=uploads.accepted, total=uploads.total) }}</p>
+<p><a class="btn" href="/admin/uploads">{{ t("uploads-open") }}</a></p>
+</section>
+
 <section class="rec-section" id="export">
 <h2>{{ t("bundle-export") }}</h2>
 <p class="small muted">{{ t("admin-export-health-note") }}</p>

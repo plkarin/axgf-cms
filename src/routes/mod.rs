@@ -12,6 +12,7 @@ mod convert;
 mod editors;
 mod entry;
 mod impact;
+mod limits;
 mod merge;
 mod notes;
 mod person_chat;
@@ -321,6 +322,59 @@ fn security_headers(router: Router, csp: &str) -> Router {
 }
 
 /// Every route, before the middleware is wrapped around it.
+/// What a request to a route that takes files may weigh (docs/adr/0041).
+#[derive(Clone, Copy)]
+enum Weight {
+    /// A file attached to a record, and the form around it.
+    Document,
+    /// Pictures pasted into a note.
+    NoteImage,
+    /// A message to the personal assistant and its files.
+    Assistant,
+    /// A GEDCOM file.
+    Gedcom,
+    /// An archive restored whole.
+    Archive,
+}
+
+/// Hold a request to the weight the site's settings allow now: the router is
+/// built once, and the limits change from the administration
+/// (docs/adr/0041). A body past it fails as it is read, and the route says
+/// the file is too large.
+async fn weighed(
+    state: Shared,
+    weight: Weight,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    let l = state.limits();
+    let most = match weight {
+        Weight::Document => l.document_request(),
+        Weight::NoteImage => l.note_image_request(),
+        Weight::Assistant => l.assistant_request(),
+        Weight::Gedcom => l.gedcom_request(),
+        Weight::Archive => l.archive_request(),
+    };
+    let req = req.map(|body| axum::body::Body::new(http_body_util::Limited::new(body, most)));
+    next.run(req).await
+}
+
+/// A route's methods, held to a [`Weight`] instead of axum's fixed limit.
+macro_rules! weighs {
+    ($state:expr, $weight:expr, $methods:expr) => {
+        $methods
+            .layer(DefaultBodyLimit::disable())
+            .layer(axum::middleware::from_fn_with_state(
+                $state.clone(),
+                move |s: axum::extract::State<Shared>,
+                      req: axum::extract::Request,
+                      next: axum::middleware::Next| {
+                    weighed(s.0, $weight, req, next)
+                },
+            ))
+    };
+}
+
 fn routes(state: Shared) -> Router {
     Router::new()
         // The river is the landing page. The overview that was `/` is at
@@ -356,9 +410,7 @@ fn routes(state: Shared) -> Router {
         .route("/convert", get(convert::form))
         .route(
             "/convert/gedcom",
-            post(convert::gedcom).layer(DefaultBodyLimit::max(
-                crate::convert::MAX_UPLOAD + 64 * 1024,
-            )),
+            weighs!(state, Weight::Gedcom, post(convert::gedcom)),
         )
         .route("/convert/download/:id", get(convert::download))
         // Notes and contributions (docs/adr/0014): read by the family's
@@ -369,9 +421,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/notes/new", get(notes::new_form))
         .route(
             "/admin/notes/images",
-            post(notes::images).layer(DefaultBodyLimit::max(
-                crate::notes::MAX_IMAGE * 4 + 64 * 1024,
-            )),
+            weighs!(state, Weight::NoteImage, post(notes::images)),
         )
         .route("/admin/notes/preview", post(notes::preview))
         .route("/admin/notes/pending/:token", get(notes::pending))
@@ -421,17 +471,19 @@ fn routes(state: Shared) -> Router {
         .route("/account/assistant/:pid/f/:fid", get(assistant::file))
         .route(
             "/account/assistant/:pid/c",
-            post(assistant::start_conversation).layer(DefaultBodyLimit::max(
-                crate::assistant::MESSAGE_FILES_MAX + 1024 * 1024,
-            )),
+            weighs!(
+                state,
+                Weight::Assistant,
+                post(assistant::start_conversation)
+            ),
         )
         .route(
             "/account/assistant/:pid/c/:cid",
-            get(assistant::conversation)
-                .post(assistant::send)
-                .layer(DefaultBodyLimit::max(
-                    crate::assistant::MESSAGE_FILES_MAX + 1024 * 1024,
-                )),
+            weighs!(
+                state,
+                Weight::Assistant,
+                get(assistant::conversation).post(assistant::send)
+            ),
         )
         .route(
             "/account/assistant/:pid/c/:cid/state",
@@ -471,14 +523,12 @@ fn routes(state: Shared) -> Router {
         .route("/admin/setup", get(setup::page))
         .route(
             "/admin/setup/gedcom",
-            post(setup::gedcom).layer(DefaultBodyLimit::max(
-                crate::convert::MAX_UPLOAD + 64 * 1024,
-            )),
+            weighs!(state, Weight::Gedcom, post(setup::gedcom)),
         )
         .route("/admin/setup/gedcom/:id", post(setup::adopt_gedcom))
         .route(
             "/admin/setup/archive",
-            post(setup::archive).layer(DefaultBodyLimit::max(setup::MAX_ARCHIVE)),
+            weighs!(state, Weight::Archive, post(setup::archive)),
         )
         .route("/admin/login", get(admin::login_form).post(admin::login))
         .route("/admin/logout", post(admin::logout))
@@ -549,17 +599,18 @@ fn routes(state: Shared) -> Router {
         // and the trailing "document" segment win over the parameter forms.
         .route(
             "/admin/person/:id/document",
-            post(admin::upload_document)
-                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(state, Weight::Document, post(admin::upload_document)),
         )
         // The portraits an AI reworked (docs/adr/0009): up to three pictures
         // in one save, so the body may be three uploads and the fields
         // around them.
         .route(
             "/admin/person/:id/ai-portraits",
-            get(ai_portraits::page)
-                .post(ai_portraits::save)
-                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(
+                state,
+                Weight::Document,
+                get(ai_portraits::page).post(ai_portraits::save)
+            ),
         )
         // The AFG on the record (docs/adr/0029): the face restored, one of
         // the photographs restored or a document read, the summary written.
@@ -645,17 +696,18 @@ fn routes(state: Shared) -> Router {
         )
         .route(
             "/admin/family/:id/document",
-            post(admin::family_emblem_upload)
-                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(state, Weight::Document, post(admin::family_emblem_upload)),
         )
         .route(
             "/admin/bundle/emblem",
             get(admin::archive_emblem_picker).post(admin::archive_emblem_set),
         )
+        // What a file sent to the site may weigh, and the kinds refused
+        // (docs/adr/0041): a page of the archive's room.
+        .route("/admin/uploads", get(limits::page).post(limits::save))
         .route(
             "/admin/bundle/emblem/upload",
-            post(admin::archive_emblem_upload)
-                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(state, Weight::Document, post(admin::archive_emblem_upload)),
         )
         // Before `/admin/place/:id`, which takes POST only and otherwise
         // matched "new" as an id: the place list's "New place" answered 405.
@@ -670,9 +722,11 @@ fn routes(state: Shared) -> Router {
         // page, one save, a portrait among the fields.
         .route(
             "/admin/person/new",
-            get(person_new::form)
-                .post(person_new::create)
-                .layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(
+                state,
+                Weight::Document,
+                get(person_new::form).post(person_new::create)
+            ),
         )
         .route("/admin/person/bulk", post(person_editor::bulk))
         // Before `/admin/person/:id` and `/admin/place/:id` take "merge" for
@@ -689,7 +743,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/person/:id/edit", get(person_editor::edit))
         .route(
             "/admin/person/:id",
-            post(person_editor::save).layer(DefaultBodyLimit::max(crate::documents::MAX_REQUEST)),
+            weighs!(state, Weight::Document, post(person_editor::save)),
         )
         .route("/admin/:kind", get(admin::list).post(admin::create))
         .route("/admin/:kind/new", get(admin::new_form))

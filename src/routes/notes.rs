@@ -221,7 +221,7 @@ fn form_page(
             categories,
             preview,
             error,
-            max_image_mb => notes::MAX_IMAGE / (1024 * 1024),
+            max_image_mb => state.limits().note_image_mb,
             // Not `back`: the page's chrome has one, the way a preference
             // form returns, and it would win.
             return_to => way.back,
@@ -684,11 +684,18 @@ pub async fn images(
         Ok(v) => v,
         Err(r) => return r,
     };
+    let limits = state.limits();
     let mut out = Vec::new();
     loop {
         let field = match multipart.next_field().await {
             Ok(Some(f)) => f,
             Ok(None) => break,
+            Err(e) if e.status() == StatusCode::PAYLOAD_TOO_LARGE => {
+                return json_error(
+                    StatusCode::PAYLOAD_TOO_LARGE,
+                    &chrome.t("notes-error-image-large"),
+                )
+            }
             Err(_) => return json_error(StatusCode::BAD_REQUEST, &chrome.t("notes-error-image")),
         };
         let name = field.file_name().unwrap_or("image").to_string();
@@ -704,13 +711,29 @@ pub async fn images(
         if bytes.is_empty() {
             continue;
         }
-        if bytes.len() > notes::MAX_IMAGE {
+        if bytes.len() > limits.note_image_bytes() {
             return json_error(
                 StatusCode::PAYLOAD_TOO_LARGE,
                 &chrome.t("notes-error-image-large"),
             );
         }
-        match state.note_images().put(viewer.name(), &name, bytes) {
+        // A kind the administration refuses (docs/adr/0041).
+        if let Some(kind) = crate::documents::sniff(&bytes).filter(|k| !limits.allows(k.mime)) {
+            return json_error(
+                StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                &chrome.t_args(
+                    "error-upload-kind-refused",
+                    &[(
+                        "kind",
+                        crate::limits::kind_name(kind.mime).to_string().into(),
+                    )],
+                ),
+            );
+        }
+        match state
+            .note_images()
+            .put(viewer.name(), &name, bytes, limits.note_image_bytes())
+        {
             Some(token) => out.push(json!({
                 "ref": format!("{}{token}", notes::PENDING_REF),
                 "url": format!("/admin/notes/pending/{token}"),

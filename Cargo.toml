@@ -98,6 +98,9 @@ krilla = { version = "0.8", default-features = false, features = ["raster-images
 # the shaper krilla draws with (same version), so a line measured is the line
 # drawn.
 rustybuzz = "0.20"
+# A request's body held to the weight the site's settings allow now
+# (docs/adr/0041): already in the tree, through axum.
+http-body-util = "0.1"
 
 [dev-dependencies]
 # The integration tests build real PNGs and decode the thumbnails they get

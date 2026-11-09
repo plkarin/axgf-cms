@@ -282,6 +282,17 @@ pub fn serve_inline(mime: &str) -> bool {
     )
 }
 
+/// The element a browser plays a file of this type in — `video` or
+/// `audio` — or `None` for one it does not play (docs/adr/0041). An AVI is
+/// a film no browser plays: it downloads.
+pub fn plays_as(mime: &str) -> Option<&'static str> {
+    match mime {
+        "video/mp4" | "video/webm" => Some("video"),
+        "audio/mpeg" | "audio/ogg" | "audio/wav" | "audio/mp4" | "audio/flac" => Some("audio"),
+        _ => None,
+    }
+}
+
 /// Lowercase hex SHA-256 of a byte run.
 pub fn sha256_hex(bytes: &[u8]) -> String {
     let digest = Sha256::digest(bytes);

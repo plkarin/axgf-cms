@@ -7,8 +7,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038),
-a person created with what surrounds them (docs/adr/0039), and the AFG
-reading a record's PDF documents (docs/adr/0040).
+a person created with what surrounds them (docs/adr/0039), the AFG
+reading a record's PDF documents (docs/adr/0040), and uploads the
+administration sets, with films that play (docs/adr/0041).
 
 ### Added
 
@@ -30,6 +31,16 @@ reading a record's PDF documents (docs/adr/0040).
   question asked on its tab, after the photographs: sixty pages and twenty
   megabytes at most, each document whole; the dossier lists them with
   their pages, and the tab says how many go with each message.
+- **What a file may weigh, and be, set in the administration** (the
+  archive's room, *Set the uploads*): a record's files, a note's pictures,
+  the assistant's files and messages, a GEDCOM file, an archive imported
+  whole, each in megabytes within bounds; and the kinds of file accepted,
+  sixteen by family. A change holds at once, without a restart; a kind
+  refused is refused when sent, the files already kept stay.
+- **Films and sounds play on the record**: the Media tab plays the MP4 and
+  WebM films and the MP3, Ogg, WAV, M4A and FLAC sounds a browser plays,
+  asked for a piece at a time, so a long film starts at once and its
+  slider goes anywhere in it.
 
 - **Two kinds of landmark: the great inventions and the great
   discoveries**, forty landmarks with their windows, from the wheel and

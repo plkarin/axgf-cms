@@ -107,7 +107,8 @@ pub async fn create(State(state): State<Shared>, headers: HeaderMap, req: Reques
         Ok(v) => v,
         Err(r) => return r,
     };
-    let (fields, portrait) = read_body(req).await;
+    let limits = state.limits();
+    let (fields, portrait) = read_body(req, limits.document_bytes()).await;
     let s = Submission::from_fields(&fields);
     let note = NoteIn::from_fields(&fields);
     // The tab the save was made on, which a refusal not tied to a field
@@ -134,10 +135,7 @@ pub async fn create(State(state): State<Shared>, headers: HeaderMap, req: Reques
         return refuse(
             chrome.t_args(
                 "error-upload-too-large",
-                &[(
-                    "mb",
-                    ((crate::documents::MAX_UPLOAD / (1024 * 1024)) as i64).into(),
-                )],
+                &[("mb", (limits.document_mb as i64).into())],
             ),
             Some("portrait"),
         );
@@ -147,7 +145,19 @@ pub async fn create(State(state): State<Shared>, headers: HeaderMap, req: Reques
         None
     } else {
         match crate::documents::sniff(&portrait.bytes) {
-            Some(kind) if kind.raster_image => Some((portrait, kind)),
+            Some(kind) if kind.raster_image && limits.allows(kind.mime) => Some((portrait, kind)),
+            Some(kind) if kind.raster_image => {
+                return refuse(
+                    chrome.t_args(
+                        "error-upload-kind-refused",
+                        &[(
+                            "kind",
+                            crate::limits::kind_name(kind.mime).to_string().into(),
+                        )],
+                    ),
+                    Some("portrait"),
+                )
+            }
             _ => return refuse(chrome.t("person-new-error-portrait"), Some("portrait")),
         }
     };
@@ -408,8 +418,8 @@ fn page(
             error_field => field,
             persons,
             places,
-            max_upload_bytes => crate::documents::MAX_UPLOAD,
-            max_upload_mb => crate::documents::MAX_UPLOAD / (1024 * 1024),
+            max_upload_bytes => state.limits().document_bytes(),
+            max_upload_mb => state.limits().document_mb,
         },
     );
     *response.status_mut() = status;
@@ -446,7 +456,7 @@ fn place_options(flat: &Value) -> Vec<Value> {
 }
 
 /// The fields as sent, repeated names kept in order, and the portrait.
-async fn read_body(req: Request) -> (Vec<(String, String)>, Portrait) {
+async fn read_body(req: Request, most: usize) -> (Vec<(String, String)>, Portrait) {
     let multipart = req
         .headers()
         .get(header::CONTENT_TYPE)
@@ -476,7 +486,7 @@ async fn read_body(req: Request) -> (Vec<(String, String)>, Portrait) {
         let name = field.name().unwrap_or_default().to_string();
         if name == "portrait" {
             portrait.filename = field.file_name().unwrap_or("portrait").to_string();
-            match super::uploads::read_capped(field, crate::documents::MAX_UPLOAD).await {
+            match super::uploads::read_capped(field, most).await {
                 Ok(Some(b)) => portrait.bytes = b,
                 Ok(None) => portrait.too_large = true,
                 Err(_) => {

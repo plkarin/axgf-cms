@@ -1,13 +1,13 @@
 //! Reading a file a form sends.
 //!
-//! A file is kept up to the site's limit ([`crate::documents::MAX_UPLOAD`]).
-//! When it is over it, the rest is still read, and thrown away, before the
-//! answer goes: a browser still sending when the server answers and closes
-//! can lose that answer, and the operator saw a blank page instead of "this
-//! file is over the limit" (a 20 MB PDF, 8 November 2026). The routes that
-//! take a file therefore accept a request of up to
-//! [`crate::documents::MAX_REQUEST`], so that what is over can be read to
-//! its end.
+//! A file is kept up to the site's limit, which the administration sets
+//! (`crate::limits`, docs/adr/0041). When it is over it, the rest is still
+//! read, and thrown away, before the answer goes: a browser still sending
+//! when the server answers and closes can lose that answer, and the operator
+//! saw a blank page instead of "this file is over the limit" (a 20 MB PDF,
+//! 8 November 2026). The routes that take a file therefore accept a request
+//! of four times the limit (`Limits::document_request`), so that what is
+//! over can be read to its end.
 
 use axum::extract::multipart::{Field, MultipartError};
 

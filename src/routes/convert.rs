@@ -6,7 +6,7 @@ use axum::response::Response;
 use minijinja::context;
 use serde_json::{json, Value};
 
-use crate::convert::{axgf_name_for, counts_of, MAX_UPLOAD};
+use crate::convert::{axgf_name_for, counts_of};
 use crate::gedcom_in::{self, Refusal};
 use crate::routes::Shared;
 use crate::state::envelope_into_data;
@@ -21,7 +21,7 @@ pub async fn form(State(state): State<Shared>, headers: HeaderMap) -> Response {
         "convert.html",
         context! {
             nav => "convert",
-            max_mb => MAX_UPLOAD / (1024 * 1024),
+            max_mb => state.limits().gedcom_mb,
         },
     )
 }
@@ -69,7 +69,10 @@ pub(super) async fn convert_and_show(
     let fail = |chrome: &render::Chrome, status: StatusCode, message: &str| {
         fail(chrome, status, message, setup)
     };
-    let limit_mb = || ((MAX_UPLOAD / (1024 * 1024)) as i64).into();
+    // What the administration lets a GEDCOM file weigh (docs/adr/0041).
+    let limits = state.limits();
+    let most = limits.gedcom_bytes();
+    let limit_mb = || (limits.gedcom_mb as i64).into();
     let mut upload = match read_upload(multipart).await {
         Ok(u) => u,
         Err(UploadError::TooLarge) => {
@@ -91,7 +94,7 @@ pub(super) async fn convert_and_show(
     if upload.bytes.is_empty() {
         return fail(&chrome, StatusCode::OK, &chrome.t("convert-error-no-file"));
     }
-    if upload.bytes.len() > MAX_UPLOAD {
+    if upload.bytes.len() > most {
         let size = crate::i18n::decimal(
             chrome.lang,
             &format!("{:.1}", upload.bytes.len() as f64 / (1024.0 * 1024.0)),
@@ -114,7 +117,8 @@ pub(super) async fn convert_and_show(
     let place_lang = upload.lang.clone();
     let bytes = std::mem::take(&mut upload.bytes);
     let work =
-        tokio::task::spawn_blocking(move || work(&bytes, confidence, &place_lang, lang)).await;
+        tokio::task::spawn_blocking(move || work(&bytes, confidence, &place_lang, lang, most))
+            .await;
     let done = match work {
         Ok(Work::Refused(Refusal::NotGedcom)) => {
             return fail(
@@ -261,10 +265,10 @@ struct Done {
 
 /// Read an upload as GEDCOM of any version (`crate::gedcom_in`), convert it,
 /// say what the data-quality screen would say about it, and package it.
-fn work(upload: &[u8], confidence: f64, place_lang: &str, lang: &'static str) -> Work {
+fn work(upload: &[u8], confidence: f64, place_lang: &str, lang: &'static str, most: usize) -> Work {
     // Any version, any encoding, bare or in a `.gdz`: read into the dialect
     // the converter reads, and what was mended on the way kept for the page.
-    let read = match gedcom_in::read(upload, MAX_UPLOAD) {
+    let read = match gedcom_in::read(upload, most) {
         Ok(r) => r,
         Err(r) => return Work::Refused(r),
     };

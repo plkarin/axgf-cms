@@ -289,6 +289,10 @@ pub struct Site {
     /// service's, kept here for the same reasons.
     #[serde(default, skip_serializing_if = "crate::afg::Config::is_default")]
     pub afg: crate::afg::Config,
+    /// What a file sent to the site may weigh, and the kinds refused
+    /// (docs/adr/0041).
+    #[serde(default, skip_serializing_if = "crate::limits::Limits::is_default")]
+    pub uploads: crate::limits::Limits,
 }
 
 impl Site {

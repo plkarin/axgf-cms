@@ -219,6 +219,8 @@ pub const TRANSLATED: &[(&str, &str)] = &[
     ("de", include_str!("impact_i18n/de.txt")),
     ("es", include_str!("impact_i18n/es.txt")),
     ("it", include_str!("impact_i18n/it.txt")),
+    ("pt", include_str!("impact_i18n/pt.txt")),
+    ("ru", include_str!("impact_i18n/ru.txt")),
 ];
 
 /// A language's file, read: each landmark's fields by its key.
@@ -3001,6 +3003,8 @@ mod tests {
         assert_eq!(ww1("de").name, "Erster Weltkrieg");
         assert_eq!(ww1("es").name, "Primera Guerra Mundial");
         assert_eq!(ww1("it").name, "Prima guerra mondiale");
+        assert_eq!(ww1("pt").name, "Primeira Guerra Mundial");
+        assert_eq!(ww1("ru").name, "Первая мировая война");
         // A language with no file yet reads in English.
         assert_eq!(ww1("sw").name, "First World War");
     }

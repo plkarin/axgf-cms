@@ -196,6 +196,93 @@ pub struct Landmark {
     notes: [String; 2],
 }
 
+// ---------------------------------------------------------------------------
+// the other languages
+// ---------------------------------------------------------------------------
+
+/// A landmark's name, note and window in one of the twelve other languages
+/// (the operator's request of 9 November 2026, docs/adr/0038).
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct Translated {
+    pub name: String,
+    pub note: String,
+    pub context: String,
+    pub stakes: String,
+    pub victims: String,
+}
+
+/// One file a language, in `src/impact_i18n/`: under "## <key>", `name|`,
+/// `note|`, `context|`, `stakes|` and `victims|` lines. What a file leaves
+/// out reads in English.
+pub const TRANSLATED: &[(&str, &str)] = &[("pl", include_str!("impact_i18n/pl.txt"))];
+
+/// A language's file, read: each landmark's fields by its key.
+pub fn parsed_translations(text: &str) -> Result<HashMap<String, Translated>, String> {
+    let mut out: HashMap<String, Translated> = HashMap::new();
+    let mut key: Option<String> = None;
+    for (n, line) in text.lines().enumerate() {
+        let line = line.trim_end();
+        if line.is_empty() || (line.starts_with('#') && !line.starts_with("## ")) {
+            continue;
+        }
+        if let Some(k) = line.strip_prefix("## ") {
+            let k = k.trim().to_string();
+            if out.contains_key(&k) {
+                return Err(format!("line {}: {k} twice", n + 1));
+            }
+            out.insert(k.clone(), Translated::default());
+            key = Some(k);
+            continue;
+        }
+        let Some(k) = key.as_ref() else {
+            return Err(format!("line {}: a field before any key", n + 1));
+        };
+        let Some((field, value)) = line.split_once('|') else {
+            return Err(format!("line {}: no field", n + 1));
+        };
+        let Some(t) = out.get_mut(k) else {
+            return Err(format!("line {}: no landmark", n + 1));
+        };
+        let slot = match field {
+            "name" => &mut t.name,
+            "note" => &mut t.note,
+            "context" => &mut t.context,
+            "stakes" => &mut t.stakes,
+            "victims" => &mut t.victims,
+            other => return Err(format!("line {}: no field \"{other}\"", n + 1)),
+        };
+        *slot = value.trim().to_string();
+    }
+    Ok(out)
+}
+
+fn translations() -> &'static HashMap<&'static str, HashMap<String, Translated>> {
+    static T: OnceLock<HashMap<&'static str, HashMap<String, Translated>>> = OnceLock::new();
+    T.get_or_init(|| {
+        TRANSLATED
+            .iter()
+            .map(|(lang, text)| (*lang, parsed_translations(text).unwrap_or_default()))
+            .collect()
+    })
+}
+
+/// A field of a landmark in the reader's language: French or English from
+/// the catalogue, another language from its file when it gives the field,
+/// English otherwise.
+fn said(pair: &[String; 2], lang: &str, key: &str, field: impl Fn(&Translated) -> &str) -> String {
+    if !lang.starts_with("fr") && !lang.starts_with("en") {
+        if let Some(v) = translations()
+            .get(lang)
+            .and_then(|m| m.get(key))
+            .map(&field)
+            .filter(|v| !v.is_empty())
+        {
+            return v.to_string();
+        }
+    }
+    pick(pair, lang).to_string()
+}
+
 /// The French of a pair when the reader reads French and there is one, the
 /// English otherwise.
 fn pick<'a>(pair: &'a [String; 2], lang: &str) -> &'a str {
@@ -207,14 +294,15 @@ fn pick<'a>(pair: &'a [String; 2], lang: &str) -> &'a str {
 }
 
 impl Landmark {
-    /// Its name in the reader's language: French or English.
-    pub fn name(&self, lang: &str) -> &str {
-        pick(&self.names, lang)
+    /// Its name in the reader's language: French or English from the
+    /// catalogue, another language from its file (docs/adr/0038).
+    pub fn name(&self, lang: &str) -> String {
+        said(&self.names, lang, &self.key, |t| &t.name)
     }
 
     /// Its explanation, when the catalogue gives one.
-    pub fn note(&self, lang: &str) -> &str {
-        pick(&self.notes, lang)
+    pub fn note(&self, lang: &str) -> String {
+        said(&self.notes, lang, &self.key, |t| &t.note)
     }
 
     pub fn start(&self) -> f64 {
@@ -1820,8 +1908,8 @@ fn column(
             Mark {
                 key: l.key.clone(),
                 kind: l.kind.slug(),
-                name: l.name(lang).to_string(),
-                note: l.note(lang).to_string(),
+                name: l.name(lang),
+                note: l.note(lang),
                 dates: span_text(lang, l.from.year, to_year, l.ongoing),
                 length: match l.to {
                     Some(t) if l.kind.lasts() => length_text(lang, l.from, t),
@@ -1831,13 +1919,13 @@ fn column(
                 tag_label: tag_label(tag, lang),
                 tag_flag: (tag.len() == 2).then(|| flag_url(tag)).flatten(),
                 context: more
-                    .map(|d| pick(&d.context, lang).to_string())
+                    .map(|d| said(&d.context, lang, &l.key, |t| &t.context))
                     .unwrap_or_default(),
                 stakes: more
-                    .map(|d| pick(&d.stakes, lang).to_string())
+                    .map(|d| said(&d.stakes, lang, &l.key, |t| &t.stakes))
                     .unwrap_or_default(),
                 victims: more
-                    .map(|d| pick(&d.victims, lang).to_string())
+                    .map(|d| said(&d.victims, lang, &l.key, |t| &t.victims))
                     .unwrap_or_default(),
                 from: l.start(),
                 to: l.end(now),
@@ -2836,5 +2924,74 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn every_translation_names_a_landmark_of_the_catalogue() {
+        let keys: std::collections::HashSet<&str> =
+            catalogue().iter().map(|l| l.key.as_str()).collect();
+        for (lang, text) in TRANSLATED {
+            let t = parsed_translations(text).unwrap_or_else(|e| panic!("{lang}: {e}"));
+            for k in t.keys() {
+                assert!(keys.contains(k.as_str()), "{lang}: {k} is no landmark");
+            }
+        }
+    }
+
+    #[test]
+    fn polish_names_and_explains_every_landmark() {
+        let pl = translations().get("pl").expect("the Polish file");
+        for l in catalogue() {
+            let t = pl
+                .get(&l.key)
+                .unwrap_or_else(|| panic!("no Polish for {}", l.key));
+            assert!(!t.name.is_empty(), "{}: no name", l.key);
+            assert_eq!(
+                t.note.is_empty(),
+                l.notes[0].is_empty(),
+                "{}: the note",
+                l.key
+            );
+            if let Some(d) = details().get(&l.key) {
+                assert!(
+                    !t.context.is_empty() && !t.stakes.is_empty(),
+                    "{}: the window",
+                    l.key
+                );
+                assert_eq!(
+                    t.victims.is_empty(),
+                    d.victims[0].is_empty(),
+                    "{}: the victims",
+                    l.key
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn a_landmark_reads_in_the_readers_language_or_in_english() {
+        let flat = family_flat();
+        let lens = Lens::unrestricted();
+        let marks = |lang: &str| -> Vec<Mark> {
+            person(&flat, &lens, "a", lang, 2026.0)
+                .unwrap()
+                .kinds
+                .into_iter()
+                .flat_map(|k| k.column.marks)
+                .collect()
+        };
+        let ww1 = |lang: &str| {
+            marks(lang)
+                .into_iter()
+                .find(|m| m.key.ends_with("first-world-war"))
+                .unwrap()
+        };
+        let pl = ww1("pl");
+        assert_eq!(pl.name, "Pierwsza wojna światowa");
+        assert!(pl.context.starts_with("Rywalizujące sojusze"));
+        assert!(pl.victims.starts_with("Około 20 milionów"));
+        assert_eq!(ww1("fr").name, "Première Guerre mondiale");
+        // A language with no file yet reads in English.
+        assert_eq!(ww1("sw").name, "First World War");
     }
 }

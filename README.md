@@ -689,10 +689,15 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.10.1**: on **Impact**, a life missing a date is
-never drawn longer than a hundred years, and the family's column fits the
-page. A record takes files of up to 50 MB, and a file over the limit is
-refused as soon as it is chosen.
+The latest release is **v1.10.2**: beside the river, the selected person's
+record is never taller than the drawing; the way to **Impact** stands at the
+head of a record, made to be seen; the family section is in blocks; flags
+are crisp; and Canopée's ground glides with a travel while its herds,
+smaller and fewer, walk.
+
+v1.10.1 kept, on Impact, a life missing a date within a hundred years and
+the family's column within the page, and let a record take files of up to
+50 MB, a larger one refused as soon as it is chosen.
 
 v1.10.0 brought, on Impact, a landmark's years lit when pointed at, and its
 window on a click: its context, what was at stake and its victims. The
@@ -787,7 +792,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.10.1**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.10.2**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1001,7 +1006,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.10.1`](https://github.com/plkarin/axgf-cms/releases/tag/v1.10.1), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.10.2`](https://github.com/plkarin/axgf-cms/releases/tag/v1.10.2), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

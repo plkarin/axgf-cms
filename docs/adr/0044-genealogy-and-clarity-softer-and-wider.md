@@ -1,6 +1,6 @@
 # ADR 0044 — Genealogy and Clarity: softer colours, a wider walk
 
-**Status:** accepted (unreleased) · **Amends:** docs/adr/0013 (Clarity's
+**Status:** accepted, v1.13.0 (2026-11-09) · **Amends:** docs/adr/0013 (Clarity's
 palette and its prism), docs/adr/0016 (Genealogy's palette and its tree) ·
 **Applies to:** `static/css/tokens.css`, `static/app.css`, `static/river.js`
 (`frame`, the camera, `meta.wide`, the names' default), `static/genealogy.js`,

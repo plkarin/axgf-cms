@@ -10,7 +10,7 @@ stakes|Osiadły tryb życia, nadwyżki żywności i wzrost liczby ludności: pod
 ## -9500-gobekli-tepe-monumental-site-in-anatolia
 name|Göbekli Tepe, monumentalne stanowisko w Anatolii
 context|Łowcy-zbieracze ustawili w kręgi rzeźbione kamienne filary na wzgórzu w południowo-wschodniej Turcji.
-stakes|Najstarsze znane stanowisko monumentalne, starsze tam od rolnictwa: wiara mogła poprzedzić pole.
+stakes|Najstarsze znane stanowisko monumentalne, w tym miejscu starsze niż rolnictwo: wiara mogła poprzedzić pole.
 ## -8000-neolithic-migrations-from-the-near-east-to-europe
 name|Migracje neolityczne z Bliskiego Wschodu do Europy
 context|Rolnicy z Anatolii przez tysiąclecia rozprzestrzeniali się po Europie, mieszając się z jej łowcami-zbieraczami.

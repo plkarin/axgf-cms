@@ -4,6 +4,30 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038).
+
+### Added
+
+- **Two kinds of landmark: the great inventions and the great
+  discoveries**, forty landmarks with their windows, from the wheel and
+  paper to mRNA vaccines, from Vasco da Gama and Copernicus to Gagarin and
+  the Higgs boson. Gutenberg's press is an invention now, Columbus and the
+  first steps on the Moon discoveries.
+- **Kinds to switch**: the legend's kinds are switches, and a kind
+  switched off is hidden on the timeline, its column too on a person's
+  view; the reader's browser keeps the choice.
+- **The landmarks and their windows in Polish**, all 353 of them, not yet
+  proofread by a native speaker. The other languages read in English
+  until theirs is written.
+
+### Changed
+
+- **A person's view lays the world's landmarks a column a kind**, narrower
+  ones, the names on two lines: on a 1,470-pixel screen the whole timeline
+  is in view with eight kinds.
+
 ## [1.10.2] — 2026-11-09
 
 The operator's review of 8 November 2026, evening: the record and the

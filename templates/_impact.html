@@ -4,9 +4,10 @@
     lights its years across the timeline and on the axis; choosing it opens
     its window, with the context, what was at stake and the victims, kept in
     the label until then. Positions come from crate::impact; nothing is drawn
-    on a canvas. -#}
-{% macro column(col, cls) -%}
-<div class="ip-col {{ cls }}" style="--ip-lane: {{ col.lane }}px">
+    on a canvas. With a kind, it is that kind's column on a person's view
+    (docs/adr/0038). -#}
+{% macro column(col, cls, kind=none) -%}
+<div class="ip-col {{ cls }}{% if kind %} ip-kcol ip-kcol-{{ kind }}{% endif %}" style="--ip-lane: {{ col.lane }}px">
   {%- for m in col.marks %}
   {%- if m.bar %}<span class="ip-bar ip-k-{{ m.kind }}{{ ' ip-hit' if m.crossed }}" style="top: {{ m.bar_top }}px; height: {{ m.bar_height }}px; left: {{ m.bar_x }}px" data-key="{{ m.key }}" data-from="{{ m.from }}" data-to="{{ m.to }}" aria-hidden="true"></span>{% endif %}
   {%- if m.moved %}<span class="ip-thread" style="top: {{ m.y }}px; height: {{ m.top - m.y }}px; left: {{ m.x }}px" aria-hidden="true"></span>{% endif %}

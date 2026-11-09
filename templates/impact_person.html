@@ -39,7 +39,7 @@
       <div class="ip-band ip-band-own" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" aria-hidden="true"></div>
       <div class="ip-band ip-band-ev" hidden></div>
       {%- for k in p.kinds %}
-      {{ ip.column(k.column, "ip-wide ip-kcol ip-kcol-" ~ k.kind) }}
+      {{ ip.column(k.column, "ip-wide", k.kind) }}
       {%- endfor %}
       <div class="ip-col ip-own">
         <span class="ip-life ip-life-own{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}{{ ' ip-open-from' if p.life.open_from }}{{ ' ip-open-to' if p.life.open_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>

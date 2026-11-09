@@ -689,11 +689,20 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.10.2**: beside the river, the selected person's
-record is never taller than the drawing; the way to **Impact** stands at the
-head of a record, made to be seen; the family section is in blocks; flags
-are crisp; and Canopée's ground glides with a travel while its herds,
-smaller and fewer, walk.
+The latest release is **v1.11.0**: a search that finds nobody offers to
+create the person, on a page that creates them with their places, portrait,
+biography and note, parents, brothers and sisters and unions in one save,
+reusing the people and places the archive holds; the AFG reads a record's
+PDF documents; the administration sets what a file may weigh and which kinds
+are accepted, and films and sounds play on the record; an import can replace
+a family, behind typed words and a verified backup; and on **Impact**, the
+great inventions and discoveries join the landmarks, a person's view lays
+them a column a kind the reader switches, in every language the site speaks.
+
+v1.10.2 kept, beside the river, the selected person's record within the
+drawing, put the way to Impact at the head of a record, laid the family
+section in blocks, made flags crisp, and let Canopée's ground glide with a
+travel while its herds walk.
 
 v1.10.1 kept, on Impact, a life missing a date within a hundred years and
 the family's column within the page, and let a record take files of up to
@@ -792,7 +801,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.10.2**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.11.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1006,7 +1015,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.10.2`](https://github.com/plkarin/axgf-cms/releases/tag/v1.10.2), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.11.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.11.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

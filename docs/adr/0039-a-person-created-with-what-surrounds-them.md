@@ -1,6 +1,6 @@
 # ADR 0039 — A person created with what surrounds them
 
-**Status:** accepted (unreleased) · **Builds on:** docs/adr/0014 (notes),
+**Status:** accepted, v1.11.0 (2026-11-09) · **Builds on:** docs/adr/0014 (notes),
 docs/adr/0022 (avatars) · **Applies to:** `src/person_new.rs`,
 `src/routes/person_new.rs`, `templates/admin_person_new.html`,
 `templates/_md_editor.html`, `static/person_new.js`, `static/notes.js`,

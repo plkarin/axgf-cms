@@ -1,6 +1,6 @@
 # ADR 0040 — The AFG reads a record's PDF documents
 
-**Status:** accepted (unreleased) · **Builds on:** docs/adr/0031 (the AFG
+**Status:** accepted, v1.11.0 (2026-11-09) · **Builds on:** docs/adr/0031 (the AFG
 on a record), docs/adr/0033 (its photographs) · **Applies to:**
 `src/pdf.rs`, `src/person_chat.rs`, `src/routes/person_chat.rs`,
 `src/state.rs`, `templates/_person_afg.html`, `locales/*.ftl`

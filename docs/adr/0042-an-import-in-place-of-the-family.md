@@ -1,6 +1,6 @@
 # ADR 0042 — An import in place of the family, behind a word and a verified backup
 
-**Status:** accepted (unreleased) · **Amends:** docs/adr/0005 §1, §2 (the
+**Status:** accepted, v1.11.0 (2026-11-09) · **Amends:** docs/adr/0005 §1, §2 (the
 page that closes) and §4 (nothing written over a family) · **Applies to:**
 `src/routes/setup.rs`, `src/state.rs` (`take_in`, `take_in_archive`,
 `Over`, `generation`), `src/backup.rs` (`Kind::PreImport`),

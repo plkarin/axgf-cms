@@ -1,6 +1,6 @@
 # ADR 0041 — Uploads the administration sets, and films that play
 
-**Status:** accepted (unreleased) · **Builds on:** docs/adr/0037 (a file
+**Status:** accepted, v1.11.0 (2026-11-09) · **Builds on:** docs/adr/0037 (a file
 over the limit refused before it is sent) · **Applies to:** `src/limits.rs`,
 `src/site.rs`, `src/state.rs`, `src/routes/limits.rs`,
 `src/routes/mod.rs`, every route that takes a file, `src/documents.rs`,

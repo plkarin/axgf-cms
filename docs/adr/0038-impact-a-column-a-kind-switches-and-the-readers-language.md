@@ -1,6 +1,6 @@
 # ADR 0038 — Impact: a column a kind, kinds to switch, the great inventions and discoveries, the reader's language
 
-**Status:** accepted (unreleased) · **Builds on:** docs/adr/0034, 0035,
+**Status:** accepted, v1.11.0 (2026-11-09) · **Builds on:** docs/adr/0034, 0035,
 0036 · **Applies to:** `src/impact.rs`, `src/impact_events.txt`,
 `src/impact_details.txt`, `src/impact_i18n/`, `templates/_impact.html`,
 `templates/impact_person.html`, `static/impact.js`, `static/app.css`,

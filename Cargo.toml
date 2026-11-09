@@ -45,6 +45,10 @@ uuid = { version = "1", features = ["v4"] }
 sha2 = "0.10"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
 kamadak-exif = "0.6"
+# Inflating a PDF's compressed object streams, to count its pages before the
+# AFG is given it (docs/adr/0038). Already in the build through zip; declared
+# here for that use.
+flate2 = "1"
 tokio-util = { version = "0.7", features = ["io"] }
 # A streaming import knows each payload's CRC-32 from the ZIP central
 # directory before decompressing anything. Recomputing it over a cached file is

@@ -52,7 +52,7 @@
   <header class="pa-head">
     <h2 id="pa-title">{{ ic.icon("afg") }}<span>{{ t("person-afg-title", name=p.name) }}</span></h2>
     <p class="lede small">{{ t("person-afg-lede", name=p.name) }}</p>
-    {% if afg_chat.reads %}<p class="small muted">{{ t("person-afg-reads", photos=afg_chat.reads.photos | localnum(lang), notes=afg_chat.reads.notes | localnum(lang), relatives=afg_chat.reads.relatives | localnum(lang), persons=afg_chat.reads.persons | localnum(lang), tokens=afg_chat.reads.tokens | localnum(lang)) }}</p>{% endif %}
+    {% if afg_chat.reads %}<p class="small muted">{{ t("person-afg-reads", photos=afg_chat.reads.photos | localnum(lang), pdfs=afg_chat.reads.pdfs | localnum(lang), notes=afg_chat.reads.notes | localnum(lang), relatives=afg_chat.reads.relatives | localnum(lang), persons=afg_chat.reads.persons | localnum(lang), tokens=afg_chat.reads.tokens | localnum(lang)) }}</p>{% endif %}
   </header>
 
   {% with action = "/person/" ~ p.id ~ "/afg", label = t("person-afg-ask", name=p.name), first = true, no_files = true, hint = t("person-afg-example", name=p.name), ready = afg_chat.ready, limits = afg_chat.limits %}{% include "_assistant_composer.html" %}{% endwith %}

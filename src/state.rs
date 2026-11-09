@@ -67,6 +67,9 @@ pub struct AppState {
     /// A person's photographs as the AFG is given them (docs/adr/0033), each
     /// sized once rather than at every question, bounded.
     model_photos: crate::documents::ThumbCache,
+    /// How many pages each PDF has, by its SHA-256, counted once
+    /// (docs/adr/0040). `None` for one that cannot be read.
+    pdf_pages: std::sync::Mutex<std::collections::HashMap<String, Option<usize>>>,
     /// Bundle size past which the admin panel warns. Not a limit.
     size_warn: u64,
     /// Binary payloads, held on disk rather than in the flat JSON. The bundle
@@ -696,6 +699,7 @@ impl AppState {
                 note_images: crate::notes::PendingImages::default(),
                 thumbs: crate::documents::ThumbCache::default(),
                 model_photos: crate::documents::ThumbCache::with_budget(48 * 1024 * 1024),
+                pdf_pages: Default::default(),
                 size_warn: crate::documents::DEFAULT_SIZE_WARN,
                 payloads: cache,
                 acl: RwLock::new(acl),
@@ -844,6 +848,29 @@ impl AppState {
     /// The photographs sized for the AFG, bounded.
     pub fn model_photos(&self) -> &crate::documents::ThumbCache {
         &self.model_photos
+    }
+
+    /// The pages of a PDF of the archive, by its SHA-256: counted from its
+    /// bytes the first time (`read`), remembered after (docs/adr/0040).
+    pub fn pdf_pages(&self, sha256: &str, read: impl FnOnce() -> Option<Vec<u8>>) -> Option<usize> {
+        if let Some(n) = self
+            .pdf_pages
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .get(sha256)
+        {
+            return *n;
+        }
+        let n = read().and_then(|b| crate::pdf::pages(&b));
+        let mut cache = self.pdf_pages.lock().unwrap_or_else(|e| e.into_inner());
+        // Bounded like the others: a cleared cache only costs a recount.
+        if cache.len() >= 4096 {
+            cache.clear();
+        }
+        if !sha256.is_empty() {
+            cache.insert(sha256.to_string(), n);
+        }
+        n
     }
 
     /// Set the size past which the admin panel warns, before the state is

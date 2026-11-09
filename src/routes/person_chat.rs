@@ -151,11 +151,16 @@ fn dossier(
     let gathered = state.read_as(viewer.ceiling(), |flat, lens| {
         crate::person_chat::gather(flat, lens, person, lang, allowed)
     })?;
-    Some(crate::person_chat::fill(gathered, &|path| {
-        state
-            .attachment(path)
-            .map(|b| String::from_utf8_lossy(&b).into_owned())
-    }))
+    Some(crate::person_chat::fill(
+        gathered,
+        &|path| {
+            state
+                .attachment(path)
+                .map(|b| String::from_utf8_lossy(&b).into_owned())
+        },
+        // A PDF's pages, counted once from its bytes (docs/adr/0040).
+        &|pdf| state.pdf_pages(&pdf.sha256, || state.attachment(&pdf.path)),
+    ))
 }
 
 /// One of the person's photographs as the AFG is given it: read from the
@@ -207,15 +212,19 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
         relatives = d.relatives.len(),
         persons = d.persons,
         photos = d.photos.len(),
+        pdfs = d.pdfs.len(),
+        pdf_pages = d.pdf_pages(),
         "AFG: a question about a person sent"
     );
     // The photographs are read and sized on the way, not while the page
-    // waits; a model that takes no picture is asked without them.
-    let prepare = (!d.photos.is_empty()).then(|| {
+    // waits, and the PDF documents read (docs/adr/0040); a model that takes
+    // neither is asked without them.
+    let prepare = (!d.photos.is_empty() || !d.pdfs.is_empty()).then(|| {
         let state = state.clone();
         let photos = d.photos.clone();
+        let pdfs = d.pdfs.clone();
         let mut instead = prompt.clone();
-        crate::person_chat::photos_refused(&mut instead);
+        crate::person_chat::files_refused(&mut instead, !photos.is_empty(), !pdfs.is_empty());
         super::assistant::Prepare {
             work: Box::new(move |prompt: &mut crate::afg_chat::ChatPrompt| {
                 let given = photos
@@ -223,6 +232,15 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
                     .filter_map(|p| model_photo(&state, p).map(|data| (p.filename.clone(), data)))
                     .collect();
                 crate::person_chat::with_photos(prompt, given);
+                let read = pdfs
+                    .iter()
+                    .filter_map(|p| {
+                        state
+                            .attachment(&p.path)
+                            .map(|data| (p.filename.clone(), data))
+                    })
+                    .collect();
+                crate::person_chat::with_pdfs(prompt, read);
             }),
             instead,
         }
@@ -348,7 +366,7 @@ pub fn tab(
     }
     // What the AFG reads, said before the first question: its size.
     let reads = dossier(state, viewer, person, chrome.lang).map(|d| {
-        json!({"photos": d.photos.len(), "notes": d.notes.len(),
+        json!({"photos": d.photos.len(), "pdfs": d.pdfs.len(), "notes": d.notes.len(),
                "relatives": d.relatives.len(), "persons": d.persons, "tokens": d.tokens()})
     });
     let notice = match done {

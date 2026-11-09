@@ -40,6 +40,14 @@ pub const PHOTOS: usize = 12;
 /// What a photograph is counted as, in tokens: about what a model reads of
 /// a picture at the size it is given (`assistant::model_photo`).
 pub const PHOTO_TOKENS: usize = 1_600;
+/// The most pages of the record's PDF documents given with a message
+/// (docs/adr/0040): a model reads a page as a picture and as its text.
+pub const PDF_PAGES: usize = 60;
+/// The most of their bytes. Sent as base64, a third larger, they leave room
+/// under the 32 MB a request may weigh for the photographs and the dossier.
+pub const PDF_BYTES: u64 = 20 * 1024 * 1024;
+/// What a page of a PDF is counted as, in tokens.
+pub const PDF_PAGE_TOKENS: usize = 2_000;
 
 /// Whether a file of this type is a picture the AFG is given: the raster
 /// formats this build decodes. A TIFF, an SVG, a film are not.
@@ -63,6 +71,24 @@ pub struct Photo {
     /// Where the bundle keeps its bytes.
     pub path: String,
     pub sha256: String,
+}
+
+/// One of the person's PDF documents (docs/adr/0040), before its bytes are
+/// read: what the record says of it, where its bytes are kept, how large it
+/// is, and its pages once counted.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Pdf {
+    pub id: String,
+    pub filename: String,
+    /// The kind of document, in the member's language.
+    pub kind: String,
+    pub caption: Option<String>,
+    pub note: Option<String>,
+    /// Where the bundle keeps its bytes.
+    pub path: String,
+    pub sha256: String,
+    pub size: u64,
+    pub pages: usize,
 }
 
 /// How a close relative is related to the person, as the dossier says it.
@@ -106,6 +132,8 @@ pub struct Gathered {
     /// The photographs of the person's record the AFG may be given, in the
     /// record's order.
     pub photos: Vec<Photo>,
+    /// Its PDF documents, in the record's order, their pages not counted yet.
+    pub pdfs: Vec<Pdf>,
 }
 
 /// A close relative, as the dossier gives it.
@@ -134,6 +162,11 @@ pub struct Dossier {
     pub photos: Vec<Photo>,
     /// The photographs of the record left out for want of room.
     pub photos_left: usize,
+    /// The PDF documents given with each message, within [`PDF_PAGES`] and
+    /// [`PDF_BYTES`].
+    pub pdfs: Vec<Pdf>,
+    /// Those left out: for want of room, or because they cannot be read.
+    pub pdfs_left: usize,
 }
 
 /// The record of one person as the dossier gives it: the page's record,
@@ -184,6 +217,7 @@ pub fn gather(
     let (name, record, view) = record_of(flat, lens, person_id, lang, Some(allowed))?;
     let notes = notes_of(flat, lens, person_id);
     let photos = photos_of(flat, lens, &view, allowed);
+    let pdfs = pdfs_of(flat, lens, &view, allowed);
 
     // The close relatives, the nearest first, each once.
     let mut near: Vec<(Relation, String)> = Vec::new();
@@ -250,6 +284,7 @@ pub fn gather(
         relatives,
         index: index.into_iter().map(|(_, line)| line).collect(),
         photos,
+        pdfs,
     })
 }
 
@@ -263,17 +298,7 @@ fn photos_of(
     view: &crate::person::PersonView,
     allowed: crate::sensitive::Scopes,
 ) -> Vec<Photo> {
-    let sensitive: std::collections::BTreeSet<String> = flat
-        .get("persons")
-        .and_then(Value::as_object)
-        .map(|ps| {
-            ps.values()
-                .flat_map(crate::sensitive::documents_referenced)
-                .filter(|(_, scopes)| !scopes.within(allowed))
-                .map(|(doc, _)| doc)
-                .collect()
-        })
-        .unwrap_or_default();
+    let sensitive = sensitive_documents(flat, allowed);
     view.documents
         .iter()
         .filter(|d| d.known && d.has_payload && !d.ai)
@@ -299,6 +324,83 @@ fn photos_of(
         .collect()
 }
 
+/// The documents that sensitive data the AFG room does not let go refers
+/// to (docs/adr/0023).
+fn sensitive_documents(
+    flat: &Value,
+    allowed: crate::sensitive::Scopes,
+) -> std::collections::BTreeSet<String> {
+    flat.get("persons")
+        .and_then(Value::as_object)
+        .map(|ps| {
+            ps.values()
+                .flat_map(crate::sensitive::documents_referenced)
+                .filter(|(_, scopes)| !scopes.within(allowed))
+                .map(|(doc, _)| doc)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// The PDF documents of the person's record the AFG may be given
+/// (docs/adr/0040), on the photographs' terms: the record's own the member
+/// may open, none an AI made, none sensitive data refers to unless the AFG
+/// room lets it go.
+fn pdfs_of(
+    flat: &Value,
+    lens: &crate::access::Lens,
+    view: &crate::person::PersonView,
+    allowed: crate::sensitive::Scopes,
+) -> Vec<Pdf> {
+    let sensitive = sensitive_documents(flat, allowed);
+    view.documents
+        .iter()
+        .filter(|d| d.known && d.has_payload && !d.ai)
+        .filter(|d| d.mime_type.as_deref() == Some("application/pdf"))
+        .filter(|d| !sensitive.contains(&d.id))
+        .filter(|d| crate::access::may_read_document(flat, lens, true, &d.id))
+        .filter_map(|d| {
+            let file = flat.get("documents")?.get(&d.id)?.get("file")?;
+            Some(Pdf {
+                id: d.id.clone(),
+                filename: d.filename.clone(),
+                kind: d.document_type_label.clone(),
+                caption: d.caption.clone(),
+                note: d.note.clone(),
+                path: file.get("path")?.as_str()?.to_string(),
+                sha256: file
+                    .get("sha256")
+                    .and_then(Value::as_str)
+                    .unwrap_or_default()
+                    .to_string(),
+                size: file.get("size_bytes").and_then(Value::as_u64).unwrap_or(0),
+                pages: 0,
+            })
+        })
+        .collect()
+}
+
+/// The PDF documents given with a message: in the record's order, each whole,
+/// while the pages and the bytes stay within [`PDF_PAGES`] and
+/// [`PDF_BYTES`]; one whose pages cannot be counted is not a PDF a model
+/// reads either. The rest are left out, and counted.
+pub fn pdfs_within(pdfs: Vec<Pdf>, pages: &dyn Fn(&Pdf) -> Option<usize>) -> (Vec<Pdf>, usize) {
+    let (mut given, mut left) = (Vec::new(), 0);
+    let (mut n_pages, mut n_bytes) = (0usize, 0u64);
+    for mut p in pdfs {
+        match pages(&p) {
+            Some(n) if n > 0 && n_pages + n <= PDF_PAGES && n_bytes + p.size <= PDF_BYTES => {
+                n_pages += n;
+                n_bytes += p.size;
+                p.pages = n;
+                given.push(p);
+            }
+            _ => left += 1,
+        }
+    }
+    (given, left)
+}
+
 /// A text cut to `n` characters, said to be cut when it is.
 fn clip(s: &str, n: usize) -> String {
     let s = s.trim();
@@ -311,7 +413,11 @@ fn clip(s: &str, n: usize) -> String {
 }
 
 /// Read the notes' text, each part within its ceiling: the dossier.
-pub fn fill(g: Gathered, read: &dyn Fn(&str) -> Option<String>) -> Dossier {
+pub fn fill(
+    g: Gathered,
+    read: &dyn Fn(&str) -> Option<String>,
+    pages: &dyn Fn(&Pdf) -> Option<usize>,
+) -> Dossier {
     let read_notes = |refs: &[NoteRef], budget: &mut usize| -> Vec<(String, String)> {
         let mut out = Vec::new();
         for n in refs {
@@ -361,6 +467,7 @@ pub fn fill(g: Gathered, read: &dyn Fn(&str) -> Option<String>) -> Dossier {
     let photos_left = g.photos.len().saturating_sub(PHOTOS);
     let mut photos = g.photos;
     photos.truncate(PHOTOS);
+    let (pdfs, pdfs_left) = pdfs_within(g.pdfs, pages);
     Dossier {
         person_id: g.person_id,
         name: g.name,
@@ -371,6 +478,8 @@ pub fn fill(g: Gathered, read: &dyn Fn(&str) -> Option<String>) -> Dossier {
         persons,
         photos,
         photos_left,
+        pdfs,
+        pdfs_left,
     }
 }
 
@@ -412,6 +521,32 @@ impl Dossier {
                 ));
             }
         }
+        if !self.pdfs.is_empty() || self.pdfs_left > 0 {
+            s.push_str(&format!("\n## The PDF documents of {}\n\n", self.name));
+            if !self.pdfs.is_empty() {
+                s.push_str("Given with the member's message in this order:\n\n");
+            }
+            for (i, p) in self.pdfs.iter().enumerate() {
+                s.push_str(&format!(
+                    "P{}. \"{}\" ({}, {} pages)",
+                    i + 1,
+                    p.filename,
+                    p.kind,
+                    p.pages
+                ));
+                for words in [&p.caption, &p.note].into_iter().flatten() {
+                    s.push_str(&format!(" — {words}"));
+                }
+                s.push('\n');
+            }
+            if self.pdfs_left > 0 {
+                s.push_str(&format!(
+                    "[{} more PDF documents of the record are not given: too long for one \
+                     message, or unreadable.]\n",
+                    self.pdfs_left
+                ));
+            }
+        }
         if !self.relatives.is_empty() {
             s.push_str("\n## Close relatives\n");
             for r in &self.relatives {
@@ -445,9 +580,17 @@ impl Dossier {
     }
 
     /// A rough size, a token for every three characters, as the AFG room
-    /// counts the archive's, and [`PHOTO_TOKENS`] for each photograph.
+    /// counts the archive's, [`PHOTO_TOKENS`] for each photograph and
+    /// [`PDF_PAGE_TOKENS`] for each page of a PDF.
     pub fn tokens(&self) -> usize {
-        self.text().chars().count() / 3 + self.photos.len() * PHOTO_TOKENS
+        self.text().chars().count() / 3
+            + self.photos.len() * PHOTO_TOKENS
+            + self.pdfs.iter().map(|p| p.pages).sum::<usize>() * PDF_PAGE_TOKENS
+    }
+
+    /// The pages of the PDF documents given.
+    pub fn pdf_pages(&self) -> usize {
+        self.pdfs.iter().map(|p| p.pages).sum()
     }
 }
 
@@ -468,15 +611,39 @@ fn last_said(prompt: &mut ChatPrompt) -> &mut Turn {
     &mut prompt.turns[last]
 }
 
-/// The question as it goes to a model that took no picture: the AFG is told
-/// that the photographs the dossier lists could not be given, so that it
-/// says so, in the member's language, when the question needs them.
-pub fn photos_refused(prompt: &mut ChatPrompt) {
-    last_said(prompt).parts.push(Part::Text(
-        "[The photographs of the record could not be given: the AFG's model does not \
-         take pictures. If the question needs them, say so.]"
-            .to_string(),
+/// The question as it goes to a model that took no file: the AFG is told
+/// that what the dossier lists — its photographs, its PDF documents
+/// (docs/adr/0040), or both — could not be given, so that it says so, in
+/// the member's language, when the question needs them.
+pub fn files_refused(prompt: &mut ChatPrompt, photos: bool, pdfs: bool) {
+    let what = match (photos, pdfs) {
+        (true, true) => "The photographs and the PDF documents of the record",
+        (false, true) => "The PDF documents of the record",
+        _ => "The photographs of the record",
+    };
+    last_said(prompt).parts.push(Part::Text(format!(
+        "[{what} could not be given: the AFG's model does not take them. If the question \
+         needs them, say so.]"
+    )));
+}
+
+/// The person's PDF documents, joined to the member's message being
+/// answered (docs/adr/0040). Each is named by its number and file name, as
+/// the dossier lists them.
+pub fn with_pdfs(prompt: &mut ChatPrompt, pdfs: Vec<(String, Vec<u8>)>) {
+    if pdfs.is_empty() {
+        return;
+    }
+    let turn = last_said(prompt);
+    turn.parts.push(Part::Text(
+        "[The PDF documents of the record, as the dossier lists them.]".to_string(),
     ));
+    for (i, (filename, data)) in pdfs.into_iter().enumerate() {
+        turn.parts.push(Part::Pdf {
+            name: format!("P{}. {filename}", i + 1),
+            data,
+        });
+    }
 }
 
 /// The person's photographs, read and sized, joined to the member's message
@@ -525,12 +692,14 @@ pub fn system_prompt(asker: &Asker, dossier: &Dossier) -> String {
         "The dossier given with the conversation is what this member may read of the \
          family's archive: the person's record, the notes about them, their close relatives \
          with the notes about them, and every person of the family the member may read, one \
-         line each. The photographs of the person's record, when it has some, come with the \
-         member's message. It is all you know of this family: there is no other record to \
-         look up.\n\
+         line each. The photographs and the PDF documents of the person's record, when it has \
+         some, come with the member's message. It is all you know of this family: there is \
+         no other record to look up.\n\
          - Look at the photographs: what they show (faces, clothes, uniforms and insignia, \
          places, objects, handwriting) may answer a question. Say which photograph, and how \
          sure you are of what you see in it.\n\
+         - Read the PDF documents (deeds, registers, letters, certificates): say which \
+         document and which page, and how sure you are of a hand you read.\n\
          - Say what the dossier says, and where it says it: a note's title, an event, a \
          source, a relative's record.\n\
          - When you go beyond it (history, places, military units, customs, registers), say \
@@ -590,7 +759,78 @@ mod tests {
                 .map(|i| format!("- Person {i} — persons/x{i}"))
                 .collect(),
             photos: Vec::new(),
+            pdfs: Vec::new(),
         }
+    }
+
+    fn pdf(i: usize, size: u64) -> Pdf {
+        Pdf {
+            id: format!("f{i}"),
+            filename: format!("acte-{i}.pdf"),
+            kind: "Acte".into(),
+            caption: None,
+            note: None,
+            path: format!("documents/f{i}.pdf"),
+            sha256: format!("s{i}"),
+            size,
+            pages: 0,
+        }
+    }
+
+    #[test]
+    fn the_pdfs_given_stay_within_sixty_pages_and_twenty_megabytes() {
+        let pages = |p: &Pdf| match p.id.as_str() {
+            "f0" => Some(30),
+            "f1" => Some(40), // past sixty with the first: left out
+            "f2" => Some(20),
+            "f3" => None, // unreadable
+            "f4" => Some(5),
+            _ => Some(1),
+        };
+        let mb = 1024 * 1024;
+        let all = vec![
+            pdf(0, mb),
+            pdf(1, mb),
+            pdf(2, mb),
+            pdf(3, mb),
+            pdf(4, 19 * mb),
+        ];
+        let (given, left) = pdfs_within(all, &pages);
+        let ids: Vec<&str> = given.iter().map(|p| p.id.as_str()).collect();
+        // The fifth fits in pages (55) but not in bytes (21 MB).
+        assert_eq!(ids, ["f0", "f2"]);
+        assert_eq!(left, 3);
+        assert_eq!(given[0].pages, 30);
+
+        let mut g = gathered(0, 1);
+        g.pdfs = vec![pdf(0, mb), pdf(3, mb)];
+        let d = fill(g, &|_| None, &pages);
+        let text = d.text();
+        assert!(
+            text.contains("P1. \"acte-0.pdf\" (Acte, 30 pages)"),
+            "{text}"
+        );
+        assert!(text.contains("[1 more PDF documents"));
+        assert_eq!(d.pdf_pages(), 30);
+        assert_eq!(d.tokens(), text.chars().count() / 3 + 30 * PDF_PAGE_TOKENS);
+    }
+
+    #[test]
+    fn the_pdfs_go_with_the_question_named_as_the_dossier_lists_them() {
+        let mut prompt = ChatPrompt::default();
+        prompt.turns.push(Turn {
+            speaker: Speaker::User,
+            parts: vec![Part::Text("Que dit l'acte ?".into())],
+        });
+        with_pdfs(&mut prompt, vec![("acte.pdf".into(), b"%PDF-1.4".to_vec())]);
+        let parts = &prompt.turns[0].parts;
+        assert!(
+            matches!(&parts[2], Part::Pdf { name, data } if name == "P1. acte.pdf" && data.starts_with(b"%PDF"))
+        );
+        let mut instead = ChatPrompt::default();
+        files_refused(&mut instead, true, true);
+        assert!(matches!(&instead.turns[0].parts[0],
+            Part::Text(t) if t.contains("photographs and the PDF documents")));
     }
 
     fn photo(i: usize) -> Photo {
@@ -608,7 +848,7 @@ mod tests {
     #[test]
     fn the_dossier_keeps_to_its_ceilings_and_says_what_it_left_out() {
         let long = "régiment ".repeat(10_000);
-        let d = fill(gathered(3, 10_000), &|_| Some(long.clone()));
+        let d = fill(gathered(3, 10_000), &|_| Some(long.clone()), &|_| None);
         let total: usize = d.notes.iter().map(|(_, b)| b.chars().count()).sum();
         assert!(total <= PERSON_NOTES + 3 * 4, "{total}");
         assert!(d.notes[0].1.ends_with("[…]"));
@@ -624,9 +864,11 @@ mod tests {
 
     #[test]
     fn a_note_whose_text_cannot_be_read_is_left_out() {
-        let d = fill(gathered(2, 1), &|p| {
-            (p == "n1").then(|| "Verdun, 1916.".to_string())
-        });
+        let d = fill(
+            gathered(2, 1),
+            &|p| (p == "n1").then(|| "Verdun, 1916.".to_string()),
+            &|_| None,
+        );
         assert_eq!(
             d.notes,
             vec![("Note 1".to_string(), "Verdun, 1916.".to_string())]
@@ -638,7 +880,7 @@ mod tests {
     fn the_photographs_are_listed_within_their_ceiling_and_counted() {
         let mut g = gathered(0, 1);
         g.photos = (0..PHOTOS + 3).map(photo).collect();
-        let d = fill(g, &|_| None);
+        let d = fill(g, &|_| None, &|_| None);
         assert_eq!(d.photos.len(), PHOTOS);
         assert_eq!(d.photos_left, 3);
         let text = d.text();
@@ -648,7 +890,7 @@ mod tests {
         assert!(text.contains("[3 more photographs of the record are not given"));
         assert_eq!(d.tokens(), text.chars().count() / 3 + PHOTOS * PHOTO_TOKENS);
         // None: no word of them.
-        let d = fill(gathered(0, 1), &|_| None);
+        let d = fill(gathered(0, 1), &|_| None, &|_| None);
         assert!(!d.text().contains("photographs"));
     }
 
@@ -683,7 +925,7 @@ mod tests {
         assert_eq!(p, before);
         // Refused: the AFG is told, with the message being answered.
         let mut refused = before.clone();
-        photos_refused(&mut refused);
+        files_refused(&mut refused, true, false);
         assert_eq!(refused.turns.len(), 3);
         assert!(matches!(refused.turns[2].parts.last(), Some(Part::Text(s))
             if s.contains("could not be given")));
@@ -768,7 +1010,7 @@ mod tests {
 
     #[test]
     fn the_instructions_name_the_person_and_the_member() {
-        let d = fill(gathered(0, 0), &|_| None);
+        let d = fill(gathered(0, 0), &|_| None, &|_| None);
         let asker = Asker {
             name: "vera",
             person: Some(("p9", "Véra Martin")),

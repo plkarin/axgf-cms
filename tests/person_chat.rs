@@ -677,7 +677,7 @@ async fn the_afg_reads_the_photographs_of_the_record_and_not_its_films() {
     // The tab says how many go with each message.
     let (_, tab) = page(&app, &format!("/person/{JEAN}?tab=afg"), vera).await;
     assert!(
-        tab.contains("la fiche, les photos (1), les notes (1)"),
+        tab.contains("la fiche, les photos (1), les PDF (0), les notes (1)"),
         "{tab}"
     );
 
@@ -735,6 +735,62 @@ async fn the_afg_reads_the_photographs_of_the_record_and_not_its_films() {
     assert_eq!(given.len(), 4, "[system, question, answer, question]");
     assert!(given[1].is_empty() && given[2].is_empty());
     assert_eq!(given[3].len(), 1);
+}
+
+/// A PDF made here, for the test: two empty pages.
+const TWO_PAGES: &[u8] = b"%PDF-1.4\n1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n\
+2 0 obj << /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >> endobj\n\
+3 0 obj << /Type /Page /Parent 2 0 R >> endobj\n4 0 obj << /Type /Page /Parent 2 0 R >> endobj\n\
+trailer << /Root 1 0 R >>\n%%EOF\n";
+
+/// The AFG reads the PDF documents of the person's record with each message
+/// (the operator's answer of 6 November 2026, docs/adr/0040): counted on the
+/// tab, listed in the dossier with their pages, and joined to the question,
+/// which a way of computing that reads no PDF says it could not read.
+#[tokio::test]
+async fn the_afg_is_given_the_pdf_documents_of_the_record() {
+    let (url, seen) = fake_service(ollama);
+    let (app, _dir, c) = family_app("person-chat-pdfs", Some(&url)).await;
+    let (ana, vera) = (&c[0], &c[1]);
+    attach(
+        &app,
+        ana,
+        JEAN,
+        "acte.pdf",
+        "application/pdf",
+        TWO_PAGES,
+        "Acte de naissance",
+    )
+    .await;
+    attach(
+        &app,
+        ana,
+        PAUL,
+        "paul.pdf",
+        "application/pdf",
+        TWO_PAGES,
+        "Livret",
+    )
+    .await;
+
+    let (_, tab) = page(&app, &format!("/person/{JEAN}?tab=afg"), vera).await;
+    assert!(tab.contains("les photos (0), les PDF (1)"), "{tab}");
+
+    let cid = begin(&app, vera, "Que dit l'acte ?").await;
+    answered(&app, vera, &cid).await;
+    let sent = seen.lock().unwrap().last().unwrap().clone();
+    assert!(
+        sent.contains("## The PDF documents of Jean Martin"),
+        "{sent}"
+    );
+    assert!(sent.contains("P1. \\\"acte.pdf\\\""), "{sent}");
+    assert!(sent.contains("2 pages) — Acte de naissance"), "{sent}");
+    assert!(!sent.contains("paul.pdf"), "not a relative's");
+    // Ollama reads no PDF: the question says one was sent.
+    assert!(
+        sent.contains("A PDF document \\\"P1. acte.pdf\\\" was sent here"),
+        "{sent}"
+    );
 }
 
 /// An Ollama whose model takes no picture: a request with one is refused,

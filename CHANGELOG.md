@@ -7,7 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 Impact, as the operator asked on 8 and 9 November 2026 (docs/adr/0038),
-and a person created with what surrounds them (docs/adr/0039).
+a person created with what surrounds them (docs/adr/0039), and the AFG
+reading a record's PDF documents (docs/adr/0040).
 
 ### Added
 
@@ -25,6 +26,10 @@ and a person created with what surrounds them (docs/adr/0039).
   once or nothing.
 - **A biography written in Markdown reads formatted on the record**, line
   breaks kept.
+- **The AFG reads the PDF documents of a person's record** with each
+  question asked on its tab, after the photographs: sixty pages and twenty
+  megabytes at most, each document whole; the dossier lists them with
+  their pages, and the tab says how many go with each message.
 
 - **Two kinds of landmark: the great inventions and the great
   discoveries**, forty landmarks with their windows, from the wheel and

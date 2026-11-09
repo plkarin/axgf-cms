@@ -48,10 +48,15 @@ pub enum Kind {
     Event,
     Economy,
     Disaster,
+    /// The great inventions (the operator's request of 8 November 2026):
+    /// printing, the vaccines, the telephone…
+    Invention,
+    /// The great discoveries: the Americas, the Moon…
+    Discovery,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 7] = [
+    pub const ALL: [Kind; 9] = [
         Kind::Era,
         Kind::War,
         Kind::Epidemic,
@@ -59,6 +64,8 @@ impl Kind {
         Kind::Event,
         Kind::Economy,
         Kind::Disaster,
+        Kind::Invention,
+        Kind::Discovery,
     ];
 
     fn parse(s: &str) -> Option<Kind> {
@@ -74,6 +81,8 @@ impl Kind {
             Kind::Event => "event",
             Kind::Economy => "economy",
             Kind::Disaster => "disaster",
+            Kind::Invention => "invention",
+            Kind::Discovery => "discovery",
         }
     }
 
@@ -2043,12 +2052,21 @@ pub struct Person {
     pub grid: Vec<GridLine>,
     pub life: LifeMark,
     pub milestones: Vec<Milestone>,
-    pub wide: Column,
+    /// The world's and their continent's landmarks, a column a kind, in the
+    /// order of [`Kind::ALL`].
+    pub kinds: Vec<KindColumn>,
     pub near: Column,
     /// (ISO code, name) of their countries.
     pub countries: Vec<Country>,
     pub continent_keys: Vec<&'static str>,
     pub held: Vec<Held>,
+}
+
+/// One kind's column on a person's view: its kind's key, and its landmarks.
+#[derive(Debug, Clone, Serialize)]
+pub struct KindColumn {
+    pub kind: &'static str,
+    pub column: Column,
 }
 
 /// The person's milestones: their marriages and their children's births.
@@ -2247,29 +2265,46 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
             String::new()
         }
     };
-    let wide_shape = Shape {
+    // The macro side, a column a kind (the operator's request of 8 November
+    // 2026), narrower than the one column it was, so that several sit side
+    // by side; a kind with nothing in the person's years has none.
+    let by_kind: Vec<(Kind, Vec<(&Landmark, String)>)> = Kind::ALL
+        .iter()
+        .filter_map(|k| {
+            let list: Vec<(&Landmark, String)> =
+                wide.iter().filter(|(l, _)| l.kind == *k).cloned().collect();
+            (!list.is_empty()).then_some((*k, list))
+        })
+        .collect();
+    let kind_shape = Shape {
         lanes: 1,
-        lane_width: 268.0,
-        label_height: 46.0,
-        bar_width: 5.0,
+        lane_width: 104.0,
+        label_height: 58.0,
+        bar_width: 4.0,
     };
     let near_shape = Shape {
         lanes: 1,
-        lane_width: 336.0,
-        label_height: 66.0,
+        lane_width: 236.0,
+        label_height: 76.0,
         bar_width: 5.0,
     };
     let crossed = |l: &Landmark| l.end(now) >= life.from && l.start() <= life.to;
     // As many pixels a year as keep each label near its year.
     let mut px = (1_500.0 / (end - start)).clamp(8.0, 24.0);
-    let (mut scale, mut wide_col, mut near_col);
+    let (mut scale, mut kind_cols, mut near_col): (Scale, Vec<KindColumn>, Column);
     loop {
         scale = Scale::linear(start, end, px);
-        wide_col = column(wide.clone(), &scale, lang, now, &wide_shape, &age, &crossed);
-        near_col = column(near.clone(), &scale, lang, now, &near_shape, &age, &crossed);
-        let drift = wide_col
-            .marks
+        kind_cols = by_kind
             .iter()
+            .map(|(k, list)| KindColumn {
+                kind: k.slug(),
+                column: column(list.clone(), &scale, lang, now, &kind_shape, &age, &crossed),
+            })
+            .collect();
+        near_col = column(near.clone(), &scale, lang, now, &near_shape, &age, &crossed);
+        let drift = kind_cols
+            .iter()
+            .flat_map(|k| &k.column.marks)
             .chain(&near_col.marks)
             .map(|m| m.top - m.y)
             .max()
@@ -2328,7 +2363,7 @@ pub fn person(flat: &Value, lens: &Lens, id: &str, lang: &str, now: f64) -> Opti
         grid: grid(&scale),
         life: life_mark,
         milestones,
-        wide: wide_col,
+        kinds: kind_cols,
         near: near_col,
         countries: life
             .countries
@@ -2622,9 +2657,8 @@ mod tests {
                 flag: Some("/static/flags/pl.svg".into()),
             }]
         );
-        let ww1 = p
-            .wide
-            .marks
+        let wide: Vec<&Mark> = p.kinds.iter().flat_map(|k| &k.column.marks).collect();
+        let ww1 = wide
             .iter()
             .find(|m| m.key.ends_with("first-world-war"))
             .unwrap();
@@ -2640,12 +2674,17 @@ mod tests {
         // Nothing of a country they did not live in, nor of another
         // continent's history on the world's side.
         assert!(p.near.marks.iter().all(|m| m.tag == "PL"));
-        assert!(!p
-            .wide
-            .marks
-            .iter()
-            .any(|m| m.name == "Dynastie Qing (Chine)"));
-        assert!(p.wide.marks.iter().any(|m| m.name == "Grippe espagnole"));
+        assert!(!wide.iter().any(|m| m.name == "Dynastie Qing (Chine)"));
+        assert!(wide.iter().any(|m| m.name == "Grippe espagnole"));
+        // A column a kind, in the kinds' order, none of them empty.
+        let kinds: Vec<&str> = p.kinds.iter().map(|k| k.kind).collect();
+        assert!(kinds.contains(&"war") && kinds.contains(&"epidemic"));
+        assert!(
+            p.kinds
+                .iter()
+                .all(|k| !k.column.marks.is_empty()
+                    && k.column.marks.iter().all(|m| m.kind == k.kind))
+        );
         assert!(p
             .milestones
             .iter()
@@ -2754,7 +2793,12 @@ mod tests {
         // Said living since 1700: nothing after their hundredth year, and
         // never "aged 322".
         let p = person(&flat, &lens, "old", "en", 2026.0).unwrap();
-        let marks: Vec<&Mark> = p.wide.marks.iter().chain(&p.near.marks).collect();
+        let marks: Vec<&Mark> = p
+            .kinds
+            .iter()
+            .flat_map(|k| &k.column.marks)
+            .chain(&p.near.marks)
+            .collect();
         assert!(!marks.is_empty());
         for m in &marks {
             assert!(m.from <= 1810.0, "{}", m.name);
@@ -2766,9 +2810,9 @@ mod tests {
         // A window estimated from a death says when they lived, not their age.
         let d = person(&flat, &lens, "died", "en", 2026.0).unwrap();
         assert!(d
-            .wide
-            .marks
+            .kinds
             .iter()
+            .flat_map(|k| &k.column.marks)
             .chain(&d.near.marks)
             .all(|m| m.age.is_empty()));
         assert!(d.milestones.iter().any(|m| m.year == 1810));

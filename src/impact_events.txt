@@ -1,7 +1,8 @@
 # The Universal Synoptic Timeline's landmarks (docs/adr/0034): one per line,
 #   kind|from|to|scopes|name in English|name in French|note in English|note in French
 #
-# kind    era, war, epidemic, migration, event, economy or disaster.
+# kind    era, war, epidemic, migration, event, economy, disaster, invention or
+#         discovery.
 # from    a year (-3500 is 3500 BC), or a year, month and day (1914-07-28).
 # to      empty for a moment; "now" for what goes on; otherwise as `from`.
 #         With a day, it is the day after the last one, so that the length
@@ -74,7 +75,7 @@ era|1400|1533|world,americas|Inca Empire|Empire inca
 era|1428|1521|world,americas|Aztec Empire|Empire aztèque
 event|1453-05-29||world,europe,asia|Fall of Constantinople|Chute de Constantinople
 era|1464|1591|world,africa|Songhai Empire|Empire songhaï
-event|1492-10-12||world,americas,europe|Christopher Columbus reaches the Americas|Arrivée de Christophe Colomb aux Amériques
+discovery|1492-10-12||world,americas,europe|Christopher Columbus reaches the Americas|Arrivée de Christophe Colomb aux Amériques
 war|632|750|world,asia,africa,europe|Early Muslim conquests|Conquêtes musulmanes
 war|711|1492|world,europe|The Iberian Reconquista|La Reconquista ibérique
 war|1066-09-28|1066-12-25|world,europe|Norman conquest of England|Conquête normande de l'Angleterre
@@ -105,7 +106,7 @@ war|1756|1763|world,europe,americas,asia|Seven Years' War|Guerre de Sept Ans
 war|1775|1783|world,americas|American War of Independence|Guerre d'indépendance des États-Unis
 war|1791|1804|world,americas|Haitian Revolution|Révolution haïtienne
 war|1792|1802|world,europe|French Revolutionary Wars|Guerres de la Révolution française
-event|1450||world,europe|Gutenberg's printing press|L'imprimerie de Gutenberg
+invention|1450||world,europe|Gutenberg's printing press|L'imprimerie de Gutenberg
 event|1517-10-31||world,europe|The Protestant Reformation begins|Début de la Réforme protestante
 event|1648-10-24||world,europe|Peace of Westphalia|Traités de Westphalie
 
@@ -135,7 +136,7 @@ event|1945-08-06||world,asia|Atomic bombings of Hiroshima and Nagasaki|Bombardem
 event|1945-10-24||world|Founding of the United Nations|Fondation de l'Organisation des Nations unies
 epidemic|1957|1958|world|Asian flu pandemic|Pandémie de grippe asiatique
 epidemic|1968|1969|world|Hong Kong flu pandemic|Pandémie de grippe de Hong Kong
-event|1969-07-20||world|First steps on the Moon|Premiers pas sur la Lune
+discovery|1969-07-20||world|First steps on the Moon|Premiers pas sur la Lune
 economy|1973-10||world|First oil shock|Premier choc pétrolier
 epidemic|1981|now|world|HIV/AIDS pandemic|Pandémie de VIH/sida
 event|2001-09-11||world,americas|September 11 attacks|Attentats du 11 septembre
@@ -353,3 +354,46 @@ event|1963-11-22||US|Assassination of John F. Kennedy|Assassinat de John F. Kenn
 era|1830|1962-07-05|DZ|French Algeria|Algérie française
 event|1962-07-05||DZ|Independence of Algeria|Indépendance de l'Algérie|Hundreds of thousands leave for France.|Des centaines de milliers de départs vers la France.
 war|1991-12|2002-02|DZ|Algerian Civil War|Guerre civile algérienne
+
+# --- The great inventions and discoveries (the operator's request of
+# 8 November 2026) ----------------------------------------------------------
+invention|-3500||world,asia|The wheel|La roue
+invention|105||world,asia|Paper, in China|Le papier, en Chine
+invention|1040||world,asia|Movable type, in China|Les caractères mobiles, en Chine
+invention|1608||world,europe|The telescope|La lunette astronomique
+invention|1712||world,europe|The steam engine|La machine à vapeur
+invention|1796||world,europe|The first vaccine, against smallpox|Le premier vaccin, contre la variole
+invention|1800||world,europe|The electric battery|La pile électrique
+invention|1826||world,europe|Photography|La photographie
+invention|1837||world,europe,americas|The electric telegraph|Le télégraphe électrique
+invention|1876||world,americas|The telephone|Le téléphone
+invention|1879||world,americas,europe|The electric light bulb|L'ampoule électrique
+invention|1885||world,europe|The rabies vaccine|Le vaccin contre la rage
+invention|1886||world,europe|The automobile|L'automobile
+invention|1895||world,europe|Cinema|Le cinéma
+invention|1903||world,americas|The aeroplane|L'avion
+invention|1946||world,americas|The electronic computer|L'ordinateur électronique
+invention|1947||world,americas|The transistor|Le transistor
+invention|1955||world,americas|The polio vaccine|Le vaccin contre la poliomyélite
+invention|1989||world,europe|The World Wide Web|Le World Wide Web
+invention|2007||world|The smartphone|Le smartphone
+invention|2020||world|Messenger RNA vaccines|Les vaccins à ARN messager
+discovery|1498||world,europe,africa,asia|Vasco da Gama opens the sea route to India|Vasco de Gama ouvre la route maritime des Indes
+discovery|1519|1522-09-07|world|Magellan's expedition sails round the world|L'expédition de Magellan fait le tour du monde
+discovery|1543||world,europe|Copernicus puts the Sun at the centre|Copernic met le Soleil au centre
+discovery|1610||world,europe|Galileo turns his telescope to the sky|Galilée tourne sa lunette vers le ciel
+discovery|1687||world,europe|Newton's laws of motion and gravitation|Les lois du mouvement et de la gravitation de Newton
+discovery|1768|1779|world,oceania|Cook's voyages in the Pacific|Les voyages de Cook dans le Pacifique
+discovery|1859||world,europe|Darwin's theory of evolution|La théorie de l'évolution de Darwin
+discovery|1869||world,europe|Mendeleev's periodic table|Le tableau périodique de Mendeleïev
+discovery|1895||world,europe|X-rays|Les rayons X
+discovery|1898||world,europe|Radioactivity: Marie and Pierre Curie discover radium|La radioactivité : Marie et Pierre Curie découvrent le radium
+discovery|1905||world,europe|Einstein's relativity|La relativité d'Einstein
+discovery|1911-12-14||world|Amundsen reaches the South Pole|Amundsen atteint le pôle Sud
+discovery|1928||world,europe|Penicillin|La pénicilline
+discovery|1953||world,europe|The double helix of DNA|La double hélice de l'ADN
+discovery|1953-05-29||world,asia|Everest climbed|L'ascension de l'Everest
+discovery|1957-10-04||world|Sputnik, the first artificial satellite|Spoutnik, le premier satellite artificiel
+discovery|1961-04-12||world|Gagarin, the first human in space|Gagarine, premier homme dans l'espace
+discovery|2003||world|The human genome sequenced|Le génome humain séquencé
+discovery|2012||world,europe|The Higgs boson|Le boson de Higgs

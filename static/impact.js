@@ -5,7 +5,8 @@
  * its window: the context, what was at stake, the victims. Pointing at a
  * life (the family's view) lights the band of its years: the landmarks it
  * crossed stand out, the others step back, and the person's name and years
- * show beside the pointer. A lane of the family's column can be a pixel wide
+ * show beside the pointer. The legend's kinds are switches that hide a kind
+ * and show it again. A lane of the family's column can be a pixel wide
  * (docs/adr/0036), so the life pointed at is the one nearest the pointer,
  * and a click between two lanes follows it. Countries are named in the
  * reader's language when the browser knows how.
@@ -90,6 +91,57 @@
     // A click on the backdrop closes it, as the button and Escape do.
     dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
   }
+
+  /* ---- the kinds shown (the operator's request of 8 November 2026) ----
+   * The legend's kinds become switches. A kind switched off is hidden on
+   * the timeline (app.css, .ip-hide-<kind>); on a person's view its column
+   * goes, and the grid closes up over it (`data-cols`). The choice is the
+   * reader's, kept in their browser. */
+  var grid = time.closest('.ip-grid'), legend = document.querySelector('.ip-legend');
+  var KEY = 'axgf-impact-hidden', hidden = [];
+  try {
+    hidden = JSON.parse(localStorage.getItem(KEY) || '[]');
+    if (!Array.isArray(hidden)) hidden = [];
+  } catch (e) { hidden = []; }
+  function lay() {
+    if (!grid) return;
+    Array.prototype.slice.call(grid.classList).forEach(function (c) {
+      if (c.indexOf('ip-hide-') === 0) grid.classList.remove(c);
+    });
+    hidden.forEach(function (k) { grid.classList.add('ip-hide-' + k); });
+    var cols = grid.getAttribute('data-cols');
+    if (cols) {
+      grid.style.gridTemplateColumns = cols.split(' ').filter(function (c) {
+        var i = c.indexOf(':');
+        return i < 0 || hidden.indexOf(c.slice(0, i)) < 0;
+      }).map(function (c) {
+        var i = c.indexOf(':');
+        return i < 0 ? c : c.slice(i + 1);
+      }).join(' ');
+    }
+  }
+  if (legend) {
+    legend.querySelectorAll('li').forEach(function (li) {
+      var m = /\bip-k-([a-z]+)\b/.exec(li.className);
+      if (!m) return;
+      var k = m[1], b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ip-kind';
+      b.textContent = li.textContent;
+      b.setAttribute('aria-pressed', hidden.indexOf(k) < 0 ? 'true' : 'false');
+      li.textContent = '';
+      li.appendChild(b);
+      b.addEventListener('click', function () {
+        var i = hidden.indexOf(k);
+        if (i < 0) hidden.push(k); else hidden.splice(i, 1);
+        b.setAttribute('aria-pressed', i < 0 ? 'false' : 'true');
+        try { localStorage.setItem(KEY, JSON.stringify(hidden)); } catch (e) { /* private window */ }
+        hide();
+        lay();
+      });
+    });
+  }
+  lay();
 
   /* ---- a life (the family's view): the band of its years ---- */
   if (time.hasAttribute('data-from')) return;

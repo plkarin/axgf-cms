@@ -4,11 +4,13 @@
 {% block main_class %}wide impact{% endblock %}
 
 {% block content %}
-{#- One person in their times (docs/adr/0034): their life and its
-    milestones in the middle; the world's and their continent's landmarks
-    on one side (macro); their countries', each with what it meant and their
-    age when it began, on the other (micro). The band of their years runs
-    across all three. -#}
+{#- One person in their times (docs/adr/0034): the world's and their
+    continent's landmarks on one side (macro), a column a kind (the
+    operator's request of 8 November 2026); their life and its milestones;
+    their countries', each with what it meant and their age when it began,
+    on the other (micro). The band of their years runs across them all. The
+    legend's kinds can be hidden and shown again (impact.js); each column
+    says its width, so that the grid closes up over a hidden one. -#}
 <header class="ip-head">
   <p class="small"><a href="/impact">{{ t("impact-back") }}</a></p>
   <h1>{{ t("impact-person-title", name=p.name) }}</h1>
@@ -25,17 +27,20 @@
 </header>
 {% if not p.countries %}<p class="small muted">{{ t("impact-countries-none") }}</p>{% endif %}
 <div class="ip-scroll" data-content>
-  <div class="ip-grid ip-grid-person" style="--ip-a: {{ p.wide.width }}px; --ip-b: 15rem; --ip-c: {{ p.near.width }}px">
+  <div class="ip-grid ip-grid-person" style="grid-template-columns: 7rem{% for k in p.kinds %} {{ k.column.width }}px{% endfor %} 11rem {{ p.near.width }}px" data-cols="7rem{% for k in p.kinds %} {{ k.kind }}:{{ k.column.width }}px{% endfor %} 11rem {{ p.near.width }}px">
     <span class="ip-h ip-h-axis" aria-hidden="true"></span>
-    <span class="ip-h">{{ t("impact-col-world") }}
-      {%- for c in p.continent_keys %} · {{ t("impact-continent-" ~ c) }}{% endfor %}</span>
+    {%- for k in p.kinds %}
+    <span class="ip-h ip-h-kind ip-k-{{ k.kind }}" data-kind="{{ k.kind }}">{{ t("impact-kind-" ~ k.kind) }}</span>
+    {%- endfor %}
     <span class="ip-h">{{ t("impact-col-life") }}</span>
     <span class="ip-h">{{ t("impact-col-country") }}{% for c in p.countries %}{% if c.flag %} <img class="flag" src="{{ c.flag }}" alt="" width="16" height="12">{% endif %}{% endfor %}</span>
     <div class="ip-time" style="height: {{ p.height }}px" data-impact data-from="{{ p.life.from }}" data-to="{{ p.life.to }}">
       {{ ip.axis(p.ticks, p.grid) }}
       <div class="ip-band ip-band-own" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" aria-hidden="true"></div>
       <div class="ip-band ip-band-ev" hidden></div>
-      {{ ip.column(p.wide, "ip-wide") }}
+      {%- for k in p.kinds %}
+      {{ ip.column(k.column, "ip-wide ip-kcol ip-kcol-" ~ k.kind) }}
+      {%- endfor %}
       <div class="ip-col ip-own">
         <span class="ip-life ip-life-own{{ ' ip-living' if p.life.living }}{{ ' ip-fuzzy-from' if p.life.fuzzy_from }}{{ ' ip-fuzzy-to' if p.life.fuzzy_to }}{{ ' ip-open-from' if p.life.open_from }}{{ ' ip-open-to' if p.life.open_to }}" style="top: {{ p.life.top }}px; height: {{ p.life.height }}px" title="{{ p.name }} · {{ p.years }}"></span>
         {%- for s in p.milestones %}

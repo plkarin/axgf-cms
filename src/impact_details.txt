@@ -942,3 +942,123 @@ fr|Après les accords d'Évian et un référendum, l'Algérie devient indépenda
 ## 1991-12-algerian-civil-war
 en|The army cancelled elections the Islamists were winning; armed groups and the state fought for a decade.|The "black decade": massacres, terror and exile.|About 150,000 to 200,000 dead.
 fr|L'armée annule des élections que gagnent les islamistes ; groupes armés et État s'affrontent pendant dix ans.|La « décennie noire » : massacres, terreur et exil.|Environ 150 000 à 200 000 morts.
+## -3500-the-wheel
+en|In Mesopotamia the potter's wheel appears, then carts on wheels drawn by oxen and later by horses.|Transport, trade and war on land change for good; the wheel turns mills and machines for the next five thousand years.|
+fr|En Mésopotamie apparaît le tour de potier, puis des chariots à roues tirés par des bœufs, plus tard par des chevaux.|Le transport, le commerce et la guerre sur terre en sont changés pour toujours ; la roue fera tourner moulins et machines pendant cinq mille ans.|
+## 105-paper-in-china
+en|At the Han court, Cai Lun is credited with making paper from bark, hemp and rags.|Cheaper than silk or bamboo, paper carries writing, government and later printing across Asia, and to Europe through the Arab world.|
+fr|À la cour des Han, on attribue à Cai Lun la fabrication du papier à partir d'écorce, de chanvre et de chiffons.|Moins cher que la soie ou le bambou, le papier porte l'écrit, l'administration puis l'imprimerie à travers l'Asie, et jusqu'en Europe par le monde arabe.|
+## 1040-movable-type-in-china
+en|Bi Sheng prints with movable characters of baked clay, four centuries before Gutenberg.|Many copies from reusable pieces: in China and Korea, books and government papers spread faster.|
+fr|Bi Sheng imprime avec des caractères mobiles en terre cuite, quatre siècles avant Gutenberg.|De nombreuses copies avec des pièces réutilisables : en Chine et en Corée, livres et écrits administratifs se diffusent plus vite.|
+## 1608-the-telescope
+en|Spectacle makers of the Dutch Republic join two lenses in a tube to see far.|The eye reaches beyond itself: navigation, war and astronomy are changed, and the sky becomes a place to measure.|
+fr|Des lunetiers des Provinces-Unies assemblent deux lentilles dans un tube pour voir au loin.|L'œil voit au-delà de lui-même : la navigation, la guerre et l'astronomie en sont changées, et le ciel devient un lieu que l'on mesure.|
+## 1712-the-steam-engine
+en|Thomas Newcomen's engine pumps water out of English mines; James Watt makes it efficient from 1769.|Power no longer depends on muscle, wind or water: the engine of the industrial revolutions, the railways and the steamships.|
+fr|La machine de Thomas Newcomen pompe l'eau des mines anglaises ; James Watt la rend efficace à partir de 1769.|L'énergie ne dépend plus du muscle, du vent ni de l'eau : le moteur des révolutions industrielles, des chemins de fer et des bateaux à vapeur.|
+## 1796-the-first-vaccine-against-smallpox
+en|Edward Jenner protects a boy from smallpox with matter taken from a cowpox sore.|Smallpox had killed hundreds of millions over the centuries; vaccination spreads through the world, and the disease is declared eradicated in 1980.|
+fr|Edward Jenner protège un garçon de la variole avec du pus prélevé sur une lésion de vaccine.|La variole avait tué des centaines de millions de personnes au fil des siècles ; la vaccination gagne le monde, et la maladie est déclarée éradiquée en 1980.|
+## 1800-the-electric-battery
+en|Alessandro Volta stacks discs of zinc and copper separated by brine and obtains a steady current.|The first lasting source of current: the start of electrochemistry, of the telegraph and of everything electric that followed.|
+fr|Alessandro Volta empile des disques de zinc et de cuivre séparés par de la saumure et obtient un courant continu.|La première source durable de courant : le début de l'électrochimie, du télégraphe et de tout l'électrique qui suivra.|
+## 1826-photography
+en|Nicéphore Niépce fixes the view from his window in Burgundy; Daguerre's process is given to the world in 1839.|For the first time a face or a place can be kept as it was: family portraits, the press, the memory of the dead.|
+fr|Nicéphore Niépce fixe la vue de sa fenêtre en Bourgogne ; le procédé de Daguerre est offert au monde en 1839.|Pour la première fois, un visage ou un lieu peut être gardé tel qu'il était : portraits de famille, presse, mémoire des morts.|
+## 1837-the-electric-telegraph
+en|Cooke and Wheatstone in Britain, then Morse and his code in the United States, send messages along wires.|News travels faster than any horse or ship: markets, railways, armies and diplomacy run on the wire; a cable crosses the Atlantic in 1866.|
+fr|Cooke et Wheatstone en Grande-Bretagne, puis Morse et son code aux États-Unis, envoient des messages par fil.|L'information va plus vite que tout cheval ou navire : marchés, chemins de fer, armées et diplomatie vivent au rythme du fil ; un câble traverse l'Atlantique en 1866.|
+## 1876-the-telephone
+en|Alexander Graham Bell patents the telephone in the United States.|The voice itself crosses distance: families and businesses within reach of each other, the first step toward today's networks.|
+fr|Alexander Graham Bell dépose le brevet du téléphone aux États-Unis.|La voix elle-même franchit la distance : familles et entreprises à portée l'une de l'autre, premier pas vers les réseaux d'aujourd'hui.|
+## 1879-the-electric-light-bulb
+en|Thomas Edison in the United States and Joseph Swan in Britain make incandescent bulbs that last.|Light at the turn of a switch: longer evenings, safer streets and factories, and the power networks built to feed them.|
+fr|Thomas Edison aux États-Unis et Joseph Swan en Grande-Bretagne mettent au point des ampoules à incandescence durables.|La lumière d'un geste : des soirées plus longues, des rues et des usines plus sûres, et les réseaux électriques construits pour les alimenter.|
+## 1885-the-rabies-vaccine
+en|Louis Pasteur treats Joseph Meister, a boy bitten by a rabid dog, with a vaccine made in his laboratory.|Rabies was always fatal once declared; the Pasteur Institute, founded in 1888, carries vaccines and microbiology across the world.|
+fr|Louis Pasteur soigne Joseph Meister, un garçon mordu par un chien enragé, avec un vaccin mis au point dans son laboratoire.|La rage était toujours mortelle une fois déclarée ; l'Institut Pasteur, fondé en 1888, porte les vaccins et la microbiologie dans le monde entier.|
+## 1886-the-automobile
+en|Carl Benz patents a motor car driven by a petrol engine in Germany.|Personal travel changes scale: roads, oil, suburbs and the car industry shape the twentieth century.|
+fr|Carl Benz dépose en Allemagne le brevet d'une voiture mue par un moteur à essence.|Le déplacement individuel change d'échelle : routes, pétrole, banlieues et industrie automobile façonnent le XXᵉ siècle.|
+## 1895-cinema
+en|The Lumière brothers show their first films to a paying audience in Paris.|Moving pictures become a popular art and a mirror of the century: newsreels, propaganda and stories seen by millions.|
+fr|Les frères Lumière projettent leurs premiers films devant un public payant à Paris.|L'image animée devient un art populaire et un miroir du siècle : actualités, propagande et récits vus par des millions.|
+## 1903-the-aeroplane
+en|In North Carolina, the Wright brothers make the first controlled, powered flights.|Within fifty years aircraft carry mail, bombs and passengers: war from the air, and the world within a day's flight.|
+fr|En Caroline du Nord, les frères Wright réalisent les premiers vols motorisés et contrôlés.|En cinquante ans, l'avion transporte courrier, bombes et passagers : la guerre aérienne, et le monde à une journée de vol.|
+## 1946-the-electronic-computer
+en|ENIAC, built for the US Army, computes with thousands of vacuum tubes; Turing and others had laid down the theory.|Calculation at electronic speed: science, codes and government, then every office and every home.|
+fr|L'ENIAC, construit pour l'armée américaine, calcule avec des milliers de tubes électroniques ; Turing et d'autres en avaient posé la théorie.|Le calcul à la vitesse de l'électronique : la science, le chiffre et l'administration, puis chaque bureau et chaque foyer.|
+## 1947-the-transistor
+en|At Bell Labs, Bardeen, Brattain and Shockley make the first transistor.|Small, cheap and reliable switching: radios, computers and every chip that followed.|
+fr|Aux Bell Labs, Bardeen, Brattain et Shockley réalisent le premier transistor.|Une commutation petite, bon marché et fiable : postes de radio, ordinateurs et toutes les puces qui suivront.|
+## 1955-the-polio-vaccine
+en|Jonas Salk's vaccine is declared safe and effective; Albert Sabin's oral vaccine follows in the 1960s.|Polio paralysed hundreds of thousands of children a year; it survives today in only a few regions of the world.|
+fr|Le vaccin de Jonas Salk est déclaré sûr et efficace ; le vaccin oral d'Albert Sabin suit dans les années 1960.|La polio paralysait des centaines de milliers d'enfants chaque année ; elle ne subsiste plus que dans quelques régions du monde.|
+## 1989-the-world-wide-web
+en|At CERN near Geneva, Tim Berners-Lee proposes pages linked to one another and read through the Internet.|Knowledge, trade and conversation online for billions; family history too becomes something searched and shared.|
+fr|Au CERN, près de Genève, Tim Berners-Lee propose des pages liées entre elles et lues par Internet.|Le savoir, le commerce et la conversation en ligne pour des milliards de personnes ; l'histoire des familles aussi se cherche et se partage.|
+## 2007-the-smartphone
+en|The iPhone and the phones that followed put a computer, a camera and the Internet in a pocket.|Within ten years most of humanity carries one: photographs, messages and maps everywhere, and attention under new pressures.|
+fr|L'iPhone et les téléphones qui suivent mettent un ordinateur, un appareil photo et Internet dans la poche.|En dix ans, la majorité de l'humanité en porte un : photos, messages et cartes partout, et une attention sous de nouvelles pressions.|
+## 2020-messenger-rna-vaccines
+en|Decades of research, Katalin Karikó's among them, yield vaccines against COVID-19 within a year of the outbreak.|A new way to make vaccines quickly; billions of doses in two years.|
+fr|Des décennies de recherche, dont celles de Katalin Karikó, aboutissent à des vaccins contre la COVID-19 en moins d'un an.|Une nouvelle façon de faire des vaccins rapidement ; des milliards de doses en deux ans.|
+## 1498-vasco-da-gama-opens-the-sea-route-to-india
+en|Sailing round Africa, the Portuguese fleet reaches Calicut on the coast of India.|The spice trade by sea: Portugal's empire in the Indian Ocean, and Europe's direct reach into Asia.|
+fr|Contournant l'Afrique, la flotte portugaise atteint Calicut, sur la côte de l'Inde.|Le commerce des épices par la mer : l'empire portugais de l'océan Indien, et l'accès direct de l'Europe à l'Asie.|
+## 1519-magellan-s-expedition-sails-round-the-world
+en|Five ships leave Spain under Magellan; one comes back three years later under Elcano, Magellan having been killed in the Philippines.|The first voyage round the world: proof of the Earth's size and of one ocean joining all the others.|More than 200 of the some 270 men who set out never came back.
+fr|Cinq navires quittent l'Espagne sous Magellan ; un seul revient trois ans plus tard sous Elcano, Magellan ayant été tué aux Philippines.|Le premier tour du monde : la preuve de la taille de la Terre et d'un océan qui les relie tous.|Plus de 200 des quelque 270 hommes partis ne sont jamais revenus.
+## 1543-copernicus-puts-the-sun-at-the-centre
+en|Nicolaus Copernicus, a canon of Frombork in Poland, publishes a cosmos in which the Earth turns round the Sun.|The Earth is no longer the centre: the start of a scientific revolution carried on by Kepler, Galileo and Newton.|
+fr|Nicolas Copernic, chanoine de Frombork en Pologne, publie un cosmos où la Terre tourne autour du Soleil.|La Terre n'est plus le centre : le début d'une révolution scientifique poursuivie par Kepler, Galilée et Newton.|
+## 1610-galileo-turns-his-telescope-to-the-sky
+en|Galileo sees the moons of Jupiter, the phases of Venus and the mountains of the Moon.|Observation against authority: evidence for Copernicus, and a trial in Rome in 1633.|
+fr|Galilée voit les lunes de Jupiter, les phases de Vénus et les montagnes de la Lune.|L'observation contre l'autorité : des preuves pour Copernic, et un procès à Rome en 1633.|
+## 1687-newton-s-laws-of-motion-and-gravitation
+en|Isaac Newton's Principia explains with one law the fall of an apple and the orbits of the planets.|A universe that obeys mathematics: the model of science for two centuries, and the mechanics of every machine.|
+fr|Les Principia d'Isaac Newton expliquent par une seule loi la chute d'une pomme et l'orbite des planètes.|Un univers qui obéit aux mathématiques : le modèle de la science pendant deux siècles, et la mécanique de toutes les machines.|
+## 1768-cook-s-voyages-in-the-pacific
+en|James Cook charts New Zealand, the east coast of Australia and many Pacific islands for Britain.|The map of the Pacific is filled in; the colonisation of Australia follows from 1788, at great cost to its first peoples.|
+fr|James Cook cartographie pour la Grande-Bretagne la Nouvelle-Zélande, la côte est de l'Australie et de nombreuses îles du Pacifique.|La carte du Pacifique se complète ; la colonisation de l'Australie suit dès 1788, au prix fort pour ses premiers peuples.|
+## 1859-darwin-s-theory-of-evolution
+en|Charles Darwin publishes On the Origin of Species, after the voyage of the Beagle and twenty years of work.|Living beings descend from one another by natural selection: biology founded anew, and a long quarrel with belief.|
+fr|Charles Darwin publie De l'origine des espèces, après le voyage du Beagle et vingt ans de travail.|Les êtres vivants descendent les uns des autres par la sélection naturelle : la biologie refondée, et une longue querelle avec la croyance.|
+## 1869-mendeleev-s-periodic-table
+en|Dmitri Mendeleev orders the chemical elements in a table and leaves gaps for those still unknown.|Chemistry gets its map: the missing elements are found where he said they would be.|
+fr|Dmitri Mendeleïev range les éléments chimiques dans un tableau et y laisse des cases pour ceux encore inconnus.|La chimie a sa carte : les éléments manquants sont trouvés là où il les attendait.|
+## 1895-x-rays
+en|Wilhelm Röntgen discovers rays that pass through the body and photographs the bones of his wife's hand.|Medicine sees inside the living body: radiography reaches the hospitals within a few years.|
+fr|Wilhelm Röntgen découvre des rayons qui traversent le corps et photographie les os de la main de sa femme.|La médecine voit à l'intérieur du corps vivant : la radiographie gagne les hôpitaux en quelques années.|
+## 1898-radioactivity-marie-and-pierre-curie-discover-radium
+en|In Paris, Marie Skłodowska-Curie, born in Warsaw, and Pierre Curie isolate polonium and radium.|The atom has a life of its own: two Nobel prizes for Marie Curie, treatments for cancer, and the way to nuclear physics.|
+fr|À Paris, Marie Skłodowska-Curie, née à Varsovie, et Pierre Curie isolent le polonium et le radium.|L'atome a une vie propre : deux prix Nobel pour Marie Curie, des traitements du cancer, et la voie de la physique nucléaire.|
+## 1905-einstein-s-relativity
+en|Albert Einstein, a clerk at the patent office in Bern, publishes special relativity and E = mc²; general relativity follows in 1915.|Time and space depend on the observer: the physics of the stars, of satellite navigation and of the atom's energy.|
+fr|Albert Einstein, employé au bureau des brevets de Berne, publie la relativité restreinte et E = mc² ; la relativité générale suit en 1915.|Le temps et l'espace dépendent de l'observateur : la physique des étoiles, de la navigation par satellite et de l'énergie de l'atome.|
+## 1911-12-14-amundsen-reaches-the-south-pole
+en|Roald Amundsen's Norwegian party reaches the pole a month before Robert Scott, who dies with his companions on the way back.|The last great blank of the map is reached: the age of polar exploration ends.|Scott and his four companions.
+fr|L'expédition norvégienne de Roald Amundsen atteint le pôle un mois avant Robert Scott, qui meurt au retour avec ses compagnons.|Le dernier grand blanc de la carte est atteint : l'âge de l'exploration polaire s'achève.|Scott et ses quatre compagnons.
+## 1928-penicillin
+en|In London, Alexander Fleming notices a mould that kills bacteria; penicillin is made in quantity from 1943.|The first antibiotic: infections that killed are cured, millions of lives saved from the Second World War on.|
+fr|À Londres, Alexander Fleming remarque une moisissure qui tue les bactéries ; la pénicilline est produite en masse dès 1943.|Le premier antibiotique : des infections mortelles se soignent, des millions de vies sauvées dès la Seconde Guerre mondiale.|
+## 1953-the-double-helix-of-dna
+en|In Cambridge, James Watson and Francis Crick, drawing on Rosalind Franklin's images, describe the structure of DNA.|Heredity has its molecule: genetics, medicine and, later, the DNA tests that read family lines.|
+fr|À Cambridge, James Watson et Francis Crick, s'appuyant sur les images de Rosalind Franklin, décrivent la structure de l'ADN.|L'hérédité a sa molécule : la génétique, la médecine et, plus tard, les tests ADN qui lisent les lignées.|
+## 1953-05-29-everest-climbed
+en|Edmund Hillary and Tenzing Norgay reach the summit of the highest mountain in the world.|The roof of the world is reached; the Himalaya opens to mountaineers.|
+fr|Edmund Hillary et Tenzing Norgay atteignent le sommet de la plus haute montagne du monde.|Le toit du monde est atteint ; l'Himalaya s'ouvre aux alpinistes.|
+## 1957-10-04-sputnik-the-first-artificial-satellite
+en|The Soviet Union puts a sphere of 58 centimetres into orbit; its radio beeps are heard around the world.|The space age opens, and with it the space race between the Soviet Union and the United States.|
+fr|L'Union soviétique place en orbite une sphère de 58 centimètres ; ses bips radio sont captés dans le monde entier.|L'ère spatiale s'ouvre, et avec elle la course à l'espace entre l'Union soviétique et les États-Unis.|
+## 1961-04-12-gagarin-the-first-human-in-space
+en|Yuri Gagarin goes once round the Earth aboard Vostok 1 and comes back safe.|A human being leaves the Earth and returns: the Soviet Union ahead, and America answers with the Moon.|
+fr|Youri Gagarine fait une fois le tour de la Terre à bord de Vostok 1 et revient sain et sauf.|Un être humain quitte la Terre et revient : l'Union soviétique en tête, et l'Amérique répond par la Lune.|
+## 2003-the-human-genome-sequenced
+en|An international project completes the reading of the three billion letters of human DNA.|Medicine and the study of human origins read our common inheritance; genetic genealogy grows from it.|
+fr|Un projet international achève la lecture des trois milliards de lettres de l'ADN humain.|La médecine et l'étude des origines humaines lisent notre héritage commun ; la généalogie génétique en naît.|
+## 2012-the-higgs-boson
+en|At CERN, the Large Hadron Collider confirms the particle predicted in 1964 by Peter Higgs and others.|The last missing piece of the standard model of physics, which explains how particles have mass.|
+fr|Au CERN, le Grand collisionneur de hadrons confirme la particule prédite en 1964 par Peter Higgs et d'autres.|La dernière pièce manquante du modèle standard de la physique, qui explique comment les particules ont une masse.|

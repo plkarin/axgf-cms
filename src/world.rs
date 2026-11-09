@@ -351,47 +351,122 @@ pub fn build(flat: &Value) -> World {
         }
     }
 
-    // A parent's water to each child: a curve down the valley, meandering
-    // a little, as wide as the descendants it carries.
+    // The family's water. A child's parents' streams meet first, at a
+    // confluence below the couple, and one river runs on from it, dividing
+    // toward each of their children: the parents' water becomes the
+    // children's. A child with one parent recorded is fed by that parent's
+    // stream alone. Each stream is a curve down the valley, meandering a
+    // little, as wide as the descendants it carries.
     let mut streams: Vec<Stream> = Vec::new();
-    for (p, c) in &shape.children {
-        let (Some(&a), Some(&b)) = (index.get(p.as_str()), index.get(c.as_str())) else {
-            continue;
-        };
-        let (pa, pb) = (&persons[a as usize], &persons[b as usize]);
-        if pb.z <= pa.z {
-            // A child laid beside or above a parent (a contradiction the
-            // tree reports): no water runs uphill.
-            continue;
-        }
-        // Half the water's width: a brook for one person, a river for a
-        // great line, always narrower than the space between two people.
-        let width = 0.3 + pb.class as f32 * 0.18;
-        let wiggle = rng.range(-1.0, 1.0) * (pb.z - pa.z) * 0.12;
+    // Half the water's width: a brook for one person, a river for a great
+    // line, always narrower than the space between two people.
+    let half_width = |class: u8| 0.3 + class as f32 * 0.18;
+    let curve = |rng: &mut Rng, a: [f32; 2], b: [f32; 2], w0: f32, w1: f32| -> Vec<[f32; 4]> {
+        let wiggle = rng.range(-1.0, 1.0) * (b[1] - a[1]) * 0.12;
         let (c1, c2) = (
-            [pa.x + wiggle, pa.z + (pb.z - pa.z) * 0.45],
-            [pb.x - wiggle, pb.z - (pb.z - pa.z) * 0.45],
+            [a[0] + wiggle, a[1] + (b[1] - a[1]) * 0.45],
+            [b[0] - wiggle, b[1] - (b[1] - a[1]) * 0.45],
         );
-        let steps = 28;
-        let mut points = Vec::with_capacity(steps + 1);
-        for s in 0..=steps {
-            let t = s as f32 / steps as f32;
-            let u = 1.0 - t;
-            let x = u * u * u * pa.x
-                + 3.0 * u * u * t * c1[0]
-                + 3.0 * u * t * t * c2[0]
-                + t * t * t * pb.x;
-            let z = u * u * u * pa.z
-                + 3.0 * u * u * t * c1[1]
-                + 3.0 * u * t * t * c2[1]
-                + t * t * t * pb.z;
-            points.push([x, z, 0.0, width * (0.75 + 0.25 * t)]);
+        let steps = 24;
+        (0..=steps)
+            .map(|s| {
+                let t = s as f32 / steps as f32;
+                let u = 1.0 - t;
+                let x = u * u * u * a[0]
+                    + 3.0 * u * u * t * c1[0]
+                    + 3.0 * u * t * t * c2[0]
+                    + t * t * t * b[0];
+                let z = u * u * u * a[1]
+                    + 3.0 * u * u * t * c1[1]
+                    + 3.0 * u * t * t * c2[1]
+                    + t * t * t * b[1];
+                [x, z, 0.0, w0 + (w1 - w0) * t]
+            })
+            .collect()
+    };
+    // Each child's parents, as the world has placed them.
+    let mut parents_of: BTreeMap<u16, Vec<u16>> = BTreeMap::new();
+    for (p, c) in &shape.children {
+        if let (Some(&a), Some(&b)) = (index.get(p.as_str()), index.get(c.as_str())) {
+            // No water runs uphill: a child laid beside or above a parent (a
+            // contradiction the tree reports) is not fed by them.
+            if persons[b as usize].z > persons[a as usize].z {
+                parents_of.entry(b).or_default().push(a);
+            }
         }
-        streams.push(Stream {
-            from: a,
-            to: b,
-            points,
-        });
+    }
+    // The children of each pair of parents, and of each lone parent.
+    let mut by_parents: BTreeMap<Vec<u16>, Vec<u16>> = BTreeMap::new();
+    for (child, mut ps) in parents_of {
+        ps.sort_unstable();
+        ps.dedup();
+        ps.truncate(2);
+        by_parents.entry(ps).or_default().push(child);
+    }
+    for (ps, kids) in &by_parents {
+        let class = kids
+            .iter()
+            .map(|k| persons[*k as usize].class)
+            .max()
+            .unwrap_or(1)
+            .min(5)
+            + 1;
+        let class = class.min(5);
+        if ps.len() == 2 {
+            let (a, b) = (&persons[ps[0] as usize], &persons[ps[1] as usize]);
+            let lowest = kids
+                .iter()
+                .map(|k| persons[*k as usize].z)
+                .fold(f32::MAX, f32::min);
+            let top = a.z.max(b.z);
+            let meet = [(a.x + b.x) / 2.0, top + (lowest - top) * 0.38];
+            for parent in [a, b] {
+                let points = curve(
+                    &mut rng,
+                    [parent.x, parent.z],
+                    meet,
+                    half_width(parent.class.min(3)),
+                    half_width(class),
+                );
+                streams.push(Stream {
+                    from: ps[0],
+                    to: u16::MAX,
+                    points,
+                });
+            }
+            for k in kids {
+                let child = &persons[*k as usize];
+                let points = curve(
+                    &mut rng,
+                    meet,
+                    [child.x, child.z],
+                    half_width(class),
+                    half_width(child.class),
+                );
+                streams.push(Stream {
+                    from: u16::MAX,
+                    to: *k,
+                    points,
+                });
+            }
+        } else if let Some(&p) = ps.first() {
+            let parent = &persons[p as usize];
+            for k in kids {
+                let child = &persons[*k as usize];
+                let points = curve(
+                    &mut rng,
+                    [parent.x, parent.z],
+                    [child.x, child.z],
+                    half_width(parent.class.min(3)),
+                    half_width(child.class),
+                );
+                streams.push(Stream {
+                    from: p,
+                    to: *k,
+                    points,
+                });
+            }
+        }
     }
 
     // The beds carved into the ground, and the pools where the people stand.
@@ -742,7 +817,13 @@ mod tests {
         assert_eq!(a.encode(), b.encode());
         assert_eq!(a.heights.len(), GRID * GRID);
         assert_eq!(a.persons.len(), 7);
-        assert_eq!(a.streams.len(), 6, "a stream for each parent and child");
+        // Each couple: its two streams to their confluence, and one on to
+        // their child.
+        assert_eq!(
+            a.streams.len(),
+            9,
+            "two tributaries and a river for each couple"
+        );
         assert!(!a.trees.is_empty() && !a.rocks.is_empty());
     }
 

@@ -36,6 +36,8 @@ The sign-in jail and rate limiting the operator asked for on 10 November
   an hour, where 8 from a single address used to shut it against its owner.
 - **The client address is an address.** `X-Forwarded-For` is read only when
   it holds one; an IPv6 client is counted with its /64.
+- **"Import" leaves the masthead once a family is there.** The first step,
+  taken; `/convert` stays where it was, behind its door.
 
 ### Fixed
 

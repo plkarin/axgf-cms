@@ -28,7 +28,7 @@ async fn page(app: &axum::Router, uri: &str, session: Option<&str>) -> (StatusCo
 }
 
 #[tokio::test]
-async fn the_section_sits_between_the_family_and_import() {
+async fn the_section_sits_after_the_family() {
     let (app, _s) = sample();
     let (status, html) = page(&app, "/impact", None).await;
     assert_eq!(status, StatusCode::OK);
@@ -40,9 +40,10 @@ async fn the_section_sits_between_the_family_and_import() {
         .next()
         .unwrap();
     let at = |href: &str| nav.find(&format!("href=\"{href}\"")).unwrap();
+    assert!(at("/about") < at("/impact"), "{nav}");
     assert!(
-        at("/about") < at("/impact") && at("/impact") < at("/convert"),
-        "{nav}"
+        !nav.contains("href=\"/convert\""),
+        "the import is not offered once a family is there: {nav}"
     );
     assert!(nav.contains("<a href=\"/impact\" aria-current=\"page\">Impact</a>"));
 }

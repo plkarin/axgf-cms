@@ -79,10 +79,20 @@ impl Open {
     /// Everything, as before the doors: what a page drawn without the
     /// archive's settings shows.
     pub fn everything() -> Self {
-        Open::of(&Doors::everyone(), false, false, false)
+        Open::of(&Doors::everyone(), false, false, false, false)
     }
 
-    pub fn of(doors: &Doors, signed_in: bool, may_write: bool, is_admin: bool) -> Self {
+    /// What the masthead offers this reader. `loaded`: the archive holds a
+    /// family, and the import is no longer offered there — it is the first
+    /// step, and once taken the link only took room (asked for on 10 November
+    /// 2026). Its door still says who may open `/convert`.
+    pub fn of(
+        doors: &Doors,
+        signed_in: bool,
+        may_write: bool,
+        is_admin: bool,
+        loaded: bool,
+    ) -> Self {
         let lets = |level: Level| level.admits(signed_in, may_write, is_admin);
         let (family, river, tree, records, impact, import) = (
             lets(doors.family),
@@ -90,7 +100,7 @@ impl Open {
             lets(doors.tree),
             lets(doors.records),
             lets(doors.impact),
-            lets(doors.import),
+            lets(doors.import) && !loaded,
         );
         let sections = [river, tree, family, impact, import]
             .into_iter()
@@ -143,17 +153,26 @@ mod tests {
 
     #[test]
     fn a_visitor_of_a_closed_site_is_offered_nothing_but_the_sign_in() {
-        let closed = Open::of(&Doors::default(), false, false, false);
+        let closed = Open::of(&Doors::default(), false, false, false, false);
         assert!(closed.family && !closed.river && !closed.records);
         assert!(!closed.nav && !closed.search && !closed.prefs);
-        let member = Open::of(&Doors::default(), true, false, false);
+        let member = Open::of(&Doors::default(), true, false, false, false);
         assert!(member.nav && member.search && member.prefs);
         let doors = Doors {
             import: Level::Contributors,
             ..Doors::default()
         };
-        assert!(!Open::of(&doors, true, false, false).import);
-        assert!(Open::of(&doors, true, true, false).import);
+        assert!(!Open::of(&doors, true, false, false, false).import);
+        assert!(Open::of(&doors, true, true, false, false).import);
         assert!(Open::everything().nav && Open::everything().prefs);
+    }
+
+    #[test]
+    fn the_import_is_not_offered_once_a_family_is_there() {
+        let doors = Doors::everyone();
+        assert!(Open::of(&doors, true, true, true, false).import);
+        let loaded = Open::of(&doors, true, true, true, true);
+        assert!(!loaded.import, "the first step, taken");
+        assert!(loaded.nav, "the other sections stay");
     }
 }

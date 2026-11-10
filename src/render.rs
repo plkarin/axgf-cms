@@ -504,7 +504,7 @@ impl Chrome {
     /// The archive's emblem and its family's name, read once for this page
     /// (docs/adr/0022).
     pub fn with_archive(mut self, state: &crate::state::AppState) -> Self {
-        let (emblem, family) = state.read(|flat| {
+        let (emblem, family, loaded) = state.read(|flat| {
             (
                 crate::emblem::of_archive(flat)
                     .map(|(id, focal)| crate::emblem::EmblemView::new(&id, focal)),
@@ -513,12 +513,21 @@ impl Chrome {
                     .map(str::trim)
                     .unwrap_or_default()
                     .to_string(),
+                flat.get("persons")
+                    .and_then(serde_json::Value::as_object)
+                    .is_some_and(|persons| !persons.is_empty()),
             )
         });
         self.site_emblem = emblem;
         self.site_family = family;
         let doors = state.acl_read(|acl| acl.site.doors.clone());
-        self.doors = crate::doors::Open::of(&doors, self.signed_in, self.may_write, self.is_admin);
+        self.doors = crate::doors::Open::of(
+            &doors,
+            self.signed_in,
+            self.may_write,
+            self.is_admin,
+            loaded,
+        );
         self
     }
 

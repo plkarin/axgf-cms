@@ -143,7 +143,16 @@ async fn an_account_signed_in_reads_the_site_as_before() {
     }
     let html = body_string(get_with_cookie(&app, "/about", &vera).await).await;
     assert!(html.contains("masthead-search") && html.contains("reading-prefs"));
-    assert!(html.contains(r#"href="/tree""#) && html.contains(r#"href="/convert""#));
+    assert!(html.contains(r#"href="/tree""#));
+    assert!(
+        !html.contains(r#"href="/convert""#),
+        "the import, once the family is there, is no longer offered"
+    );
+    assert_eq!(
+        get_with_cookie(&app, "/convert", &vera).await.status(),
+        StatusCode::OK,
+        "though its page is still there"
+    );
     assert!(
         !html.contains("brand-link"),
         "the sections' row is the way back"
@@ -199,6 +208,18 @@ async fn an_administrator_opens_a_part_to_everyone_or_keeps_it_for_fewer() {
     assert_eq!(
         get_with_cookie(&app, "/convert", &cleo).await.status(),
         StatusCode::OK
+    );
+}
+
+#[tokio::test]
+async fn the_import_is_offered_until_a_family_is_there() {
+    let (app, _dir) = app_with_empty_bundle("doors-import-empty");
+    let html = body_string(get(&app, "/about").await)
+        .await
+        .replace("&#x2f;", "/");
+    assert!(
+        html.contains(r#"href="/convert""#),
+        "an empty site: the first step is offered"
     );
 }
 

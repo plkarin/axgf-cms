@@ -1,6 +1,6 @@
 # ADR 0045 — The AFG takes commands, and an MCP for the family's archive
 
-**Status:** accepted (1.14.0) · **Builds on:** docs/adr/0023–0027 (the AFG,
+**Status:** accepted, v1.14.0 (2026-11-10) · **Builds on:** docs/adr/0023–0027 (the AFG,
 its brains, the personal assistant), docs/adr/0039 (a person created with
 what surrounds them), docs/adr/0012 (roles and the rules of entry),
 docs/adr/0001 (the lens) · **Applies to:** `src/ops.rs`, `src/tokens.rs`,

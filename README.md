@@ -712,13 +712,17 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.13.1**: **Genealogy** and **Clarity** in softer
-colours — Genealogy's page a moss rather than a near-black green, its cards
-a quieter parchment, its gold an old brass; Clarity without pure white or
-near-black, a terracotta accent, its prism veiled — every word still well
-over the contrast it needs; their drawings keep within their window (the
-sideways walk v1.13.0 tried is withdrawn), the near generations named as
-before.
+The latest release is **v1.14.0**: **the AFG takes commands**. In the
+personal assistant it proposes changes to the archive — a person added, a
+name or a date corrected, a baptism, a union, a child — as a card in plain
+words that the member applies with one click, all or nothing, by the rules
+of the site's own pages. The same operations are open to ChatGPT, Claude and
+the other AI assistants through the site's **MCP**, with a token each
+account makes and revokes, and the community connector **ax-genealogy**;
+every member's assistant carries a guide in twelve chapters.
+
+v1.13.1 gave **Genealogy** and **Clarity** softer colours, their drawings
+within their window.
 
 v1.12.1 withdrew, at the operator's request, the 3D world v1.12.0 gave
 Canopée, and kept the texts 1.11.0 added, reread in the twelve languages.
@@ -827,7 +831,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.13.1**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.14.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1041,7 +1045,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.13.1`](https://github.com/plkarin/axgf-cms/releases/tag/v1.13.1), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.14.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.14.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

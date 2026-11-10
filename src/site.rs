@@ -266,6 +266,175 @@ impl Providers {
     }
 }
 
+/// Who may open a part of the site (docs/adr/0046), from the widest door to
+/// the narrowest.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Level {
+    /// Anyone, signed in or not.
+    Visitors,
+    /// Any account signed in.
+    Members,
+    /// The accounts that may write: contributors and administrators.
+    Contributors,
+    /// Administrators.
+    Admins,
+}
+
+impl Level {
+    pub const ALL: [Level; 4] = [
+        Level::Visitors,
+        Level::Members,
+        Level::Contributors,
+        Level::Admins,
+    ];
+
+    pub fn slug(self) -> &'static str {
+        match self {
+            Level::Visitors => "visitors",
+            Level::Members => "members",
+            Level::Contributors => "contributors",
+            Level::Admins => "admins",
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|l| l.slug() == s.trim())
+    }
+
+    /// Whether a reader is let in: signed in or not, writing or not, an
+    /// administrator or not.
+    pub fn admits(self, signed_in: bool, may_write: bool, is_admin: bool) -> bool {
+        match self {
+            Level::Visitors => true,
+            Level::Members => signed_in,
+            Level::Contributors => may_write,
+            Level::Admins => is_admin,
+        }
+    }
+}
+
+/// The parts of the site whose door an administrator sets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Part {
+    /// The family's page, `/about`.
+    Family,
+    /// The river, or the theme's drawing in its place: `/`.
+    River,
+    Tree,
+    /// The records, and what is read from them: people, search, notes,
+    /// documents, data quality.
+    Records,
+    Impact,
+    /// The GEDCOM converter.
+    Import,
+}
+
+impl Part {
+    pub const ALL: [Part; 6] = [
+        Part::Family,
+        Part::River,
+        Part::Tree,
+        Part::Records,
+        Part::Impact,
+        Part::Import,
+    ];
+
+    pub fn slug(self) -> &'static str {
+        match self {
+            Part::Family => "family",
+            Part::River => "river",
+            Part::Tree => "tree",
+            Part::Records => "records",
+            Part::Impact => "impact",
+            Part::Import => "import",
+        }
+    }
+}
+
+fn visitors() -> Level {
+    Level::Visitors
+}
+
+fn members() -> Level {
+    Level::Members
+}
+
+/// Who may open each part of the site (the operator's request of 10 November
+/// 2026, docs/adr/0046): the family's page to anyone, every other part to
+/// the accounts signed in, until an administrator opens a part wider — or
+/// closes it further. Absent from an older accounts file, so an archive put
+/// online before it is closed the day it is upgraded.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Doors {
+    #[serde(default = "visitors")]
+    pub family: Level,
+    #[serde(default = "members")]
+    pub river: Level,
+    #[serde(default = "members")]
+    pub tree: Level,
+    #[serde(default = "members")]
+    pub records: Level,
+    #[serde(default = "members")]
+    pub impact: Level,
+    #[serde(default = "members")]
+    pub import: Level,
+}
+
+impl Default for Doors {
+    fn default() -> Self {
+        Doors {
+            family: Level::Visitors,
+            river: Level::Members,
+            tree: Level::Members,
+            records: Level::Members,
+            impact: Level::Members,
+            import: Level::Members,
+        }
+    }
+}
+
+impl Doors {
+    /// Every part open to anyone, as every page was before 1.15.0.
+    pub fn everyone() -> Self {
+        Doors {
+            family: Level::Visitors,
+            river: Level::Visitors,
+            tree: Level::Visitors,
+            records: Level::Visitors,
+            impact: Level::Visitors,
+            import: Level::Visitors,
+        }
+    }
+
+    pub fn level(&self, part: Part) -> Level {
+        match part {
+            Part::Family => self.family,
+            Part::River => self.river,
+            Part::Tree => self.tree,
+            Part::Records => self.records,
+            Part::Impact => self.impact,
+            Part::Import => self.import,
+        }
+    }
+
+    pub fn set(&mut self, part: Part, level: Level) {
+        match part {
+            Part::Family => self.family = level,
+            Part::River => self.river = level,
+            Part::Tree => self.tree = level,
+            Part::Records => self.records = level,
+            Part::Impact => self.impact = level,
+            Part::Import => self.import = level,
+        }
+    }
+
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+}
+
 /// The site's rules of entry, as stored under `site` in the `.acl`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Site {
@@ -299,6 +468,9 @@ pub struct Site {
     /// company whose assistant reads it.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub mcp: bool,
+    /// Who may open each part of the site (docs/adr/0046).
+    #[serde(default, skip_serializing_if = "Doors::is_default")]
+    pub doors: Doors,
 }
 
 impl Site {

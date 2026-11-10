@@ -5681,3 +5681,23 @@ afg-mcp-opened = The MCP is open: accounts' tokens are accepted.
 afg-mcp-closed = The MCP is closed: tokens are kept, and open nothing.
 assistant-guide-title = Keeping the family's genealogy through the AFG
 assistant-guide-reader = Your account reads the archive and does not change it: the AFG answers your questions but proposes no change. An administrator can give your account the contributor role.
+
+# Who may open each part of the site (docs/adr/0046).
+doors-title = Who may open each part of the site
+doors-intro = Visitors see the family's page and nothing else until you open more here; every other part is for the accounts signed in. Each record still keeps its own visibility.
+doors-change = Change who may open each part
+doors-save = Save
+doors-saved = Saved: who may open each part of the site.
+doors-unknown = That is not a level this site knows. Nothing was saved.
+doors-part-family = The family's page
+doors-part-river = The river (or the theme's drawing)
+doors-part-tree = The tree
+doors-part-records = Records, search and notes
+doors-part-impact = Impact
+doors-part-import = Import (GEDCOM)
+doors-level-visitors = Everyone
+doors-level-members = Accounts signed in
+doors-level-contributors = Contributors
+doors-level-admins = Administrators
+doors-closed-title = Not open to your account
+doors-closed-detail = An administrator keeps this part of the site for other roles.

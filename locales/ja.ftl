@@ -5235,3 +5235,23 @@ afg-mcp-opened = MCP を開きました。アカウントのトークンを受�
 afg-mcp-closed = MCP を閉じました。トークンは残りますが、何も開けません。
 assistant-guide-title = AI 家系研究家で家族の系譜を管理する
 assistant-guide-reader = あなたのアカウントはアーカイブを読むだけで変更はしません。AI 家系研究家は質問に答えますが、変更は提案しません。管理者があなたのアカウントに編集者の役割を与えることができます。
+
+# サイトの各部分を開ける人（docs/adr/0046）。
+doors-title = サイトの各部分を開ける人
+doors-intro = ここでほかを開かない限り、訪問者に見えるのは家族のページだけです。それ以外はログイン中のアカウント向けです。各記録はさらにそれぞれの公開範囲を保ちます。
+doors-change = 各部分を開ける人を変更
+doors-save = 保存
+doors-saved = 保存しました：サイトの各部分を開ける人。
+doors-unknown = このサイトにその段階はありません。何も保存していません。
+doors-part-family = 家族のページ
+doors-part-river = 流れ（またはテーマの図）
+doors-part-tree = 家系図
+doors-part-records = 記録、検索、ノート
+doors-part-impact = インパクト
+doors-part-import = 取り込み（GEDCOM）
+doors-level-visitors = すべての人
+doors-level-members = ログイン中のアカウント
+doors-level-contributors = 編集者
+doors-level-admins = 管理者
+doors-closed-title = あなたのアカウントには開かれていません
+doors-closed-detail = 管理者がサイトのこの部分をほかの役割に限っています。

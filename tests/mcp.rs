@@ -427,3 +427,35 @@ async fn the_community_connector_is_served_packed_and_agrees_with_the_mcp() {
     announced.sort();
     assert_eq!(announced, served);
 }
+
+#[tokio::test]
+async fn the_mcp_follows_the_records_door() {
+    let (app, _dir, admin, vera, _) = app("mcp-doors").await;
+    post_form_as(&app, &admin, "/admin/afg/mcp", "open=1").await;
+    let t = token(&app, &vera, "Vera", true).await;
+    // The records kept for administrators: vera's token is offered the
+    // guide alone, and refused the rest.
+    let resp = post_form_as(&app, &admin, "/admin/connectivity/pages", "records=admins").await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let (_, v) = rpc(
+        &app,
+        Some(&t),
+        "/mcp",
+        json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}),
+    )
+    .await;
+    let names: Vec<&str> = v["result"]["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|t| t["name"].as_str().unwrap())
+        .collect();
+    assert_eq!(names, ["guide"]);
+    let r = call(&app, &t, "search_people", json!({"query": ""})).await;
+    assert_eq!(r["isError"], true);
+    assert!(text(&r).contains("not open to this account"));
+    // Opened again to the accounts signed in, it reads.
+    post_form_as(&app, &admin, "/admin/connectivity/pages", "records=members").await;
+    let r = call(&app, &t, "search_people", json!({"query": ""})).await;
+    assert_eq!(r["isError"], false);
+}

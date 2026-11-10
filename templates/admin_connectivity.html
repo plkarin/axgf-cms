@@ -51,6 +51,33 @@
 </form>
 </section>
 
+{#- Who may open each part of the site (docs/adr/0046): the family's page
+    to anyone and the rest to the accounts signed in, until an
+    administrator says otherwise here. -#}
+<section class="rec-section" id="pages">
+<h2>{{ t("doors-title") }}</h2>
+<p class="small muted">{{ t("doors-intro") }}</p>
+<dl class="facts">
+  {%- for d in door_rows %}
+  <dt>{{ t("doors-part-" ~ d.part) }}</dt><dd>{{ t("doors-level-" ~ d.level) }}</dd>
+  {%- endfor %}
+</dl>
+<details class="doors-edit">
+  <summary>{{ t("doors-change") }}</summary>
+  <form method="post" action="/admin/connectivity/pages" class="doors-form">
+    {%- for d in door_rows %}
+    <div class="field">
+      <label for="door-{{ d.part }}">{{ t("doors-part-" ~ d.part) }}</label>
+      <select id="door-{{ d.part }}" name="{{ d.part }}">
+        {%- for l in levels %}<option value="{{ l }}"{% if l == d.level %} selected{% endif %}>{{ t("doors-level-" ~ l) }}</option>{% endfor %}
+      </select>
+    </div>
+    {%- endfor %}
+    <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("doors-save") }}</button>
+  </form>
+</details>
+</section>
+
 {#- The rules every sign-in follows, administrators' included. -#}
 <section class="rec-section" id="policy">
 <h2>{{ t("connectivity-policy") }}</h2>

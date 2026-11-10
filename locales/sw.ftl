@@ -5455,3 +5455,23 @@ afg-mcp-opened = MCP iko wazi: tokeni za akaunti zinakubaliwa.
 afg-mcp-closed = MCP imefungwa: tokeni zinahifadhiwa na hazifungui chochote.
 assistant-guide-title = Kusimamia nasaba ya familia kwa AFG
 assistant-guide-reader = Akaunti yako inasoma kumbukumbu bila kuzibadilisha: AFG inajibu maswali yako lakini haipendekezi mabadiliko. Msimamizi anaweza kuipa akaunti yako nafasi ya mchangiaji.
+
+# Nani anaweza kufungua kila sehemu ya tovuti (docs/adr/0046).
+doors-title = Nani anaweza kufungua kila sehemu ya tovuti
+doors-intro = Wageni wanaona ukurasa wa familia pekee hadi utakapofungua zaidi hapa; sehemu nyingine zote ni za akaunti zilizoingia. Kila rekodi pia inabaki na uonekano wake.
+doors-change = Badilisha nani anaweza kufungua kila sehemu
+doors-save = Hifadhi
+doors-saved = Imehifadhiwa: nani anaweza kufungua kila sehemu ya tovuti.
+doors-unknown = Kiwango hicho hakipo kwenye tovuti hii. Hakuna kilichohifadhiwa.
+doors-part-family = Ukurasa wa familia
+doors-part-river = Mto (au mchoro wa mandhari)
+doors-part-tree = Mti
+doors-part-records = Rekodi, utafutaji na maelezo
+doors-part-impact = Athari
+doors-part-import = Kuleta (GEDCOM)
+doors-level-visitors = Kila mtu
+doors-level-members = Akaunti zilizoingia
+doors-level-contributors = Wachangiaji
+doors-level-admins = Wasimamizi
+doors-closed-title = Haijafunguliwa kwa akaunti yako
+doors-closed-detail = Msimamizi ameweka sehemu hii ya tovuti kwa nafasi nyingine.

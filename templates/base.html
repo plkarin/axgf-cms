@@ -34,30 +34,41 @@
         proper noun, so every catalogue carries the same value and a test says
         so: the failure worth guarding against is not the number of edits a
         rename costs but a rename that reaches ten catalogues out of eleven. -#}
-    {#- Not a link: "Rivière" beside it goes to the same place. -#}
+    {#- Not a link: "Rivière" beside it goes to the same place — unless the
+        sections' row is not drawn (docs/adr/0046), and then it is the way
+        back to the family's page. -#}
     {#- The logo (docs/adr/0006): in its own colours under Canopée, in ink
         like the wordmark under every other theme. -#}
+    {%- if not doors.nav and doors.family %}<a class="brand-link" href="/about">{% endif -%}
     {{ logo.mark("mh", "brand-mark") }}<span class="brand">{{ t("app-name") | replace("-", "·") }}</span>
+    {%- if not doors.nav and doors.family %}</a>{% endif %}
     {#- The emblem of the family the archive is about, beside the product's
         name (docs/adr/0022): a picture, not a control. -#}
     {%- if site_emblem %}<img class="masthead-emblem" src="/document/{{ site_emblem.id }}/thumb" alt="" width="30" height="30" title="{{ site_family }}">{% endif %}
+    {#- The sections this reader may open (docs/adr/0046), when there are
+        two at least: one alone is the page they are on. -#}
+    {%- if doors.nav %}
     <nav>
-      <a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }}</a>
-      <a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>
-      <a href="/about" {% if nav == "about" %}aria-current="page"{% endif %}>{{ t("nav-home") }}</a>
-      <a href="/impact" {% if nav == "impact" %}aria-current="page"{% endif %}>{{ t("nav-impact") }}</a>
-      <a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>
+      {% if doors.river %}<a href="/" {% if nav == "river" %}aria-current="page"{% endif %}>{{ t("nav-river") if view == "river" else t("view-" ~ view ~ "-name") }}</a>{% endif %}
+      {% if doors.tree %}<a href="/tree" {% if nav == "tree" %}aria-current="page"{% endif %}>{{ t("nav-tree") }}</a>{% endif %}
+      {% if doors.family %}<a href="/about" {% if nav == "about" %}aria-current="page"{% endif %}>{{ t("nav-home") }}</a>{% endif %}
+      {% if doors.impact %}<a href="/impact" {% if nav == "impact" %}aria-current="page"{% endif %}>{{ t("nav-impact") }}</a>{% endif %}
+      {% if doors.import %}<a href="/convert" {% if nav == "convert" %}aria-current="page"{% endif %}>{{ t("nav-convert") }}</a>{% endif %}
     </nav>
+    {%- endif %}
     {#- Then the reader's own controls, each on its own (v0.4.3): the
         person search, the language, the theme and the density. The last
         three are the accessibility controls, and a menu hid them from the
         reader who most needs them (docs/adr/0002 §9). Eleven controls at
         most: five sections (Impact, the fifth, docs/adr/0034), these four,
         the settings and the account. -#}
+    {%- if doors.search or doors.prefs %}
     <div class="masthead-tools">
     {#- People by name, through the reader's lens. A plain GET form, so it
         works with scripting off; ui.js adds suggestions, where Enter travels
-        the river to the person and Shift+Enter opens their record. -#}
+        the river to the person and Shift+Enter opens their record. Offered
+        with the records only (docs/adr/0046). -#}
+    {%- if doors.search %}
     <form class="masthead-search" role="search" method="get" action="/search">
       <label class="search-box" for="masthead-q"><span class="search-box-label">{{ t('search-short') }}</span>
       <input type="search" name="q" id="masthead-q" autocomplete="off"
@@ -67,13 +78,19 @@
       <span id="masthead-q-hint" class="sr-only">{{ t("search-hint") if view == "river" else t("view-" ~ view ~ "-search-hint") }}</span>
       <ul id="masthead-q-list" class="search-suggest" role="listbox" hidden></ul>
     </form>
+    {%- endif %}
+    {#- The reading preferences, to whoever may read more than the family's
+        page (docs/adr/0046). -#}
+    {%- if doors.prefs %}
     <div class="reading-prefs">
       {{ prefs.language(t, locales, current_locale, back) }}
       {{ prefs.theme(t, themes, theme_choice, back) }}
       {{ prefs.density(t, styles, style, back) }}
       <a class="prefs-more" href="{{ settings_url }}" title="{{ t('display-settings') }}" aria-label="{{ t('display-settings') }}">⋯</a>
     </div>
+    {%- endif %}
     </div>
+    {%- endif %}
     <span class="spacer"></span>
     <nav class="chrome-nav">
       {% if signed_in %}

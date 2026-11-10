@@ -1598,6 +1598,8 @@ cat <<EOF
   withheld from signed-out visitors, but a bundle converted from GEDCOM
   carries no visibility at all: there, everyone recorded as living is treated
   as \`members\` and everyone else is public. Check that this is what you want
-  before publishing.
+  before publishing. Visitors see the family's page and the sign-in, and
+  nothing else, until an administrator opens more of the site under
+  Administration → Connectivity.
 
 EOF

@@ -138,7 +138,22 @@ pub fn scratch(tag: &str) -> Scratch {
 /// running the suite: a test's verdict must not depend on how full the build
 /// host is. The real check is `space::Filesystem`, and the binary always uses
 /// it.
+///
+/// Every part of the site is open to anyone here, as every page was when
+/// these tests were written: what they read is what a page shows, not who
+/// may open it. [`build_app_as_installed`] keeps the doors an installation
+/// starts with (docs/adr/0046).
 pub fn build_app(path: &Path) -> anyhow::Result<axum::Router> {
+    let state = axgf_cms::AppState::load_or_create(path, TOKEN.to_string())?.with_space_probe(
+        std::sync::Arc::new(axgf_cms::space::Fixed::new(50 << 30, 100 << 30)),
+    );
+    state.site_mutate(|s| s.doors = axgf_cms::site::Doors::everyone())?;
+    Ok(axgf_cms::router(std::sync::Arc::new(state)))
+}
+
+/// Build the app as an installation starts: the family's page open to
+/// anyone, every other part to the accounts signed in (docs/adr/0046).
+pub fn build_app_as_installed(path: &Path) -> anyhow::Result<axum::Router> {
     let state = axgf_cms::AppState::load_or_create(path, TOKEN.to_string())?.with_space_probe(
         std::sync::Arc::new(axgf_cms::space::Fixed::new(50 << 30, 100 << 30)),
     );

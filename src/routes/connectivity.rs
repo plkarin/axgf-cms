@@ -124,6 +124,12 @@ fn render_connectivity(
             linked_admins,
             without_way,
             outbound_note => state.bind().is_some(),
+            // Who may open each part of the site (docs/adr/0046).
+            door_rows => crate::site::Part::ALL
+                .into_iter()
+                .map(|p| json!({"part": p.slug(), "level": site.doors.level(p).slug()}))
+                .collect::<Vec<_>>(),
+            levels => crate::site::Level::ALL.iter().map(|l| l.slug()).collect::<Vec<_>>(),
             error,
             notice,
         },
@@ -375,6 +381,59 @@ pub async fn test_provider(
             )
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Who may open each part of the site
+// ---------------------------------------------------------------------------
+
+/// `POST /admin/connectivity/pages` — who may open each part of the site
+/// (docs/adr/0046): each part's level by the part's name (`family`, `river`,
+/// `tree`, `records`, `impact`, `import`), anyone, the accounts signed in, the
+/// contributors or the administrators. A part the form does not name keeps
+/// its level.
+pub async fn save_pages(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(levels): Form<std::collections::BTreeMap<String, String>>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let mut doors = state.site().doors;
+    for part in crate::site::Part::ALL {
+        let Some(typed) = levels.get(part.slug()) else {
+            continue;
+        };
+        match crate::site::Level::parse(typed) {
+            Some(level) => doors.set(part, level),
+            None => return refused(&state, &chrome, chrome.t("doors-unknown")),
+        }
+    }
+    let saved = doors.clone();
+    if let Err(e) = state.site_mutate(|s| s.doors = saved) {
+        return refused(
+            &state,
+            &chrome,
+            chrome.t_args("connectivity-not-saved", &[("error", e.to_string().into())]),
+        );
+    }
+    // Who opened or closed the site, and how; nothing else.
+    tracing::warn!(
+        by = viewer.name(),
+        family = doors.family.slug(),
+        river = doors.river.slug(),
+        tree = doors.tree.slug(),
+        records = doors.records.slug(),
+        impact = doors.impact.slug(),
+        import = doors.import.slug(),
+        "who may open each part of the site changed"
+    );
+    render_connectivity(
+        &state,
+        &chrome,
+        StatusCode::OK,
+        None,
+        Some(chrome.t("doors-saved")),
+    )
 }
 
 // ---------------------------------------------------------------------------

@@ -5887,3 +5887,23 @@ afg-mcp-opened = ה־MCP פתוח: האסימונים של החשבונות מת
 afg-mcp-closed = ה־MCP סגור: האסימונים נשמרים ואינם פותחים דבר.
 assistant-guide-title = לנהל את הגנאלוגיה המשפחתית עם הגנאלוג המלאכותי
 assistant-guide-reader = החשבון שלך קורא את הארכיון בלי לשנות אותו: הגנאלוג המלאכותי עונה לשאלות אבל לא מציע שינויים. מנהל יכול לתת לחשבון שלך את תפקיד התורם.
+
+# מי רשאי לפתוח כל חלק באתר ‏(docs/adr/0046).
+doors-title = מי רשאי לפתוח כל חלק באתר
+doors-intro = מבקרים רואים רק את דף המשפחה כל עוד לא פתחתם כאן דבר נוסף; כל השאר שמור לחשבונות מחוברים. כל רשומה שומרת גם על הנראות שלה.
+doors-change = לשנות מי רשאי לפתוח כל חלק
+doors-save = שמירה
+doors-saved = נשמר: מי רשאי לפתוח כל חלק באתר.
+doors-unknown = הרמה הזו לא קיימת באתר הזה. שום דבר לא נשמר.
+doors-part-family = דף המשפחה
+doors-part-river = הנהר (או הציור של ערכת הנושא)
+doors-part-tree = העץ
+doors-part-records = הרשומות, החיפוש וההערות
+doors-part-impact = השפעה
+doors-part-import = הייבוא (GEDCOM)
+doors-level-visitors = כולם
+doors-level-members = חשבונות מחוברים
+doors-level-contributors = תורמים
+doors-level-admins = מנהלים
+doors-closed-title = לא פתוח לחשבון שלך
+doors-closed-detail = מנהל שומר את החלק הזה באתר לתפקידים אחרים.

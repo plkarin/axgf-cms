@@ -428,6 +428,9 @@ pub struct Chrome {
     pub site_emblem: Option<crate::emblem::EmblemView>,
     /// That family's name, said by the emblem.
     pub site_family: String,
+    /// What the masthead offers this reader, the parts of the site open to
+    /// them (docs/adr/0046). Set by [`Chrome::with_archive`].
+    pub doors: crate::doors::Open,
 }
 
 impl Chrome {
@@ -494,6 +497,7 @@ impl Chrome {
             presume_after: crate::living::max_age_years(),
             site_emblem: None,
             site_family: String::new(),
+            doors: crate::doors::Open::everything(),
         }
     }
 
@@ -513,6 +517,8 @@ impl Chrome {
         });
         self.site_emblem = emblem;
         self.site_family = family;
+        let doors = state.acl_read(|acl| acl.site.doors.clone());
+        self.doors = crate::doors::Open::of(&doors, self.signed_in, self.may_write, self.is_admin);
         self
     }
 

@@ -4,6 +4,28 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Who may open each part of the site, as the operator asked on 10 November
+2026 after putting ax-genealogy.com online (docs/adr/0046).
+
+### Changed
+
+- **Closed by default.** A visitor sees the family's page and the sign-in,
+  and nothing else: the river, the tree, the records and the search, Impact
+  and the import are for the accounts signed in. The masthead offers a
+  visitor the wordmark and "Sign in" alone. An archive already online is
+  closed too the day it is upgraded: its administrator opens again what
+  should be public.
+
+### Added
+
+- **Who may open each part of the site**, in the Connectivity room: for the
+  family's page, the river, the tree, the records, Impact and the import,
+  anyone, the accounts signed in, the contributors or the administrators.
+  The rule is the server's: a closed page is not served, a closed script's
+  answer is refused, and the masthead stops offering what would be refused.
+
 ## [1.14.0] — 2026-11-10
 
 The AFG takes commands, and an MCP opens the archive to AI assistants

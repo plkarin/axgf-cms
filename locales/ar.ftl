@@ -6288,3 +6288,23 @@ afg-mcp-opened = MCP مفتوح: تُقبل رموز الحسابات.
 afg-mcp-closed = MCP مغلق: تُحفظ الرموز ولا تفتح شيئًا.
 assistant-guide-title = إدارة نسب العائلة مع النسّابة الاصطناعي
 assistant-guide-reader = حسابك يقرأ الأرشيف دون أن يعدّله: يجيب النسّابة الاصطناعي عن أسئلتك لكنه لا يقترح تعديلًا. يستطيع مدير أن يمنح حسابك دور المساهم.
+
+# من يحق له فتح كل جزء من الموقع ‏(docs/adr/0046).
+doors-title = من يحق له فتح كل جزء من الموقع
+doors-intro = لا يرى الزوار إلا صفحة العائلة ما دمت لم تفتح هنا شيئًا آخر؛ وكل ما سواها للحسابات المسجّلة الدخول. ويحتفظ كل سجل فوق ذلك بدرجة ظهوره.
+doors-change = تغيير من يحق له فتح كل جزء
+doors-save = حفظ
+doors-saved = حُفظ: من يحق له فتح كل جزء من الموقع.
+doors-unknown = هذا المستوى غير موجود في هذا الموقع. لم يُحفظ شيء.
+doors-part-family = صفحة العائلة
+doors-part-river = النهر (أو رسم السمة)
+doors-part-tree = الشجرة
+doors-part-records = السجلات والبحث والملاحظات
+doors-part-impact = الأثر
+doors-part-import = الاستيراد (GEDCOM)
+doors-level-visitors = الجميع
+doors-level-members = الحسابات المسجّلة الدخول
+doors-level-contributors = المساهمون
+doors-level-admins = المديرون
+doors-closed-title = غير مفتوح لحسابك
+doors-closed-detail = يخصّص مدير هذا الجزء من الموقع لأدوار أخرى.

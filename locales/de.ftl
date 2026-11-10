@@ -5671,3 +5671,23 @@ afg-mcp-opened = Das MCP ist offen: Die Token der Konten werden angenommen.
 afg-mcp-closed = Das MCP ist geschlossen: Die Token bleiben erhalten und öffnen nichts.
 assistant-guide-title = Die Familiengenealogie mit dem AFG pflegen
 assistant-guide-reader = Ihr Konto liest das Archiv, ohne es zu ändern: Der AFG beantwortet Ihre Fragen, schlägt aber keine Änderung vor. Ein Administrator kann Ihrem Konto die Rolle Mitwirkender geben.
+
+# Wer welchen Teil der Seite öffnen darf (docs/adr/0046).
+doors-title = Wer welchen Teil der Seite öffnen darf
+doors-intro = Besucher sehen nur die Seite der Familie, solange Sie hier nicht mehr öffnen; alles andere bleibt angemeldeten Konten vorbehalten. Jeder Eintrag behält zudem seine eigene Sichtbarkeit.
+doors-change = Ändern, wer welchen Teil öffnen darf
+doors-save = Speichern
+doors-saved = Gespeichert: wer welchen Teil der Seite öffnen darf.
+doors-unknown = Diese Stufe kennt die Seite nicht. Nichts wurde gespeichert.
+doors-part-family = Die Seite der Familie
+doors-part-river = Der Fluss (oder die Zeichnung des Themas)
+doors-part-tree = Der Stammbaum
+doors-part-records = Die Einträge, die Suche und die Notizen
+doors-part-impact = Wirkung
+doors-part-import = Der Import (GEDCOM)
+doors-level-visitors = Alle
+doors-level-members = Angemeldete Konten
+doors-level-contributors = Mitwirkende
+doors-level-admins = Verwaltung
+doors-closed-title = Für Ihr Konto nicht geöffnet
+doors-closed-detail = Eine Verwaltung behält diesen Teil der Seite anderen Rollen vor.

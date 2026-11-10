@@ -94,6 +94,7 @@ fn tile_origin(template: &str) -> Option<String> {
 pub fn router(state: Shared) -> Router {
     let csp = content_security_policy(&state);
     let guarded = routes(state.clone())
+        .layer(axum::middleware::from_fn_with_state(state.clone(), doors))
         .layer(axum::middleware::from_fn_with_state(
             state,
             same_site_writes,
@@ -161,6 +162,70 @@ async fn same_site_writes(
         }
     }
     next.run(req).await
+}
+
+/// Who may open each part of the site (docs/adr/0046), applied before any
+/// page is drawn: a part a reader may not open is not served to them.
+///
+/// A visitor asking for the river is shown the family's page, when that one
+/// is open to them; for any other closed page, the sign-in. A signed-in
+/// reader whose role is short of a part is told so, on a page of its own.
+/// What a script or a file asks for is answered with a status and nothing
+/// else. The archive's emblem, drawn on the family's page, is served with
+/// that page.
+async fn doors(
+    axum::extract::State(state): axum::extract::State<Shared>,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use crate::site::Level;
+    use axum::http::{Method, StatusCode};
+    use axum::response::{IntoResponse, Redirect};
+    let path = req.uri().path().to_string();
+    let Some(part) = crate::doors::part_of(&path) else {
+        return next.run(req).await;
+    };
+    let doors = state.acl_read(|acl| acl.site.doors.clone());
+    if doors.level(part) == Level::Visitors {
+        return next.run(req).await;
+    }
+    let viewer = crate::auth::viewer(&state, req.headers());
+    let lets =
+        |level: Level| level.admits(viewer.signed_in(), viewer.may_write(), viewer.is_admin());
+    if lets(doors.level(part)) {
+        return next.run(req).await;
+    }
+    if lets(doors.family) {
+        if let Some(id) = crate::doors::document_of(&path) {
+            let emblem = state.read(|flat| crate::emblem::of_archive(flat).map(|(e, _)| e));
+            if emblem.as_deref() == Some(id) {
+                return next.run(req).await;
+            }
+        }
+    }
+    let page = matches!(*req.method(), Method::GET | Method::HEAD)
+        && !crate::doors::is_data(
+            &path,
+            req.headers()
+                .get(header::ACCEPT)
+                .and_then(|v| v.to_str().ok()),
+        );
+    if !page {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+    if path == "/" && lets(doors.family) {
+        return Redirect::to("/about").into_response();
+    }
+    if !viewer.signed_in() {
+        return Redirect::to("/admin/login").into_response();
+    }
+    let chrome = crate::render::Chrome::resolve(&viewer, req.headers(), "/").with_archive(&state);
+    crate::render::error_page_in(
+        &chrome,
+        StatusCode::FORBIDDEN,
+        "doors-closed-title",
+        "doors-closed-detail",
+    )
 }
 
 /// `https://a.example:8443/x?y` → `https://a.example:8443`.
@@ -608,6 +673,8 @@ fn routes(state: Shared) -> Router {
             "/admin/users/registration",
             post(connectivity::save_registration),
         )
+        // Who may open each part of the site (docs/adr/0046).
+        .route("/admin/connectivity/pages", post(connectivity::save_pages))
         .route("/register", get(entry::register_form).post(entry::register))
         .route(
             "/register/finish",

@@ -24,10 +24,11 @@
     </p>
     {#- Two ways in, and only two: the river and the tree. Everything else is
         one control away in the masthead (the minimalism pass). -#}
-    {% if total > 0 %}
+    {#- Each offered when the reader may open it (docs/adr/0046). -#}
+    {% if total > 0 and (doors.river or doors.tree) %}
     <div class="hero-actions">
-      <a class="btn primary" href="/">{{ t("home-cta-river") if view == "river" else t("view-" ~ view ~ "-cta") }}</a>
-      <a class="btn" href="/tree"><span class="hero-ring">{{ ic.icon("tree") }}</span>{{ t("home-cta-tree") }}</a>
+      {% if doors.river %}<a class="btn primary" href="/">{{ t("home-cta-river") if view == "river" else t("view-" ~ view ~ "-cta") }}</a>{% endif %}
+      {% if doors.tree %}<a class="btn" href="/tree"><span class="hero-ring">{{ ic.icon("tree") }}</span>{{ t("home-cta-tree") }}</a>{% endif %}
     </div>
     {% endif %}
   </div>
@@ -117,7 +118,7 @@
       <span class="feature-ico" data-kind="{{ s.kind }}">{{ ic.icon(s.kind) }}</span>
       <h3>{{ s.title }}</h3>
       <p>{{ s.detail }}</p>
-      {% if s.example_id %}
+      {% if s.example_id and doors.records %}
       <a class="feature-go" href="/person/{{ s.example_id }}">{{ t("home-showcase-example") }}</a>
       {% endif %}
     </article>

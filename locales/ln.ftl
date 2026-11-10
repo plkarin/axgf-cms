@@ -5474,3 +5474,23 @@ afg-mcp-opened = MCP efungwami: ba-jeton ya ba-compte endimami.
 afg-mcp-closed = MCP ekangami: ba-jeton ebombami mpe efungolaka eloko te.
 assistant-guide-title = Kokamba mabota ya libota na AFG
 assistant-guide-reader = Compte na yo etángaka ebombelo kozanga kobongola yango: AFG eyanolaka mituna na yo kasi epesaka mbongwana te. Administrateur akoki kopesa compte na yo mokumba ya mosungi.
+
+# Nani akoki kofungola eteni moko na moko ya site (docs/adr/0046).
+doors-title = Nani akoki kofungola eteni moko na moko ya site
+doors-intro = Bapaya bamonaka kaka lokasa ya libota soki ofungoli naino eloko mosusu awa te; oyo etikali ezali mpo na ba-compte oyo ekoti. Fisi moko na moko ebombaka lisusu bomonani na yango.
+doors-change = Kobongola nani akoki kofungola eteni moko na moko
+doors-save = Bomba
+doors-saved = Ebombami: nani akoki kofungola eteni moko na moko ya site.
+doors-unknown = Lolenge yango ezali te na site oyo. Eloko moko te ebombami.
+doors-part-family = Lokasa ya libota
+doors-part-river = Ebale (to elilingi ya thème)
+doors-part-tree = Nzete
+doors-part-records = Bafisi, boluki mpe ba-note
+doors-part-impact = Impact
+doors-part-import = Kokotisa (GEDCOM)
+doors-level-visitors = Bato nyonso
+doors-level-members = Ba-compte oyo ekoti
+doors-level-contributors = Basungi
+doors-level-admins = Bakambi
+doors-closed-title = Efungwami te mpo na compte na yo
+doors-closed-detail = Mokambi abombi eteni oyo ya site mpo na mikumba mosusu.

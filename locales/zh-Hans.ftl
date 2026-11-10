@@ -5341,3 +5341,23 @@ afg-mcp-opened = MCP 已打开：接受账户令牌。
 afg-mcp-closed = MCP 已关闭：令牌保留，但打不开任何东西。
 assistant-guide-title = 用 AI 家谱师管理家族谱系
 assistant-guide-reader = 您的账户只阅读档案而不修改：AI 家谱师会回答您的问题，但不会提出修改。管理员可以给您的账户编辑者角色。
+
+# 谁可以打开网站的各个部分（docs/adr/0046）。
+doors-title = 谁可以打开网站的各个部分
+doors-intro = 在您于此处开放更多内容之前，访客只能看到家族页面；其余部分留给已登录的账户。每份档案还各自保留其可见范围。
+doors-change = 更改谁可以打开各个部分
+doors-save = 保存
+doors-saved = 已保存：谁可以打开网站的各个部分。
+doors-unknown = 本站没有这个级别。没有保存任何内容。
+doors-part-family = 家族页面
+doors-part-river = 河流（或主题的图示）
+doors-part-tree = 家谱
+doors-part-records = 档案、搜索和笔记
+doors-part-impact = 影响
+doors-part-import = 导入（GEDCOM）
+doors-level-visitors = 所有人
+doors-level-members = 已登录的账户
+doors-level-contributors = 编辑者
+doors-level-admins = 管理员
+doors-closed-title = 未向您的账户开放
+doors-closed-detail = 管理员将网站的这一部分留给其他角色。

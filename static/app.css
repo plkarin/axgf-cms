@@ -547,6 +547,9 @@ code, pre, .mono { font-family: var(--mono); font-size: 0.9em; }
   }
   .masthead .masthead-inner > .brand-mark { grid-area: mark; margin-inline-end: 0; }
   .masthead .masthead-inner > .brand { grid-area: brand; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* The wordmark as a link (docs/adr/0046): the mark and the name together. */
+  .masthead .masthead-inner > .brand-link { grid-column: mark-start / brand-end; grid-row: mark-start / mark-end; min-inline-size: 0; gap: 0.6rem; }
+  .masthead .masthead-inner > .brand-link > .brand-mark { margin-inline-end: 0; }
   .masthead .masthead-inner > nav:not(.chrome-nav) {
     grid-area: nav;
     justify-content: space-between;
@@ -8156,6 +8159,14 @@ a.kpi:hover { border-color: var(--border-strong); }
 .as-mark-done { color: var(--conf-certain); }
 .as-done { padding-inline-start: 0.85rem; border-inline-start: 3px solid var(--border-strong); color: var(--text-secondary); }
 .as-orphan { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; margin: -0.5rem 0 1rem; }
+/* The wordmark as the way back to the family's page, when the sections' row
+   is not drawn (docs/adr/0046): it reads as the wordmark, not as a link. */
+.brand-link { display: inline-flex; align-items: center; gap: inherit; color: inherit; text-decoration: none; }
+/* Who may open each part of the site, in the Connectivity room. */
+.doors-edit { margin-top: 0.75rem; }
+.doors-edit > summary { cursor: pointer; color: var(--text-secondary); }
+.doors-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 0.25rem 1rem; align-items: end; margin-top: 0.75rem; }
+.doors-form .btn { justify-self: start; }
 /* The guide to keeping the archive through the AFG (docs/adr/0045 §6): its
    chapters folded, each request a quote to copy. */
 .as-guide { max-width: 46rem; margin-top: 2rem; }

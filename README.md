@@ -657,6 +657,15 @@ Without a service, a small form remains: a username and a password, and the
 secret if you asked for one. It asks for no email address, so nobody can
 claim someone else's.
 
+*(New in 1.15.0.)* **Closed until you open it.** A visitor sees the
+family's page and *Sign in*, and nothing else: the river, the tree, the
+records and the search, Impact and the import are for the accounts signed
+in. Under **Connectivity** you open each part to everyone, or keep it for
+the accounts signed in, the contributors or the administrators; the
+masthead offers each reader what is open to them, and the server refuses
+the rest. Why it works this way:
+[Who may open each part of the site](docs/adr/0046-who-may-open-each-part-of-the-site.md).
+
 ### Make it yours
 
 [![The overview page under the six themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a crystal funnel lit pink and blue, in orange, its frosted card over a prism of violet, pink and orange light. Genealogy: "Every life is a portrait. Every family, a tree to climb." in a book face and gold beside a golden tree and empty oval frames, on dark green with antique vines along the page's edges, its cards cream.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)

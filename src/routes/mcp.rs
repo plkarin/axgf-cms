@@ -42,6 +42,9 @@ struct Caller {
     write: bool,
     /// What the journal says the write came through.
     via: String,
+    /// The records' door lets the account in (docs/adr/0046): what every
+    /// tool but the guide reads and writes.
+    records: bool,
 }
 
 /// `POST /mcp`
@@ -194,9 +197,15 @@ fn caller(state: &Shared, token: Option<&str>) -> Result<Caller, Response> {
         user: Some(user),
         emergency: false,
     };
+    let records = state.acl_read(|acl| acl.site.doors.records).admits(
+        true,
+        viewer.may_write(),
+        viewer.is_admin(),
+    );
     Ok(Caller {
         write: kept.write && viewer.may_write(),
         via: format!("MCP · {}", kept.label),
+        records,
         viewer,
     })
 }
@@ -566,6 +575,7 @@ fn operations_input() -> Value {
 fn tools(caller: &Caller) -> Vec<Value> {
     TOOLS
         .iter()
+        .filter(|t| caller.records || t.name == "guide")
         .filter(|t| !t.writes || caller.write)
         .filter(|t| !t.admin || caller.viewer.is_admin())
         .map(|t| {
@@ -621,6 +631,12 @@ async fn call(state: &Shared, caller: &Caller, params: &Value) -> Result<Value, 
     let Some(tool) = TOOLS.iter().find(|t| t.name == name) else {
         return Err((-32602, format!("Unknown tool: {name}")));
     };
+    if !caller.records && name != "guide" {
+        return Ok(text(
+            "The records of this site are not open to this account: an administrator keeps them for other roles.".into(),
+            true,
+        ));
+    }
     if tool.writes && !caller.write {
         return Ok(text(
             "This token reads only, or its account may not write: nothing was changed.".into(),

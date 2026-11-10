@@ -45,6 +45,7 @@ pub mod convert;
 pub mod coords;
 pub mod diff;
 pub mod documents;
+pub mod doors;
 pub mod emblem;
 pub mod events;
 pub mod findings;

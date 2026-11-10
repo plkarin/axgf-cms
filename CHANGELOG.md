@@ -20,22 +20,26 @@ The sign-in jail and rate limiting the operator asked for on 10 November
   is one line in the journal with the address in it, which the README's
   fail2ban filter bans on. Wrong emergency tokens are also counted from every
   address together: twenty in an hour, and the token is refused to everyone
-  until the hour is out. A restart empties the jail.
+  for the next hour. A restart empties the jail.
 - **Rate limiting at the door.** The shipped nginx configuration counts the
-  sign-in and registration posts per address — ten a minute, a burst of ten,
-  a 429 past them — and never the page itself. The README has the fail2ban
+  posts to the sign-in, the registration and the services' sign-in per
+  address — ten a minute, a burst of ten, a 429 past them — and never the
+  page itself. The README has the fail2ban
   filter and jail, and what to do when the proxy is on another machine.
 
 ### Changed
 
-- **Attempts are counted before they are compared.** A burst of sign-ins sent
-  at once used to pass the count together and cost a password hash each; the
-  hashes now run off the request workers, a few at a time, so a burst no
-  longer holds every page of the site.
+- **Attempts are counted before they are compared**, the address's and the
+  account's. A burst of sign-ins sent at once used to pass the count together
+  and cost a password hash each; the hashes now run off the request workers,
+  a few at a time, so a burst no longer holds every page of the site. A
+  success gives back its own charge and no more: signing in to one account no
+  longer washes away the guesses at another.
 - **An account is shut only by many addresses**: 24 failures in a quarter of
   an hour, where 8 from a single address used to shut it against its owner.
 - **The client address is an address.** `X-Forwarded-For` is read only when
-  it holds one; an IPv6 client is counted with its /64.
+  it holds one, and only from a proxy on this machine; an IPv6 client is
+  counted with its /64.
 - **"Import" leaves the masthead once a family is there.** The first step,
   taken; `/convert` stays where it was, behind its door.
 

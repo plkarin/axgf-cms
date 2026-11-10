@@ -173,7 +173,7 @@ login-jailed-hours = Trop de tentatives échouées depuis cette adresse. Réessa
         [one] une heure
        *[other] { $n } heures
     }.
-login-token-closed = Trop de jetons faux, toutes adresses confondues : le jeton de secours est refusé à tous jusqu'à la fin de l'heure. Redémarrer le service le rouvre.
+login-token-closed = Trop de jetons faux, toutes adresses confondues : le jeton de secours est refusé à tous pendant une heure au plus. Redémarrer le service le rouvre.
 login-no-accounts-title = Cette installation n'a encore aucun compte.
 login-no-accounts-detail = Il n'y a délibérément pas de page d'installation ici — la fenêtre entre le déploiement et la première connexion est précisément le moment où une installation n'est pas protégée : le premier administrateur est donc créé en ligne de commande.
 login-no-accounts-note = Un mot de passe généré est affiché une seule fois sur la sortie d'erreur. D'ici là, le seul accès est le jeton de secours ci-dessous.

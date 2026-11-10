@@ -185,7 +185,7 @@ login-jailed-hours = Demasiados intentos fallidos desde esta dirección. Pruebe 
         [one] una hora
        *[other] { $n } horas
     }.
-login-token-closed = Demasiados testigos erróneos, contando todas las direcciones: el testigo de emergencia se rechaza a todos hasta el final de la hora. Reiniciar el servicio lo vuelve a abrir.
+login-token-closed = Demasiados testigos erróneos, contando todas las direcciones: el testigo de emergencia se rechaza a todos durante una hora como máximo. Reiniciar el servicio lo vuelve a abrir.
 login-no-accounts-title = Esta instalación todavía no tiene cuentas.
 login-no-accounts-detail = Aquí no hay página de configuración a propósito: el rato entre la puesta en marcha y el primer acceso es justo el momento en que una instalación está desprotegida, así que el primer administrador se crea desde la línea de órdenes.
 login-no-accounts-note = Imprime una contraseña generada en stderr una sola vez y nunca más. Hasta entonces la única entrada es el testigo de emergencia de abajo.

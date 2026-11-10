@@ -187,7 +187,7 @@ login-jailed-hours = Zu viele Fehlversuche von dieser Adresse. Versuchen Sie es 
         [one] einer Stunde
        *[other] { $n } Stunden
     } erneut.
-login-token-closed = Zu viele falsche Token, von allen Adressen zusammen: Das Notfall-Token wird bis zum Ende der Stunde allen verweigert. Ein Neustart des Dienstes gibt es wieder frei.
+login-token-closed = Zu viele falsche Token, von allen Adressen zusammen: Das Notfall-Token wird bis zu einer Stunde lang allen verweigert. Ein Neustart des Dienstes gibt es wieder frei.
 login-no-accounts-title = Diese Installation hat noch keine Konten.
 login-no-accounts-detail = Eine Einrichtungsseite gibt es hier bewusst nicht — die Lücke zwischen Inbetriebnahme und erster Anmeldung ist genau der Moment, in dem eine Installation ungeschützt ist, deshalb wird die erste Verwaltung auf der Kommandozeile angelegt.
 login-no-accounts-note = Sie gibt ein erzeugtes Passwort einmal auf stderr aus und nie wieder. Bis dahin ist der einzige Weg hinein das Notfall-Token unten.

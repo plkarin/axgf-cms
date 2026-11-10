@@ -391,9 +391,31 @@ impl SessionStore {
         self.count_reaches(key, MAX_ATTEMPTS)
     }
 
-    /// Whether the account `username` is out of failed sign-ins.
-    pub fn account_throttled(&self, username: &str) -> bool {
-        self.count_reaches(username, MAX_ACCOUNT_FAILURES)
+    /// Charge a sign-in attempt to the account `username` before its password
+    /// is compared; false, and nothing charged, when the account is out of
+    /// attempts. Checked and counted at once, as the jail counts addresses:
+    /// checked before the hash and counted after it, a burst from many
+    /// addresses at once was compared in full. A success clears the count
+    /// ([`Self::clear_failures`]); a failure stays counted.
+    pub fn charge_account(&self, username: &str) -> bool {
+        let mut map = self.attempts.write().unwrap_or_else(|e| e.into_inner());
+        let now = Instant::now();
+        if map.len() > 1024 {
+            map.retain(|_, a| a.window_start.elapsed() < ATTEMPT_WINDOW);
+        }
+        let e = map.entry(username.to_string()).or_insert(Attempts {
+            count: 0,
+            window_start: now,
+        });
+        if e.window_start.elapsed() >= ATTEMPT_WINDOW {
+            e.count = 0;
+            e.window_start = now;
+        }
+        if e.count >= MAX_ACCOUNT_FAILURES {
+            return false;
+        }
+        e.count += 1;
+        true
     }
 
     fn count_reaches(&self, key: &str, limit: u32) -> bool {
@@ -475,18 +497,31 @@ pub fn is_tls(headers: &HeaderMap) -> bool {
 
 /// The client's address.
 ///
-/// `X-Forwarded-For`'s first entry when a proxy set one and it reads as an
-/// address, else the peer address axum recorded. Only an address: a value
-/// that is not one used to be taken whole, so whoever could set the header
-/// chose their own bucket and wrote what they liked into the journal line
-/// that names them.
+/// `X-Forwarded-For`'s first entry when a proxy on this machine set one and
+/// it reads as an address, else the peer address axum recorded.
+///
+/// - **Only from this machine.** The documented proxy runs beside the
+///   application, which binds 127.0.0.1; a peer elsewhere — the application
+///   bound wider, with no proxy — is a client, and a client's header used to
+///   be believed, so it could name any address: its own cell anew at every
+///   attempt, or somebody else's to have it jailed. Without a peer at all
+///   (the tests, which call the router directly) the header is read.
+/// - **Only an address.** A value that is not one used to be taken whole,
+///   and written into the journal line that names the client.
 pub fn client_addr(
     headers: &HeaderMap,
     peer: Option<std::net::SocketAddr>,
 ) -> Option<std::net::IpAddr> {
     use std::net::{IpAddr, SocketAddr};
+    let canonical = |ip: IpAddr| match ip {
+        IpAddr::V6(v6) => v6.to_ipv4_mapped().map_or(IpAddr::V6(v6), IpAddr::V4),
+        v4 => v4,
+    };
+    let peer = peer.map(|a| canonical(a.ip()));
+    let from_here = peer.is_none_or(|ip| ip.is_loopback());
     let forwarded = headers
         .get("x-forwarded-for")
+        .filter(|_| from_here)
         .and_then(|v| v.to_str().ok())
         .and_then(|xff| xff.split(',').next())
         .map(str::trim)
@@ -496,10 +531,7 @@ pub fn client_addr(
                 .ok()
                 .or_else(|| first.parse::<SocketAddr>().ok().map(|a| a.ip()))
         });
-    forwarded.or(peer.map(|a| a.ip())).map(|ip| match ip {
-        IpAddr::V6(v6) => v6.to_ipv4_mapped().map_or(IpAddr::V6(v6), IpAddr::V4),
-        v4 => v4,
-    })
+    forwarded.map(canonical).or(peer)
 }
 
 /// The bucket a client's attempts count against: its address, or for IPv6
@@ -667,14 +699,31 @@ mod tests {
     #[test]
     fn the_client_key_prefers_the_proxys_first_hop() {
         let mut h = HeaderMap::new();
-        let peer: std::net::SocketAddr = "10.0.0.9:5555".parse().unwrap();
-        assert_eq!(client_key(&h, Some(peer)), "10.0.0.9");
+        let proxy: std::net::SocketAddr = "127.0.0.1:5555".parse().unwrap();
+        assert_eq!(client_key(&h, Some(proxy)), "127.0.0.1");
         assert_eq!(client_key(&h, None), "unknown");
         h.insert(
             "x-forwarded-for",
             HeaderValue::from_static("203.0.113.7, 10.0.0.1"),
         );
-        assert_eq!(client_key(&h, Some(peer)), "203.0.113.7");
+        assert_eq!(client_key(&h, Some(proxy)), "203.0.113.7");
+        assert_eq!(client_key(&h, None), "203.0.113.7");
+    }
+
+    #[test]
+    fn a_client_elsewhere_cannot_name_an_address() {
+        // Bound wider than localhost with no proxy: the peer is the client,
+        // and what it says of itself is not believed.
+        let mut h = HeaderMap::new();
+        h.insert("x-forwarded-for", HeaderValue::from_static("192.168.1.50"));
+        let client: std::net::SocketAddr = "192.168.1.66:40000".parse().unwrap();
+        assert_eq!(client_key(&h, Some(client)), "192.168.1.66");
+        let mapped: std::net::SocketAddr = "[::ffff:127.0.0.1]:5555".parse().unwrap();
+        assert_eq!(
+            client_key(&h, Some(mapped)),
+            "192.168.1.50",
+            "this machine, however it is written, is the proxy"
+        );
     }
 
     #[test]

@@ -190,7 +190,7 @@ login-jailed-hours = Demasiadas tentativas falhadas a partir deste endereço. Te
         [one] uma hora
        *[other] { $n } horas
     }.
-login-token-closed = Demasiados testemunhos errados, contando todos os endereços: o testemunho de emergência é recusado a todos até ao fim da hora. Reiniciar o serviço volta a abri-lo.
+login-token-closed = Demasiados testemunhos errados, contando todos os endereços: o testemunho de emergência é recusado a todos durante uma hora, no máximo. Reiniciar o serviço volta a abri-lo.
 login-no-accounts-title = Esta instalação ainda não tem contas.
 login-no-accounts-detail = Não há aqui página de configuração de propósito: o intervalo entre a entrada em serviço e o primeiro acesso é precisamente o momento em que uma instalação está desprotegida, por isso o primeiro administrador cria-se na linha de comandos.
 login-no-accounts-note = Imprime uma palavra-passe gerada no stderr uma vez e nunca mais. Até lá a única entrada é o testemunho de emergência abaixo.

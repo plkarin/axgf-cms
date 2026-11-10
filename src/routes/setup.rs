@@ -364,8 +364,12 @@ fn finish(
                 .map(|((_, n), singular)| serde_json::json!({"singular": singular, "n": n}))
                 .collect();
             let total: usize = state.counts().iter().map(|(_, n)| n).sum();
+            // The masthead of the archive as it now is — its emblem, its
+            // name, and no "Import" once it holds a family — rather than as
+            // it was when the request came in.
+            let chrome = chrome.clone().with_archive(state);
             render::page_with(
-                chrome,
+                &chrome,
                 "admin_setup_result.html",
                 context! {
                     nav => "admin",

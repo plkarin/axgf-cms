@@ -10,7 +10,9 @@
 //!
 //! - **Counted before it is compared.** An attempt is charged when it begins
 //!   and given back if it succeeds, so attempts sent at once cannot pass the
-//!   count together: the ninth waits for no hash, it is refused.
+//!   count together: the ninth waits for no hash, it is refused. A success
+//!   gives back its own charge and nothing more: the failures before it stay
+//!   counted, or one working account would wash an address's record clean.
 //! - **A term, longer each time.** [`MAX_FAILURES`] failed sign-ins in
 //!   [`WINDOW`], or [`MAX_TOKEN_FAILURES`] wrong emergency tokens, and the
 //!   address is shut out for the first of [`TERMS`]: fifteen minutes, then an
@@ -21,7 +23,7 @@
 //! - **The emergency token, for everyone.** It opens an administrator's
 //!   session and has no account to lock, so wrong tokens are also counted from
 //!   every address together: [`MAX_TOKEN_FAILURES_ANYWHERE`] in an hour, and
-//!   the token is refused to all until the hour is out.
+//!   the token is refused to all for the next hour.
 //! - **In the journal, once a term**, with the address in the sentence —
 //!   `sign-in jail: 203.0.113.7 shut out for 900 s` — which is the line a
 //!   fail2ban filter bans on (README, "Rate limiting and jail"). What happens
@@ -66,8 +68,15 @@ pub const MAX_TOKEN_FAILURES_ANYWHERE: u32 = 20;
 /// The period [`MAX_TOKEN_FAILURES_ANYWHERE`] is counted over.
 pub const TOKEN_HOUR: Duration = Duration::from_secs(60 * 60);
 
-/// Addresses kept before the forgotten ones are swept out.
+/// Addresses kept before the forgotten ones are first swept out. Each sweep
+/// sets the next at twice what it kept, so a flood of new addresses costs a
+/// sweep now and then, not one per attempt.
 const SWEEP_ABOVE: usize = 1024;
+
+/// Past this many addresses, even after a sweep, the ones merely counted are
+/// let go and only those serving a term are kept: a flood from more addresses
+/// than this loses its partial counts rather than the process its memory.
+const MOST_CELLS: usize = 100_000;
 
 /// A way in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -182,6 +191,8 @@ impl Cell {
 #[derive(Debug, Default)]
 struct Inner {
     cells: HashMap<String, Cell>,
+    /// The size at which the next sweep runs.
+    next_sweep: usize,
     /// Wrong emergency tokens from every address, and when the hour began.
     tokens_anywhere: u32,
     tokens_since: Option<Instant>,
@@ -206,14 +217,17 @@ pub struct Charge<'a> {
 }
 
 impl Charge<'_> {
-    /// The attempt got in: the address's failures are forgotten. Its terms
-    /// are not — a success does not wipe a record.
+    /// The attempt got in: its own charge is given back, and nothing else.
+    /// The failures before it stay counted until their window ends — signing
+    /// in to one account must not wash away the guesses at another.
     pub fn succeeded(self) {
-        self.jail.succeeded_at(&self.key);
+        self.jail.refund_at(&self.key, self.way);
     }
 
-    /// The attempt was not a guess after all (an account created with the
-    /// right secret, say): give back its charge and nothing else.
+    /// The attempt was refused before anything was compared — the account it
+    /// named is shut ([`crate::session::MAX_ACCOUNT_FAILURES`]): its charge is
+    /// given back, for it may be the account's owner, shut out by others'
+    /// guesses, who must not jail their own address by trying again.
     pub fn refund(self) {
         self.jail.refund_at(&self.key, self.way);
     }
@@ -264,8 +278,12 @@ impl Jail {
 
     fn begin_at(&self, key: &str, addr: &str, way: Way, now: Instant) -> Result<(), Refusal> {
         let mut inner = self.lock();
-        if inner.cells.len() > SWEEP_ABOVE {
+        if inner.cells.len() >= inner.next_sweep.max(SWEEP_ABOVE) {
             inner.cells.retain(|_, c| !c.forgotten(now));
+            if inner.cells.len() >= MOST_CELLS {
+                inner.cells.retain(|_, c| c.term_left(now).is_some());
+            }
+            inner.next_sweep = (inner.cells.len() * 2).max(SWEEP_ABOVE);
         }
         if way == Way::Token {
             if let Some(left) = inner
@@ -296,14 +314,6 @@ impl Jail {
         Ok(())
     }
 
-    fn succeeded_at(&self, key: &str) {
-        if let Some(cell) = self.lock().cells.get_mut(key) {
-            cell.failures = 0;
-            cell.token_failures = 0;
-            cell.window = None;
-        }
-    }
-
     fn refund_at(&self, key: &str, way: Way) {
         if let Some(cell) = self.lock().cells.get_mut(key) {
             match way {
@@ -327,9 +337,12 @@ impl Jail {
             inner.tokens_anywhere += 1;
             let already = inner.tokens_closed_until.is_some_and(|until| until > now);
             if inner.tokens_anywhere >= MAX_TOKEN_FAILURES_ANYWHERE && !already {
-                let until = inner.tokens_since.unwrap_or(now) + TOKEN_HOUR;
-                inner.tokens_closed_until = Some(until);
-                closed = Some((inner.tokens_anywhere, until.saturating_duration_since(now)));
+                // A full hour from now, however the guesses were spread over
+                // the hour that counted them.
+                inner.tokens_closed_until = Some(now + TOKEN_HOUR);
+                inner.tokens_anywhere = 0;
+                inner.tokens_since = None;
+                closed = Some((MAX_TOKEN_FAILURES_ANYWHERE, TOKEN_HOUR));
             }
         }
         let mut term = None;
@@ -443,18 +456,39 @@ mod tests {
     }
 
     #[test]
-    fn a_success_forgives_the_failures_but_not_the_record() {
+    fn a_success_gives_back_its_own_charge_and_nothing_more() {
+        // Seven guesses at one account, then a sign-in to another that works:
+        // the eighth guess still starts the term.
+        let jail = Jail::new();
+        let t = Instant::now();
+        for _ in 0..MAX_FAILURES - 1 {
+            fail(&jail, KEY, Way::Password, t).unwrap();
+        }
+        jail.begin_at(KEY, KEY, Way::Password, t).unwrap();
+        jail.refund_at(KEY, Way::Password);
+        fail(&jail, KEY, Way::Password, t).unwrap();
+        assert_eq!(jail.term_left_at(KEY, t), Some(TERMS[0]));
+        // A password that works gives back nothing of the wrong tokens.
+        let other = "198.51.100.4";
+        for _ in 0..MAX_TOKEN_FAILURES - 1 {
+            fail(&jail, other, Way::Token, t).unwrap();
+        }
+        jail.begin_at(other, other, Way::Password, t).unwrap();
+        jail.refund_at(other, Way::Password);
+        fail(&jail, other, Way::Token, t).unwrap();
+        assert_eq!(jail.term_left_at(other, t), Some(TERMS[0]));
+    }
+
+    #[test]
+    fn a_success_does_not_wipe_the_record() {
         let jail = Jail::new();
         let t = Instant::now();
         for _ in 0..MAX_FAILURES {
             fail(&jail, KEY, Way::Password, t).unwrap();
         }
         let after = t + TERMS[0];
-        for _ in 0..MAX_FAILURES - 1 {
-            fail(&jail, KEY, Way::Password, after).unwrap();
-        }
         jail.begin_at(KEY, KEY, Way::Password, after).unwrap();
-        jail.succeeded_at(KEY);
+        jail.refund_at(KEY, Way::Password);
         for _ in 0..MAX_FAILURES {
             fail(&jail, KEY, Way::Password, after).unwrap();
         }
@@ -555,6 +589,39 @@ mod tests {
     }
 
     #[test]
+    fn the_token_closes_for_a_full_hour_however_the_guesses_were_spread() {
+        let jail = Jail::new();
+        let t = Instant::now();
+        for i in 0..MAX_TOKEN_FAILURES_ANYWHERE - 1 {
+            let addr = format!("192.0.2.{i}");
+            fail(&jail, &addr, Way::Token, t).unwrap();
+        }
+        let late = t + TOKEN_HOUR - Duration::from_secs(60);
+        fail(&jail, "198.51.100.1", Way::Token, late).unwrap();
+        let fresh = "198.51.100.200";
+        assert_eq!(
+            jail.begin_at(fresh, fresh, Way::Token, late + Duration::from_secs(120)),
+            Err(Refusal::TokenClosed(TOKEN_HOUR - Duration::from_secs(120))),
+            "closed an hour from the twentieth, not from the first"
+        );
+    }
+
+    #[test]
+    fn a_flood_of_addresses_is_swept_now_and_then_and_bounded() {
+        let jail = Jail::new();
+        let t = Instant::now();
+        for i in 0..(3 * SWEEP_ABOVE) {
+            let addr = format!("10.1.{}.{}", i / 256, i % 256);
+            jail.begin_at(&addr, &addr, Way::Password, t).unwrap();
+        }
+        // Every address still counted: nothing could be swept, and the next
+        // sweep waits for twice as many rather than running at every attempt.
+        let inner = jail.lock();
+        assert_eq!(inner.cells.len(), 3 * SWEEP_ABOVE);
+        assert!(inner.next_sweep >= 2 * SWEEP_ABOVE, "{}", inner.next_sweep);
+    }
+
+    #[test]
     fn a_refund_gives_back_one_charge() {
         let jail = Jail::new();
         let t = Instant::now();
@@ -572,12 +639,38 @@ mod tests {
     fn forgotten_addresses_are_swept() {
         let jail = Jail::new();
         let t = Instant::now();
-        for i in 0..=SWEEP_ABOVE {
+        for i in 0..SWEEP_ABOVE - 1 {
             let addr = format!("10.0.{}.{}", i / 256, i % 256);
             fail(&jail, &addr, Way::Password, t).unwrap();
         }
         let later = t + WINDOW;
         jail.begin_at(KEY, KEY, Way::Password, later).unwrap();
-        assert_eq!(jail.lock().cells.len(), 1, "only the address still counted");
+        let other = "198.51.100.3";
+        jail.begin_at(other, other, Way::Password, later).unwrap();
+        assert_eq!(
+            jail.lock().cells.len(),
+            2,
+            "only the addresses still counted"
+        );
+    }
+
+    #[test]
+    fn past_the_most_cells_only_the_terms_are_kept() {
+        let jail = Jail::new();
+        let t = Instant::now();
+        let jailed = ["203.0.113.1", "203.0.113.2"];
+        for addr in jailed {
+            for _ in 0..MAX_FAILURES {
+                fail(&jail, addr, Way::Password, t).unwrap();
+            }
+        }
+        for i in 0..(2 * MOST_CELLS) {
+            let addr = format!("10.{}.{}.{}", i / 65536, (i / 256) % 256, i % 256);
+            jail.begin_at(&addr, &addr, Way::Password, t).unwrap();
+        }
+        assert!(jail.lock().cells.len() < MOST_CELLS, "bounded");
+        for addr in jailed {
+            assert_eq!(jail.term_left_at(addr, t), Some(TERMS[0]), "{addr} kept");
+        }
     }
 }

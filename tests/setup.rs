@@ -241,7 +241,15 @@ async fn an_archive_sets_a_family_up_photographs_and_all() {
         multipart("with-photo.axgf", &archive, &[]),
     )
     .await;
-    expect_status(resp, StatusCode::OK, "archive").await;
+    let done = expect_status(resp, StatusCode::OK, "archive")
+        .await
+        .replace("&#x2f;", "/");
+    // The page that says so draws the archive as it now is: a family there,
+    // and no "Import" in the masthead.
+    assert!(
+        !done.contains(r#"href="/convert""#),
+        "the first step, taken"
+    );
     let family = exported(&app, &cookie).await;
     assert_eq!(people(&family), ["Józef Gęsiorek"]);
     // The photograph is served, byte for byte the archive's own.

@@ -176,7 +176,7 @@ login-jailed-hours = Too many failed attempts from this address. Try again in { 
         [one] an hour
        *[other] { $n } hours
     }.
-login-token-closed = Too many wrong tokens, from every address together: the emergency token is refused to everyone until the end of the hour. Restarting the service opens it again.
+login-token-closed = Too many wrong tokens, from every address together: the emergency token is refused to everyone for up to an hour. Restarting the service opens it again.
 login-no-accounts-title = This installation has no accounts yet.
 login-no-accounts-detail = There is deliberately no setup page here — the window between deployment and the first login is exactly when an installation is unprotected, so the first administrator is created from the command line instead.
 login-no-accounts-note = It prints a generated password to stderr once and never again. Until then the only way in is the emergency token below.

@@ -38,7 +38,9 @@ quarter was out. It had four holes.
 [`WINDOW`] (15 minutes), or offers [`MAX_TOKEN_FAILURES`] (3) wrong emergency
 tokens, serves a term: 15 minutes, then 1 hour, 6 hours, 24 hours, and 24
 hours again after that. A day ([`MEMORY`]) after its last term ends, the next
-is the first again. A success forgives an address's failures, not its terms.
+is the first again. A success gives back its own charge and nothing more: the
+failures before it stay counted until their window ends, or signing in to one
+account would wash away the guesses at another.
 
 A term closes every way in that is a guess: the password, the emergency token
 and the registration secret. Sign-in through a service (docs/adr/0012) is not
@@ -53,10 +55,14 @@ back in.
 ### 2. Counted before it is compared
 
 An attempt is charged when it begins and given back when it succeeds
-(`Charge::succeeded`, or `refund` for an account made with the right
-registration secret). Dropped without a word — the reader gave up mid-hash —
-it stays counted. Attempts in flight therefore count: the ninth of a burst is
-refused before any hash runs.
+(`Charge::succeeded`), or when it is refused before anything is compared
+because the account it names is shut (`Charge::refund`): that may be the
+account's owner, shut out by others' guesses, who must not jail their own
+address by trying again — and hammering a shut account compares nothing.
+Dropped without a word — the reader gave up mid-hash — an attempt stays
+counted. Attempts in flight therefore count: the ninth of a burst is refused
+before any hash runs. A wrong registration secret, compared before anything
+costly, is counted after the comparison (`Jail::record_failure`).
 
 ### 3. Hashes off the async workers, a few at a time
 
@@ -69,8 +75,9 @@ a reader who disconnects does not free it early. Sign-ins queue; pages go on.
 It opens an administrator's session and has no account to lock, so wrong
 tokens are also counted from every address together:
 [`MAX_TOKEN_FAILURES_ANYWHERE`] (20) in an hour, and the token is refused to
-everyone until the hour is out, with a page that says so and that a restart
-opens it again. A strong token makes the count moot; a token chosen by hand
+everyone for the next hour — a full hour from the twentieth, however the
+guesses were spread — with a page that says so and that a restart opens it
+again. A strong token makes the count moot; a token chosen by hand
 is what it is for.
 
 ### 5. The account outlasts one address
@@ -78,14 +85,19 @@ is what it is for.
 The per-account limit ([`MAX_ACCOUNT_FAILURES`]) is three addresses' worth,
 24 in the quarter hour: one address is jailed long before it can shut the
 account against its owner, and guesses spread over many addresses still run
-out.
+out. The account is charged before the hash as well
+(`SessionStore::charge_account`), so a burst from many addresses at once is
+compared 24 times, not once per attempt; the owner's success clears it.
 
 ### 6. An address is an address
 
 `session::client_addr` takes `X-Forwarded-For`'s first entry only if it reads
-as an address (with or without a port), else the peer's. It used to take any
-text, so whoever could set the header chose their bucket and wrote what they
-liked into the journal. An IPv4 address mapped into IPv6 is the IPv4 address.
+as an address (with or without a port), and only from a peer on this machine —
+where the documented proxy runs — else the peer's address. It used to take any
+text from anyone, so whoever could set the header chose their bucket, named
+somebody else's address to have it jailed, and wrote what they liked into the
+journal. Bound wider with no proxy, the application now counts each client at
+its own address. An IPv4 address mapped into IPv6 is the IPv4 address.
 An IPv6 client is counted with its whole /64, which it can roam at will.
 
 This machine's own address (loopback) never serves more than the first term:
@@ -125,7 +137,7 @@ jail and fail2ban do the work.
   of an hour, and longer each time it comes back the same day; the owner of
   the account signs in from elsewhere as before.
 - Every term is one line in the journal that names the address, which fail2ban
-  can turn into a ban on every port.
+  can turn into a ban at the firewall or at the proxy.
 - The jail is only as right as the address the proxy reports. Behind a chain
   of proxies, each must pass the visitor's address on: the README says how to
   check that the journal names your own address when you fail on purpose.

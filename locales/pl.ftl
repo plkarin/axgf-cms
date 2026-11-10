@@ -197,7 +197,7 @@ login-jailed-hours = Zbyt wiele nieudanych prób z tego adresu. Spróbuj ponowni
         [many] { $n } godzin
        *[other] { $n } godziny
     }.
-login-token-closed = Zbyt wiele błędnych tokenów, ze wszystkich adresów razem: token awaryjny jest odrzucany wszystkim do końca godziny. Ponowne uruchomienie usługi znów go otwiera.
+login-token-closed = Zbyt wiele błędnych tokenów, ze wszystkich adresów razem: token awaryjny jest odrzucany wszystkim przez najwyżej godzinę. Ponowne uruchomienie usługi znów go otwiera.
 login-no-accounts-title = Ta instalacja nie ma jeszcze żadnych kont.
 login-no-accounts-detail = Celowo nie ma tu strony konfiguracji — okno między wdrożeniem a pierwszym logowaniem to dokładnie ten moment, w którym instalacja jest bezbronna, więc pierwszego administratora tworzy się z wiersza poleceń.
 login-no-accounts-note = Wypisuje wygenerowane hasło na stderr raz i nigdy więcej. Do tego czasu jedynym wejściem jest awaryjny token poniżej.

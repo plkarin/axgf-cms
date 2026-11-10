@@ -289,10 +289,13 @@ pub async fn login(
     }
 
     let username = f.username.trim().to_ascii_lowercase();
-    if state.sessions().account_throttled(&username) {
-        // Counted against the address too: grinding at an account already
-        // shut is still grinding.
-        charge.failed();
+    // The account is charged before the hash too, so that a burst from many
+    // addresses cannot pass its count together.
+    if !username.is_empty() && !state.sessions().charge_account(&username) {
+        // Not counted against the address: nothing was compared, and this may
+        // be the account's owner with the right password, shut out by others'
+        // guesses — who must not jail their own address by trying again.
+        charge.refund();
         return login_refused(&state, &chrome, &chrome.t("login-throttled"));
     }
 
@@ -309,9 +312,6 @@ pub async fn login(
 
     let Some(user) = user.filter(|_| ok) else {
         charge.failed();
-        if !username.is_empty() {
-            state.sessions().record_failure(&username);
-        }
         tracing::info!(client = %addr, "a sign-in failed from {addr}");
         return login_refused(&state, &chrome, &chrome.t("login-wrong"));
     };

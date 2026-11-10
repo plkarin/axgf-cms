@@ -993,8 +993,8 @@ how long, in the reader's language. Attempts are counted before they are
 compared, so a burst sent at once cannot slip through together, and an
 account is shut only by 24 failures from several addresses, never by one
 address alone. Wrong emergency tokens are also counted from every address
-together: twenty in an hour, and the token is refused to everyone until the
-hour is out. The jail lives in memory: **restarting the service empties it**,
+together: twenty in an hour, and the token is refused to everyone for the
+next hour. The jail lives in memory: **restarting the service empties it**,
 which is the way back in if you shut yourself out.
 [docs/adr/0047](docs/adr/0047-the-sign-in-jail.md) has the details.
 
@@ -1006,28 +1006,46 @@ journalctl -u axgf-cms -g 'sign-in jail'
 ```
 
 **Check that the address is the visitor's.** The jail counts the address the
-proxy reports in `X-Forwarded-For`. Fail to sign in once on purpose, from
+proxy reports in `X-Forwarded-For`, believed from a proxy on this machine
+and from no one else — bound wider with no proxy, each client is counted at
+its own address and cannot name another. Fail to sign in once on purpose, from
 outside, and look for your own address:
 
 ```sh
 journalctl -u axgf-cms --since -10min -g 'sign-in failed from'
 ```
 
-If it names the proxy instead — `127.0.0.1`, or the address of a proxy on
-another machine — every visitor shares one cell, and one bot shuts the
-sign-in for all: put the proxy right first (docs/DEPLOY.md, "five things
-matter").
+If it names the proxy instead, every visitor shares one cell, and one bot
+shuts the sign-in for all. `127.0.0.1` means the proxy in front does not set
+`X-Forwarded-For` (docs/DEPLOY.md, "five things matter"). The address of
+another proxy means a chain — a load balancer or HAProxy in front of the
+nginx in front of axgf-cms — and the nginx must be told to believe the one
+before it, at the `server` level, so that its `$remote_addr`, and the
+`X-Forwarded-For` it sets from it, is the visitor:
+
+```nginx
+set_real_ip_from 192.0.2.10;      # the proxy in front, and only it
+real_ip_header   X-Forwarded-For;
+```
+
+The proxy in front must set `X-Forwarded-For` to the visitor's address
+rather than append to what the visitor sent (HAProxy:
+`http-request set-header X-Forwarded-For %[src]`). Caddy in the same place
+takes `trusted_proxies static 192.0.2.10` in its global `servers` options.
+With `real_ip`, nginx's `allow` and `deny` see the visitor too: restrict who
+may reach that nginx at the firewall, or on `$realip_remote_addr`.
 
 **At the door, nginx.** The shipped
 [`nginx-axgf-cms.conf`](deploy/proxy/nginx-axgf-cms.conf) also counts the
-sign-in and registration posts per address: ten a minute with a burst of
-ten, then a 429 from nginx, before the application spends anything. The page
+posts to the sign-in, the registration and the services' sign-in per
+address: ten a minute with a burst of ten, then a 429 from nginx, before the
+application spends anything. The page
 itself is never limited. Keep its `map` and `limit_req_zone` at the top of
 the file, outside the `server` blocks.
 
-**At the firewall, fail2ban.** To ban a jailed address from the whole
-machine, on every port and for longer — the application only closes its
-ways in — give fail2ban the journal line. On Ubuntu:
+**At the firewall, fail2ban.** To ban a jailed address from the whole site
+and for longer — the application only closes its ways in — give fail2ban
+the journal line. On Ubuntu:
 
 ```sh
 sudo apt install -y fail2ban
@@ -1046,6 +1064,8 @@ sudo tee /etc/fail2ban/jail.d/axgf-cms.local >/dev/null <<'EOF'
 enabled  = true
 backend  = systemd
 filter   = axgf-cms
+# Never this machine, nor your proxies and your own network.
+ignoreip = 127.0.0.1/8 ::1
 # The application has counted already: one term is enough.
 maxretry = 1
 findtime = 1d
@@ -1058,10 +1078,14 @@ sudo systemctl restart fail2ban
 sudo fail2ban-client status axgf-cms
 ```
 
-`sudo fail2ban-regex systemd-journal /etc/fail2ban/filter.d/axgf-cms.conf`
-checks the filter against the journal; it was tested with Ubuntu 24.04's
-fail2ban 1.0.2. nginx's own refusals can be banned the same way with the
-`nginx-limit-req` filter fail2ban ships.
+For an IPv6 visitor, the application shuts out the whole /64 the address is
+in, and fail2ban bans the one address the line names. That bans the web
+ports; `banaction = %(banaction_allports)s` in place of
+`port` bans every port, SSH included — keep your own addresses in
+`ignoreip` before you choose it. `sudo fail2ban-regex systemd-journal
+/etc/fail2ban/filter.d/axgf-cms.conf` checks the filter against the journal;
+it was tested with Ubuntu 24.04's fail2ban 1.0.2. nginx's own refusals can
+be banned the same way with the `nginx-limit-req` filter fail2ban ships.
 
 **If the proxy is on another machine** — a load balancer, HAProxy, a relay —
 the visitors' connections end there, and a firewall ban on the machine
@@ -1081,9 +1105,8 @@ actionban   = echo 'deny <ip>;' >> /etc/nginx/axgf-deny.conf && nginx -s reload
 actionunban = sed -i '/^deny <ip>;$/d' /etc/nginx/axgf-deny.conf && nginx -s reload
 ```
 
-With `real_ip`, do not restrict who may reach that nginx with `allow` and
-`deny`: they see the visitor's address too, and would refuse every visitor.
-Restrict it at the firewall, or on `$realip_remote_addr`.
+Add the proxies' addresses to `ignoreip`, so that a mistake upstream can
+never ban the proxy itself, and with it every visitor.
 
 **Caddy** has no rate limiting without a plugin: behind it, the application's
 jail and fail2ban do the work.

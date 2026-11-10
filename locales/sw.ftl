@@ -167,7 +167,7 @@ login-jailed-hours = Majaribio mengi mno yameshindwa kutoka anwani hii. Jaribu t
         [one] saa moja
        *[other] saa { $n }
     }.
-login-token-closed = Tokeni nyingi mno zisizo sahihi, kutoka anwani zote kwa pamoja: tokeni ya dharura inakataliwa kwa kila mtu hadi mwisho wa saa hii. Kuanzisha upya huduma kunaifungua tena.
+login-token-closed = Tokeni nyingi mno zisizo sahihi, kutoka anwani zote kwa pamoja: tokeni ya dharura inakataliwa kwa kila mtu kwa hadi saa moja. Kuanzisha upya huduma kunaifungua tena.
 login-no-accounts-title = Usakinishaji huu bado hauna akaunti.
 login-no-accounts-detail = Kwa makusudi hakuna ukurasa wa kuanzisha hapa — kipindi kati ya kusambaza na kuingia kwa mara ya kwanza ndicho hasa ambapo usakinishaji hauna ulinzi, kwa hiyo msimamizi wa kwanza huundwa kutoka kwenye mstari wa amri.
 login-no-accounts-note = Inachapisha nenosiri lililotengenezwa kwenye stderr mara moja tu. Hadi wakati huo njia pekee ya kuingia ni tokeni ya dharura iliyo hapa chini.

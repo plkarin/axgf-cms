@@ -107,8 +107,8 @@ journalctl -u axgf-cms | grep -i 'emergency admin token'
 
 Three wrong tokens from one address and that address is jailed, like eight
 wrong passwords (below). Twenty wrong tokens in an hour from every address
-together, and the token is refused to everyone until the hour is out; the
-page says so. A restart opens it again.
+together, and the token is refused to everyone for the next hour; the page
+says so. A restart opens it again.
 
 Once somebody can sign in normally, delete that line and restart. Until you
 do, the admin dashboard says so on every visit.
@@ -149,10 +149,13 @@ journalctl -u axgf-cms --since today -g 'sign-in failed from'
 ```
 
 - **The address must be the visitor's.** Fail once on purpose from outside:
-  the second command should show your own address. If it shows `127.0.0.1`
-  or a proxy's, the proxy is not passing `X-Forwarded-For` and every visitor
-  shares one cell — this machine's own address is never jailed for longer
-  than a quarter of an hour for that reason, and the journal says so.
+  the second command should show your own address. `127.0.0.1` means the
+  proxy does not set `X-Forwarded-For`; another proxy's address means a chain
+  whose nginx does not believe the proxy before it (`set_real_ip_from`,
+  README, "Rate limiting and jail"). Either way every visitor shares one
+  cell. This machine's own address is never jailed for longer than a
+  quarter of an hour for that reason, and the journal says so; another
+  proxy's would be, so put it right before anything else.
 - **To let an address back in,** restart the service: the jail lives in
   memory. A ban fail2ban added is lifted with
   `sudo fail2ban-client set axgf-cms unbanip <address>`.

@@ -185,7 +185,7 @@ login-jailed-hours = Troppi tentativi falliti da questo indirizzo. Riprovate tra
         [one] un'ora
        *[other] { $n } ore
     }.
-login-token-closed = Troppi token errati, contando tutti gli indirizzi: il token d'emergenza è rifiutato a tutti fino allo scadere dell'ora. Riavviare il servizio lo riapre.
+login-token-closed = Troppi token errati, contando tutti gli indirizzi: il token d'emergenza è rifiutato a tutti per un'ora al massimo. Riavviare il servizio lo riapre.
 login-no-accounts-title = Questa installazione non ha ancora nessun account.
 login-no-accounts-detail = Non c'è di proposito una pagina di configurazione: l'intervallo fra la messa in opera e il primo accesso è esattamente il momento in cui un'installazione è indifesa, perciò il primo amministratore si crea dalla riga di comando.
 login-no-accounts-note = Stampa una password generata su stderr una volta sola e mai più. Fino ad allora l'unica via d'ingresso è il token d'emergenza qui sotto.

@@ -100,8 +100,12 @@ impl Open {
             lets(doors.tree),
             lets(doors.records),
             lets(doors.impact),
-            lets(doors.import) && !loaded,
+            lets(doors.import),
         );
+        // Admitted still, and no longer offered: the row of sections counts
+        // the links it draws, and the preferences who may read more.
+        let may_import = import;
+        let import = may_import && !loaded;
         let sections = [river, tree, family, impact, import]
             .into_iter()
             .filter(|open| *open)
@@ -115,7 +119,7 @@ impl Open {
             import,
             nav: sections >= 2,
             search: records,
-            prefs: signed_in || river || tree || records || impact || import,
+            prefs: signed_in || river || tree || records || impact || may_import,
         }
     }
 }
@@ -174,5 +178,12 @@ mod tests {
         let loaded = Open::of(&doors, true, true, true, true);
         assert!(!loaded.import, "the first step, taken");
         assert!(loaded.nav, "the other sections stay");
+        // A visitor whose only way past the family's page is the import keeps
+        // the reading preferences: /convert still admits them.
+        let only_import = Doors {
+            import: Level::Visitors,
+            ..Doors::default()
+        };
+        assert!(Open::of(&only_import, false, false, false, true).prefs);
     }
 }

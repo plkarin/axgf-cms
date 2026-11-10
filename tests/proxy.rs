@@ -134,7 +134,10 @@ fn every_location_inherits_the_headers_the_application_reads() {
         );
     }
     let locations = heads.len();
-    assert_eq!(locations, 4, "/, the sign-in, the registration, the import");
+    assert_eq!(
+        locations, 5,
+        "/, the sign-in, the registration, the services, the import"
+    );
 }
 
 #[test]
@@ -146,7 +149,11 @@ fn the_nginx_config_counts_sign_in_attempts_at_the_door() {
         "map $request_method $axgf_sign_in {\n    POST    $binary_remote_addr;\n    default \"\";\n}"
     ));
     assert!(conf.contains("limit_req_zone $axgf_sign_in zone=axgf_sign_in:10m rate=10r/m;"));
-    for head in ["location = /admin/login {", "location ^~ /register {"] {
+    for head in [
+        "location = /admin/login {",
+        "location ^~ /register {",
+        "location ^~ /auth/ {",
+    ] {
         let block = location(&conf, head);
         assert!(
             block.contains("limit_req zone=axgf_sign_in burst=10 nodelay;"),

@@ -680,6 +680,12 @@ async fn an_account_ground_from_many_addresses_is_shut_for_the_quarter_hour() {
         body.contains("Too many failed attempts. Wait a few minutes"),
         "{body}"
     );
+    // Its owner trying again and again is told the same, and never jails
+    // their own address for it: nothing was compared.
+    for i in 0..2 * per_address {
+        let resp = login_from(&app, "198.51.100.2", PASSWORD).await;
+        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "retry {i}");
+    }
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
@@ -714,6 +720,38 @@ async fn attempts_sent_at_once_cannot_pass_the_count_together() {
         "{statuses:?}"
     );
     assert_eq!(compared + refused, statuses.len(), "{statuses:?}");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn a_burst_from_many_addresses_cannot_pass_the_accounts_count_together() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-burst-many", &[("ada", Role::Admin, &[])]);
+    let per_address = axgf_cms::jail::MAX_FAILURES as usize;
+    let burst: Vec<_> = (0..10)
+        .flat_map(|a| (0..per_address).map(move |i| (a, i)))
+        .map(|(a, i)| {
+            let app = app.clone();
+            tokio::spawn(async move {
+                let resp = login_from(&app, &format!("192.0.2.{a}"), &format!("wrong{i}")).await;
+                body_string(resp).await
+            })
+        })
+        .collect();
+    let mut compared = 0;
+    for attempt in burst {
+        if attempt
+            .await
+            .expect("attempt")
+            .contains("That username and password do not match.")
+        {
+            compared += 1;
+        }
+    }
+    assert_eq!(
+        compared,
+        axgf_cms::session::MAX_ACCOUNT_FAILURES,
+        "the account's count, charged before the hash"
+    );
 }
 
 #[tokio::test]

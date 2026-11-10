@@ -25,10 +25,20 @@ fn sample() -> PathBuf {
 /// reader (vera) and a contributor (cleo); the administrator's cookie, and
 /// theirs.
 async fn installed(tag: &str) -> (axum::Router, Scratch, String, String, String) {
+    installed_over(tag, true).await
+}
+
+/// As installed, over the sample family or over an empty archive.
+async fn installed_over(
+    tag: &str,
+    with_family: bool,
+) -> (axum::Router, Scratch, String, String, String) {
     use axgf_cms::acl::{new_user, Acl, Role};
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
-    std::fs::copy(sample(), &path).unwrap();
+    if with_family {
+        std::fs::copy(sample(), &path).unwrap();
+    }
     let mut acl = Acl::default();
     acl.users
         .push(new_user("vera", PASSWORD, Role::Viewer).unwrap());
@@ -209,6 +219,27 @@ async fn an_administrator_opens_a_part_to_everyone_or_keeps_it_for_fewer() {
         get_with_cookie(&app, "/convert", &cleo).await.status(),
         StatusCode::OK
     );
+}
+
+#[tokio::test]
+async fn on_an_empty_archive_the_import_link_follows_its_door() {
+    // Where no family hides the link, the door alone decides who is offered it.
+    let (app, _dir, admin, vera, cleo) = installed_over("doors-import-door", false).await;
+    let resp = post_form_as(
+        &app,
+        &admin,
+        "/admin/connectivity/pages",
+        "import=contributors",
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    let offered = |html: String| html.replace("&#x2f;", "/").contains(r#"href="/convert""#);
+    assert!(!offered(
+        body_string(get_with_cookie(&app, "/about", &vera).await).await
+    ));
+    assert!(offered(
+        body_string(get_with_cookie(&app, "/about", &cleo).await).await
+    ));
 }
 
 #[tokio::test]

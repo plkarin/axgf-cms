@@ -32,6 +32,8 @@ jobs:
         run: cargo clippy --all-targets --locked -- -D warnings
       - name: cargo test
         run: cargo test --locked
+      - name: the community connector parses (docs/adr/0045 §5)
+        run: node --check mcp/ax-genealogy/server.mjs
 
   stress:
     name: stress tests, in release

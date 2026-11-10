@@ -4,6 +4,41 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The AFG takes commands, and an MCP opens the archive to AI assistants
+elsewhere, as the operator asked on 9 November 2026 (docs/adr/0045).
+
+### Added
+
+- **The AFG proposes changes, the member applies them.** In the personal
+  assistant, when the project takes the archive, ask the AFG to add a person,
+  correct a name or a date, record a baptism, unite two people, add a child:
+  it answers with a "Proposed changes" card, in plain words, checked against
+  the archive as you would write it. **Apply** writes it all or nothing,
+  journalled under your name with "AFG"; **Set aside** leaves it. Nothing
+  changes without your click, and nothing your account could not change on a
+  page; a viewer's AFG says it cannot.
+- **One set of operations** (`src/ops.rs`) behind both the AFG and the MCP:
+  search, read a person or a family; create a person with parents, siblings
+  and unions; change names, gender, living, visibility, biography; set a
+  birth or a death; add, change or delete an event; unite people or undo a
+  union; add or remove a child; delete a person (administrators). A batch of
+  up to sixty is checked by the pages' own rules and committed whole or not
+  at all.
+- **The MCP** at `/mcp`: ChatGPT, Claude or any assistant that speaks the
+  Model Context Protocol reads and changes the archive as one account, with a
+  token made on that account's page (shown once, kept as a fingerprint,
+  revocable, read-only or read-write). Closed until an administrator opens it
+  on the AFG page of the administration.
+- **The community connector `ax-genealogy`** (`mcp/ax-genealogy/`): a bridge
+  without dependency for the assistants that start a program, a bundle for
+  Claude Desktop served by the site at `/mcp/ax-genealogy.mcpb`, and how to
+  connect Claude Desktop, Claude Code, claude.ai, ChatGPT and Cursor.
+- **"Keeping the family's genealogy through the AFG"**, a guide in twelve
+  chapters on every member's personal assistant, each with requests to make,
+  in the fourteen languages.
+
 ## [1.13.1] — 2026-11-09
 
 ### Changed

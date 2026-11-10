@@ -1,0 +1,29 @@
+{% import "_icons.html" as ic %}
+{#- Operations the AFG proposed (docs/adr/0045 §2): what they would do,
+    checked against the archive as the reader would write them, and the
+    buttons to apply them or set them aside; or what became of them. -#}
+<section class="as-ops as-ops-{{ card.status }}" aria-label="{{ t('afg-ops-title') }}">
+  <header class="as-ops-head">{{ ic.icon("pen") }}<strong>{{ t("afg-ops-title") }}</strong></header>
+  {%- if card.status == "open" %}
+  <ul class="as-ops-lines">{% for l in card.lines %}<li>{{ l }}</li>{% endfor %}</ul>
+  <form class="as-ops-form" method="post" action="{{ card.action }}">
+    <input type="hidden" name="msg" value="{{ card.message }}">
+    <input type="hidden" name="block" value="{{ card.block }}">
+    <button class="btn primary small" type="submit" name="do" value="apply" data-busy="{{ t('busy-saving') }}">{{ ic.icon("check") }}<span>{{ t("afg-ops-apply") }}</span></button>
+    <button class="btn small" type="submit" name="do" value="aside">{{ t("afg-ops-aside") }}</button>
+  </form>
+  <p class="as-ops-note small muted">{{ t("afg-ops-note") }}</p>
+  {%- elif card.status == "refused" %}
+  <p class="as-ops-why">{{ card.refusal }}</p>
+  <form class="as-ops-form" method="post" action="{{ card.action }}">
+    <input type="hidden" name="msg" value="{{ card.message }}">
+    <input type="hidden" name="block" value="{{ card.block }}">
+    <button class="btn small" type="submit" name="do" value="aside">{{ t("afg-ops-aside") }}</button>
+  </form>
+  {%- elif card.status == "applied" %}
+  <p class="as-ops-state small">{{ ic.icon("check") }}<span>{{ t("afg-ops-applied", n=card.records) }}</span></p>
+  {%- else %}
+  <p class="as-ops-state small muted">{{ t("afg-ops-aside-done") }}</p>
+  {%- endif %}
+  <details class="as-ops-json small"><summary>{{ t("afg-ops-json") }}</summary><pre>{{ card.json }}</pre></details>
+</section>

@@ -571,6 +571,29 @@ included. The family's archive goes with a project's messages only when its
 member says so. Why it works this way:
 [My personal assistant](docs/adr/0026-my-personal-assistant.md).
 
+### Keep the tree by talking to the AFG, or from ChatGPT and Claude
+
+*(New in 1.14.0.)* In the personal assistant, when a project takes the
+archive, the AFG does more than answer: ask it to add a person, correct a
+name or a date, record a baptism, unite two people or add a child, and it
+answers with a **Proposed changes** card, in plain words, checked against
+the archive as you would write it. **Apply** writes it all or nothing,
+journalled under your name with "AFG"; **Set aside** leaves it. Nothing
+changes without your click, and nothing your account could not change on a
+page.
+
+The same operations are open to AI assistants elsewhere through the site's
+**MCP** (Model Context Protocol), once an administrator opens it: each
+account makes its own tokens on its page — shown once, read-only or
+read-write, revocable — and connects ChatGPT, Claude, Cursor or any other
+with the community connector
+[`ax-genealogy`](mcp/ax-genealogy/README.md), which the site also serves
+packed for Claude Desktop. Every member's assistant carries a guide in
+twelve chapters, with requests to make for every kind of work.
+
+Why it works this way:
+[The AFG takes commands, and an MCP](docs/adr/0045-the-afg-takes-commands-and-an-mcp.md).
+
 ### The AFG on a person's record
 
 *(New in 1.4.0.)* For the members the AFG is open to, on each record:

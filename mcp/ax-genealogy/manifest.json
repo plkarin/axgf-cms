@@ -1,0 +1,70 @@
+{
+  "manifest_version": "0.2",
+  "name": "ax-genealogy",
+  "display_name": "AX Genealogy",
+  "version": "1.13.1",
+  "description": "Read and keep a family's genealogy on an ax·genealogy site, as one of its accounts.",
+  "long_description": "The community connector of the MCP of an ax·genealogy site (axgf-cms). Give it the site's address and a token made on your account's page: your assistant can then search the family, read records, and — if the token may write — add people, correct names and dates, record events and unions, all checked by the site with your account's rights, and journalled under your name.",
+  "author": {
+    "name": "Karin Pierre-Leonard",
+    "url": "https://github.com/plkarin"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/plkarin/axgf-cms"
+  },
+  "homepage": "https://github.com/plkarin/axgf-cms/tree/main/mcp/ax-genealogy",
+  "license": "Apache-2.0",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server.mjs"],
+      "env": {
+        "AXGF_URL": "${user_config.site_url}",
+        "AXGF_TOKEN": "${user_config.token}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "search_people", "description": "Find people by name." },
+    { "name": "get_person", "description": "A person's record, relatives and events." },
+    { "name": "get_family", "description": "A family's partners and children." },
+    { "name": "create_person", "description": "Add a person, with parents, siblings and unions." },
+    { "name": "update_person", "description": "Change names, gender, living state, visibility, biography." },
+    { "name": "set_birth", "description": "Set a person's birth." },
+    { "name": "set_death", "description": "Set a person's death." },
+    { "name": "add_event", "description": "Add a life event: baptism, burial, migration…" },
+    { "name": "update_event", "description": "Change an event." },
+    { "name": "delete_event", "description": "Delete an event." },
+    { "name": "add_union", "description": "Unite one or two people." },
+    { "name": "add_child", "description": "Make a person the child of parents or a family." },
+    { "name": "remove_child", "description": "Take a child out of a family." },
+    { "name": "delete_union", "description": "Undo a union." },
+    { "name": "delete_person", "description": "Delete a person (administrators)." },
+    { "name": "check_operations", "description": "Check a batch without writing." },
+    { "name": "apply_operations", "description": "Apply a batch, all or nothing." },
+    { "name": "guide", "description": "Every operation and its rules." }
+  ],
+  "user_config": {
+    "site_url": {
+      "type": "string",
+      "title": "Site address",
+      "description": "The address of the ax·genealogy site, such as https://family.example",
+      "required": true
+    },
+    "token": {
+      "type": "string",
+      "title": "Access token",
+      "description": "A token made on your account's page of the site (My account → Access tokens). It acts as your account.",
+      "sensitive": true,
+      "required": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}

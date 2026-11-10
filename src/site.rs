@@ -293,6 +293,12 @@ pub struct Site {
     /// (docs/adr/0041).
     #[serde(default, skip_serializing_if = "crate::limits::Limits::is_default")]
     pub uploads: crate::limits::Limits,
+    /// Whether AI assistants elsewhere may reach the archive through the MCP,
+    /// each with an account's token (docs/adr/0045). Closed until an
+    /// administrator opens it: what an account may read then leaves for the
+    /// company whose assistant reads it.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub mcp: bool,
 }
 
 impl Site {

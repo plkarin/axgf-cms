@@ -2,7 +2,7 @@
 {#- One message of a conversation (docs/adr/0026): the member's words and
     files on one side, the AFG's answer drawn from its Markdown on the
     other, or what kept it from answering. -#}
-<article class="as-msg as-msg-{{ m.role }}" data-msg="{{ m.id }}" data-role="{{ m.role }}">
+<article class="as-msg as-msg-{{ m.role }}" id="m-{{ m.id }}" data-msg="{{ m.id }}" data-role="{{ m.role }}">
 {%- if m.role == "user" %}
   <div class="as-bubble">
     {%- if m.files %}
@@ -24,6 +24,9 @@
     <details class="as-kept small"><summary>{{ ic.icon("brain") }}<span>{{ t("assistant-kept", n=m.remembered | length) }}</span></summary><ul>{% for r in m.remembered %}<li>{{ r }}</li>{% endfor %}</ul></details>
     {%- endif %}
   </div>
+{%- elif m.role == "done" %}
+  <div class="as-mark as-mark-done" aria-hidden="true">{{ ic.icon("check") }}</div>
+  <div class="as-answer as-done small"><div class="as-text">{{ m.text }}</div></div>
 {%- else %}
   <div class="as-mark as-mark-error" aria-hidden="true">{{ ic.icon("alert") }}</div>
   <div class="as-answer as-error">

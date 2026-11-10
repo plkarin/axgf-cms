@@ -68,6 +68,23 @@
         <button class="btn primary" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-create") }}</button>
       </form>
     </section>
+    {#- The guide to keeping the family's archive through the AFG
+        (docs/adr/0045 §6): chapters, each with requests to make. -#}
+    {% if guide %}
+    <section class="as-guide" id="guide" aria-labelledby="as-guide-title">
+      <h2 id="as-guide-title">{{ t("assistant-guide-title") }}</h2>
+      <div class="note-text as-guide-lead">{{ guide.lead | safe }}</div>
+      {% if not writes %}<p class="small muted">{{ t("assistant-guide-reader") }}</p>{% endif %}
+      <div class="as-guide-chapters" data-content>
+      {%- for c in guide.chapters %}
+      <details class="as-guide-chapter" id="{{ c.id }}">
+        <summary>{{ c.title }}</summary>
+        <div class="note-text as-guide-body">{{ c.html | safe }}</div>
+      </details>
+      {%- endfor %}
+      </div>
+    </section>
+    {% endif %}
 
 {% elif screen == "project" %}
     <header class="as-head">

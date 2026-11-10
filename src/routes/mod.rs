@@ -1,7 +1,7 @@
 //! HTTP routing.
 
 mod account;
-mod admin;
+pub(crate) mod admin;
 mod afg;
 mod afg_record;
 mod ai_portraits;
@@ -13,6 +13,7 @@ mod editors;
 mod entry;
 mod impact;
 mod limits;
+mod mcp;
 mod merge;
 mod notes;
 mod person_chat;
@@ -434,6 +435,19 @@ fn routes(state: Shared) -> Router {
         )
         .route("/admin/notes/:id/delete", post(notes::delete))
         .route("/health", get(public::health))
+        // The MCP (docs/adr/0045): the archive's operations for AI assistants
+        // elsewhere, each request with an account's token.
+        .route(
+            "/mcp",
+            get(mcp::get)
+                .post(mcp::post)
+                .layer(DefaultBodyLimit::max(mcp::MOST_BYTES)),
+        )
+        .route("/mcp/ax-genealogy.mcpb", get(mcp::connector_file))
+        .route(
+            "/mcp/t/:token",
+            post(mcp::post_with).layer(DefaultBodyLimit::max(mcp::MOST_BYTES)),
+        )
         // Preferences are POSTs so that choosing a language is not something a
         // link or a crawler can do to a reader.
         .route("/settings", get(prefs::settings))
@@ -441,6 +455,9 @@ fn routes(state: Shared) -> Router {
         .route("/account/person", post(account::person))
         // The AFG's brain of the account, its own to forget (docs/adr/0024).
         .route("/account/brain/forget", post(account::forget))
+        // The account's access tokens for the MCP (docs/adr/0045).
+        .route("/account/tokens", post(account::make_token))
+        .route("/account/tokens/:tid/revoke", post(account::revoke_token))
         // My personal assistant (docs/adr/0026): the account's projects and
         // their conversations with the AFG, its own and nobody else's. A
         // message carries up to six files, forty megabytes in all.
@@ -493,6 +510,12 @@ fn routes(state: Shared) -> Router {
             "/account/assistant/:pid/c/:cid/retry",
             post(assistant::retry),
         )
+        // What the AFG proposed to change, applied or set aside
+        // (docs/adr/0045).
+        .route(
+            "/account/assistant/:pid/c/:cid/ops",
+            post(assistant::apply_ops),
+        )
         .route(
             "/account/assistant/:pid/c/:cid/edit",
             post(assistant::edit_conversation),
@@ -541,6 +564,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/afg", get(afg::page).post(afg::save))
         .route("/admin/afg/test", post(afg::test))
         .route("/admin/afg/images", post(afg::save_images))
+        .route("/admin/afg/mcp", post(afg::save_mcp))
         // Canva's account, for the AFG's pictures (docs/adr/0030).
         .route("/admin/afg/canva/connect", post(afg::canva_connect))
         .route("/admin/afg/canva/finish", post(afg::canva_finish))

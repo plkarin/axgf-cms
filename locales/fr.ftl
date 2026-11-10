@@ -5621,3 +5621,114 @@ setup-replace-done = La famille remplacée est sauvegardée, et la sauvegarde v�
 setup-replace-room-title = Remplacer la famille par un import
 setup-replace-room-detail = Une archive ou un GEDCOM à la place de la famille actuelle, après une sauvegarde vérifiée de celle-ci.
 setup-replace-room-go = Ouvrir l'import
+
+# Les commandes de l'AFG et le MCP : un seul jeu d'opérations sur l'archive
+# (docs/adr/0045). Une ligne dit ce que fait un lot ; un refus dit pourquoi il
+# ne peut pas se faire.
+ops-line-create-person = Créer { $name }
+ops-line-create-relative = Créer aussi { $name }
+ops-line-create-place = Créer le lieu { $name }
+ops-line-update-person = Modifier { $name } : { $fields }
+ops-line-set-birth = Naissance de { $name } : { $fact }
+ops-line-set-death = Décès de { $name } : { $fact }
+ops-line-add-event = Ajouter { $event }
+ops-line-update-event = Modifier { $event }
+ops-line-delete-event = Supprimer { $event }
+ops-line-add-union = Unir { $partners } ({ $kind })
+ops-line-add-child = { $child }, enfant de { $parents }
+ops-line-remove-child = { $child } n'est plus l'enfant de { $parents }
+ops-line-delete-person = Retirer { $name } de toutes ses familles et de tous ses événements, puis supprimer sa fiche
+ops-line-delete-union = Défaire l'union de { $partners } : ses enfants restent, sans ces parents
+ops-field-name = nom
+ops-field-gender = genre
+ops-field-living = en vie ou non
+ops-field-visibility = visibilité
+ops-field-bio = biographie
+ops-refused-at = Opération { $n } : { $why }
+ops-refused-empty = Il n'y a rien à faire.
+ops-refused-no-person = Aucune personne n'est nommée.
+ops-refused-not-found = Rien dans l'archive ne répond à « { $what } ».
+ops-refused-ambiguous = Plusieurs fiches répondent à « { $what } » : nommez-la par son identifiant.
+ops-refused-date = « { $value } » n'est pas une date : écrivez 1890, 1890-06 ou 1890-06-14.
+ops-refused-gender = « { $value } » n'est pas un genre : M, F, NB ou U.
+ops-refused-visibility = « { $value } » n'est pas une visibilité : public, members, contributors ou private.
+ops-refused-category = « { $value } » n'est pas une catégorie d'événement connue de ce site.
+ops-refused-role-name = « { $value } » n'est pas un rôle dans un événement.
+ops-refused-union-kind = « { $value } » n'est pas un type d'union.
+ops-refused-partners = Une union a un ou deux partenaires.
+ops-refused-parents = Nommez un ou deux parents, ou la famille.
+ops-refused-own-parent = Personne n'est son propre parent.
+ops-refused-already-child = { $child } est déjà enfant de cette famille.
+ops-refused-not-a-child = { $child } n'est pas enfant de cette famille.
+ops-refused-nothing = Rien ne changerait.
+ops-refused-name = Une personne a besoin d'un prénom ou d'un nom de famille.
+ops-refused-field = { $field } « { $typed } » : { $why }
+ops-refused-role = Ce compte peut lire l'archive, pas la modifier.
+ops-refused-scope = Cela touche quelqu'un hors de la branche que ce compte peut modifier.
+ops-refused-admin = Seul un administrateur peut supprimer une personne.
+ops-refused-dangling = { $field } désigne { $target }, qui n'est nulle part dans l'archive.
+ops-refused-invalid = Cette opération ne peut pas se faire ici : { $detail }.
+ops-refused-conflict = L'archive a changé entre-temps et rien n'a été écrit. Vérifiez de nouveau, puis appliquez.
+ops-refused-library = L'archive l'a refusé et rien n'a été écrit : { $detail }
+ops-refused-io = L'archive n'a pas pu être écrite, et rien ne l'a été : { $detail }
+journal-via-afg = AFG
+afg-ops-title = Modifications proposées
+afg-ops-apply = Appliquer
+afg-ops-aside = Écarter
+afg-ops-note = Rien ne change avant que vous appliquiez. Tout ce qui est ci-dessus est appliqué ensemble, ou rien ne l'est.
+afg-ops-applied = { $n ->
+    [0] Appliqué : aucune fiche écrite.
+    [one] Appliqué : une fiche écrite.
+   *[other] Appliqué : { $n } fiches écrites.
+}
+afg-ops-aside-done = Écarté : rien n'a été modifié.
+afg-ops-json = Les opérations, telles que l'AFG les a écrites
+afg-ops-unreadable = L'AFG a écrit des opérations que ce site ne sait pas lire : { $detail }
+afg-ops-applied-text = { $n ->
+    [0] J'ai appliqué les modifications proposées : aucune fiche écrite.
+    [one] J'ai appliqué les modifications proposées : une fiche écrite.
+   *[other] J'ai appliqué les modifications proposées : { $n } fiches écrites.
+}
+afg-ops-aside-text = J'ai écarté les modifications proposées : rien n'a été modifié.
+afg-ops-preparing = L'AFG prépare des modifications à proposer…
+account-tokens-title = Jetons d'accès pour une IA (MCP)
+account-tokens-intro = Un jeton permet à une IA extérieure — ChatGPT, Claude ou toute autre qui parle MCP — de lire l'archive de la famille comme votre compte, et de la modifier si le jeton peut écrire. Il ne fait jamais plus que ce que votre compte peut faire.
+account-tokens-closed = Le MCP de ce site est fermé : aucun jeton n'ouvre quoi que ce soit tant qu'un administrateur ne l'a pas ouvert.
+account-tokens-open-it = L'ouvrir
+account-token-made = Jeton « { $label } » créé.
+account-token-once = Copiez-le maintenant : il n'est montré qu'une fois, et seule son empreinte est gardée. Qui le détient agit comme votre compte.
+account-token-value = Le jeton
+account-token-address = L'adresse du MCP
+account-token-address-with = L'adresse avec le jeton dedans
+account-token-address-with-hint = Pour une IA qui ne prend qu'une adresse, comme un connecteur ChatGPT ou Claude : gardez-la aussi secrète que le jeton.
+account-token-writes = lit et écrit
+account-token-reads = lit seulement
+account-token-made-on = créé le { $date }
+account-token-used-on = utilisé le { $date }
+account-token-never-used = jamais utilisé
+account-token-revoke = Révoquer
+account-token-revoked = Le jeton est révoqué : il n'ouvre plus rien.
+account-tokens-none = Aucun jeton pour l'instant.
+account-token-label = Nom du jeton
+account-token-label-example = ChatGPT, Claude sur le portable…
+account-token-write = Il peut modifier l'archive, comme ce compte le peut
+account-token-make = Créer un jeton
+account-tokens-too-many = Un compte garde dix jetons au plus : révoquez-en un pour en créer un autre.
+account-tokens-how = Le guide de l'assistant personnel explique comment brancher ChatGPT, Claude et les autres, avec le connecteur communautaire ax-genealogy.
+account-tokens-guide = Lire le guide
+account-tokens-connector = Télécharger le connecteur pour Claude Desktop (.mcpb)
+afg-mcp = MCP pour les IA extérieures
+afg-mcp-intro = Le MCP permet à une IA extérieure — ChatGPT, Claude ou toute autre qui parle le Model Context Protocol — de lire et de modifier l'archive comme un compte, avec un jeton que ce compte a créé sur sa propre page. Chaque jeton fait ce que son compte peut faire, et rien de plus.
+afg-mcp-state = État
+afg-mcp-open = ouvert
+afg-mcp-shut = fermé
+afg-mcp-address = Adresse
+afg-mcp-address-relative = à la suite de l’adresse publique du site, pas encore réglée : la console la règle.
+afg-mcp-tokens = Jetons des comptes actifs
+afg-mcp-privacy = Tout ce qu'un compte peut lire part chez l'entreprise dont l'IA le lit, les vivants compris. N'ouvrez le MCP que si la famille est d'accord.
+afg-mcp-switch = Ouvrir le MCP aux jetons des comptes
+afg-mcp-close = Fermer le MCP
+afg-mcp-opened = Le MCP est ouvert : les jetons des comptes sont acceptés.
+afg-mcp-closed = Le MCP est fermé : les jetons sont gardés et n'ouvrent rien.
+assistant-guide-title = Gérer la généalogie familiale avec l'AFG
+assistant-guide-reader = Votre compte lit l'archive sans la modifier : l'AFG répond à vos questions mais ne propose aucune modification. Un administrateur peut donner à votre compte le rôle de contributeur.

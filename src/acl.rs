@@ -225,6 +225,10 @@ pub struct User {
     /// check of its setup and does not ask for it.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub afg: bool,
+    /// The account's access tokens for the MCP (docs/adr/0045 §3), each kept
+    /// as a digest: what an AI assistant elsewhere acts as this account with.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub api_tokens: Vec<crate::tokens::ApiToken>,
 }
 
 /// One provider's identifier for an account's person.
@@ -608,6 +612,7 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         created_via: None,
         person_id: None,
         afg: false,
+        api_tokens: Vec::new(),
     })
 }
 
@@ -640,6 +645,7 @@ pub fn new_provider_user(username: &str, identity: Identity, email: Option<Strin
         person_id: None,
         identities: vec![identity],
         afg: false,
+        api_tokens: Vec::new(),
     }
 }
 

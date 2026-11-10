@@ -95,6 +95,12 @@ const UNIVERSAL: &[&str] = &[
     "Claude",
     "Codex",
     "OpenCode",
+    // The protocol AI assistants elsewhere reach the archive by, and those
+    // assistants, named as themselves (docs/adr/0045); "Claude Desktop" and
+    // "Model Context Protocol" are read as names below.
+    "MCP",
+    "ChatGPT",
+    "Cursor",
     // Where its pictures are made (docs/adr/0030): two products named as
     // themselves, and the ComfyUI node a workflow loads its picture with.
     "Canva",
@@ -358,6 +364,8 @@ fn english_in(html: &str) -> Vec<String> {
     text = text.replace(axgf_cms::render::AUTHOR, " ");
     // One product's name in two words, which "Code" alone is not.
     text = text.replace("Claude Code", " ");
+    text = text.replace("Claude Desktop", " ");
+    text = text.replace("Model Context Protocol", " ");
     let mut spoken = Vec::new();
     // What a screen reader says or a tooltip shows is read too.
     for attr in ["title", "aria-label", "placeholder", "alt"] {

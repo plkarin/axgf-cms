@@ -5943,3 +5943,116 @@ setup-replace-done = Zastąpiona rodzina jest w kopii zapasowej, a kopia sprawdz
 setup-replace-room-title = Zastąp rodzinę importem
 setup-replace-room-detail = Archiwum lub GEDCOM w miejsce obecnej rodziny, po sprawdzonej kopii zapasowej.
 setup-replace-room-go = Otwórz import
+
+# Polecenia AFG i MCP (docs/adr/0045).
+ops-line-create-person = Utworzyć { $name }
+ops-line-create-relative = Utworzyć także { $name }
+ops-line-create-place = Utworzyć miejsce { $name }
+ops-line-update-person = Zmienić { $name }: { $fields }
+ops-line-set-birth = Narodziny: { $name }, { $fact }
+ops-line-set-death = Zgon: { $name }, { $fact }
+ops-line-add-event = Dodać { $event }
+ops-line-update-event = Zmienić { $event }
+ops-line-delete-event = Usunąć { $event }
+ops-line-add-union = Połączyć { $partners } ({ $kind })
+ops-line-add-child = { $child }, dziecko: { $parents }
+ops-line-remove-child = { $child } nie jest już dzieckiem: { $parents }
+ops-line-delete-person = Usunąć { $name } ze wszystkich rodzin i wydarzeń, a potem usunąć kartę
+ops-line-delete-union = Rozwiązać związek { $partners }: dzieci zostają, bez tych rodziców
+ops-field-name = imię i nazwisko
+ops-field-gender = płeć
+ops-field-living = żyje czy nie
+ops-field-visibility = widoczność
+ops-field-bio = biografia
+ops-refused-at = Operacja { $n }: { $why }
+ops-refused-empty = Nie ma nic do zrobienia.
+ops-refused-no-person = Nie wskazano żadnej osoby.
+ops-refused-not-found = Nic w archiwum nie odpowiada „{ $what }”.
+ops-refused-ambiguous = Kilka kart odpowiada „{ $what }”: wskaż ją po identyfikatorze.
+ops-refused-date = „{ $value }” nie jest datą: napisz 1890, 1890-06 lub 1890-06-14.
+ops-refused-gender = „{ $value }” nie jest płcią: M, F, NB lub U.
+ops-refused-visibility = „{ $value }” nie jest widocznością: public, members, contributors lub private.
+ops-refused-category = „{ $value }” nie jest kategorią wydarzenia znaną tej witrynie.
+ops-refused-role-name = „{ $value }” nie jest rolą w wydarzeniu.
+ops-refused-union-kind = „{ $value }” nie jest rodzajem związku.
+ops-refused-partners = Związek ma jednego lub dwóch partnerów.
+ops-refused-parents = Wskaż jednego lub dwoje rodziców albo rodzinę.
+ops-refused-own-parent = Nikt nie jest własnym rodzicem.
+ops-refused-already-child = { $child } jest już dzieckiem tej rodziny.
+ops-refused-not-a-child = { $child } nie jest dzieckiem tej rodziny.
+ops-refused-nothing = Nic by się nie zmieniło.
+ops-refused-name = Osoba potrzebuje imienia lub nazwiska.
+ops-refused-field = { $field } „{ $typed }”: { $why }
+ops-refused-role = To konto może czytać archiwum, nie zmieniać go.
+ops-refused-scope = To dotyczy kogoś spoza gałęzi, którą to konto może edytować.
+ops-refused-admin = Tylko administrator może usunąć osobę.
+ops-refused-dangling = { $field } wskazuje { $target }, którego nie ma nigdzie w archiwum.
+ops-refused-invalid = Tej operacji nie można tu wykonać: { $detail }.
+ops-refused-conflict = Archiwum w międzyczasie się zmieniło i nic nie zostało zapisane. Sprawdź ponownie, a potem zastosuj.
+ops-refused-library = Archiwum to odrzuciło i nic nie zostało zapisane: { $detail }
+ops-refused-io = Nie udało się zapisać archiwum i nic nie zostało zapisane: { $detail }
+journal-via-afg = AFG
+afg-ops-title = Proponowane zmiany
+afg-ops-apply = Zastosuj
+afg-ops-aside = Odłóż
+afg-ops-note = Nic się nie zmienia, zanim zastosujesz. Wszystko powyżej jest stosowane razem albo wcale.
+afg-ops-applied = { $n ->
+    [0] Zastosowano: nie zapisano żadnej karty.
+    [one] Zastosowano: zapisano jedną kartę.
+    [few] Zastosowano: zapisano { $n } karty.
+    [many] Zastosowano: zapisano { $n } kart.
+   *[other] Zastosowano: zapisano { $n } karty.
+}
+afg-ops-aside-done = Odłożono: nic nie zostało zmienione.
+afg-ops-json = Operacje, tak jak zapisał je AFG
+afg-ops-unreadable = AFG zapisał operacje, których ta witryna nie umie odczytać: { $detail }
+afg-ops-applied-text = { $n ->
+    [0] Zastosowano proponowane zmiany: nie zapisano żadnej karty.
+    [one] Zastosowano proponowane zmiany: zapisano jedną kartę.
+    [few] Zastosowano proponowane zmiany: zapisano { $n } karty.
+    [many] Zastosowano proponowane zmiany: zapisano { $n } kart.
+   *[other] Zastosowano proponowane zmiany: zapisano { $n } karty.
+}
+afg-ops-aside-text = Odłożono proponowane zmiany: nic nie zostało zmienione.
+afg-ops-preparing = AFG przygotowuje zmiany do zaproponowania…
+account-tokens-title = Tokeny dostępu dla AI (MCP)
+account-tokens-intro = Token pozwala zewnętrznej AI — ChatGPT, Claude lub każdej innej, która mówi MCP — czytać archiwum rodziny jako twoje konto i zmieniać je, jeśli token może pisać. Nigdy nie robi więcej, niż może twoje konto.
+account-tokens-closed = MCP tej witryny jest zamknięty: żaden token niczego nie otwiera, dopóki administrator go nie otworzy.
+account-tokens-open-it = Otwórz
+account-token-made = Utworzono token „{ $label }”.
+account-token-once = Skopiuj go teraz: jest pokazywany tylko ten jeden raz i przechowywany jest tylko jego odcisk. Kto go ma, działa jako twoje konto.
+account-token-value = Token
+account-token-address = Adres MCP
+account-token-address-with = Adres z tokenem w środku
+account-token-address-with-hint = Dla AI, która przyjmuje tylko adres, jak łącznik ChatGPT lub Claude: trzymaj go w tajemnicy tak jak token.
+account-token-writes = czyta i pisze
+account-token-reads = tylko czyta
+account-token-made-on = utworzony { $date }
+account-token-used-on = użyty { $date }
+account-token-never-used = nigdy nieużyty
+account-token-revoke = Unieważnij
+account-token-revoked = Token jest unieważniony: niczego już nie otwiera.
+account-tokens-none = Jeszcze nie ma tokenu.
+account-token-label = Nazwa tokenu
+account-token-label-example = ChatGPT, Claude na laptopie…
+account-token-write = Może zmieniać archiwum, tak jak to konto
+account-token-make = Utwórz token
+account-tokens-too-many = Konto przechowuje najwyżej dziesięć tokenów: unieważnij jeden, by utworzyć kolejny.
+account-tokens-how = Przewodnik osobistego asystenta wyjaśnia, jak podłączyć ChatGPT, Claude i inne, ze społecznościowym łącznikiem ax-genealogy.
+account-tokens-guide = Przeczytaj przewodnik
+account-tokens-connector = Pobierz łącznik dla Claude Desktop (.mcpb)
+afg-mcp = MCP dla zewnętrznych AI
+afg-mcp-intro = MCP pozwala zewnętrznej AI — ChatGPT, Claude lub każdej innej, która mówi Model Context Protocol — czytać i zmieniać archiwum jako jedno konto, z tokenem, który to konto utworzyło na własnej stronie. Każdy token robi to, co może jego konto, i nic więcej.
+afg-mcp-state = Stan
+afg-mcp-open = otwarty
+afg-mcp-shut = zamknięty
+afg-mcp-address = Adres
+afg-mcp-address-relative = po publicznym adresie witryny, jeszcze nieustawionym: ustawia go konsola.
+afg-mcp-tokens = Tokeny aktywnych kont
+afg-mcp-privacy = Wszystko, co konto może czytać, trafia do firmy, której AI to czyta, łącznie z żyjącymi. Otwórz MCP tylko wtedy, gdy rodzina się zgadza.
+afg-mcp-switch = Otwórz MCP dla tokenów kont
+afg-mcp-close = Zamknij MCP
+afg-mcp-opened = MCP jest otwarty: tokeny kont są przyjmowane.
+afg-mcp-closed = MCP jest zamknięty: tokeny są zachowane i niczego nie otwierają.
+assistant-guide-title = Prowadzenie genealogii rodziny z AFG
+assistant-guide-reader = Twoje konto czyta archiwum, nie zmieniając go: AFG odpowiada na pytania, ale nie proponuje zmian. Administrator może nadać twojemu kontu rolę współtwórcy.

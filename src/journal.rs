@@ -111,6 +111,13 @@ impl Entry {
 pub fn who_in(who: &str, lang: &str) -> String {
     if who == "emergency-token" {
         crate::i18n::translate(lang, "login-emergency-label", None)
+    } else if let Some(account) = who.strip_suffix(" · AFG") {
+        // A change the AFG proposed and the account applied (docs/adr/0045),
+        // journalled as `karin · AFG` and read in the reader's language.
+        format!(
+            "{account} · {}",
+            crate::i18n::translate(lang, "journal-via-afg", None)
+        )
     } else {
         who.to_string()
     }
@@ -530,6 +537,16 @@ pub fn entry_for(r: Record<'_>) -> Entry {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_change_the_afg_proposed_names_it_in_the_readers_language() {
+        assert_eq!(who_in("karin · AFG", "en"), "karin · AFG");
+        assert_eq!(who_in("karin · AFG", "zh-Hans"), "karin · AI 家谱师");
+        assert_eq!(
+            who_in("karin · MCP · ChatGPT", "zh-Hans"),
+            "karin · MCP · ChatGPT"
+        );
+    }
     use serde_json::json;
 
     /// A scratch directory, and the journal path inside it. The guard has to

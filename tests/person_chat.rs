@@ -423,8 +423,11 @@ async fn a_question_reads_the_dossier_vera_may_read_and_is_answered_in_the_threa
     let space = dir.with_extension("assistant").join("vera");
     assert!(space.join("owner.json").is_file());
     let (_, home) = page(&app, "/account/assistant", vera).await;
+    // What the page lists, before the guide and the names its examples use.
+    let listed = home.split(r#"id="guide""#).next().unwrap_or_default();
+    assert!(home.contains(r#"id="guide""#), "the guide is there");
     assert!(
-        !home.contains("Jean Martin"),
+        !listed.contains("Jean Martin"),
         "not one of the assistant's projects"
     );
 }

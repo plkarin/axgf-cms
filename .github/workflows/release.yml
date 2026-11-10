@@ -141,6 +141,21 @@ jobs:
           bash -n dist/rehearse-rollback.sh
           (cd dist && sha256sum rehearse-rollback.sh > rehearse-rollback.sh.sha256)
 
+      # The community connector for Claude Desktop (docs/adr/0045 §5): the
+      # bundle the site also serves at /mcp/ax-genealogy.mcpb, at the tag's
+      # version.
+      - name: Pack the community connector
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          work="$(mktemp -d)"
+          cp mcp/ax-genealogy/server.mjs mcp/ax-genealogy/README.md "$work/"
+          cp static/img/icon-192.png "$work/icon.png"
+          python3 -c 'import json,sys; m=json.load(open(sys.argv[2])); m["version"]=sys.argv[1].lstrip("v"); json.dump(m,open(sys.argv[3],"w"),indent=2,ensure_ascii=False)' \
+            "$tag" mcp/ax-genealogy/manifest.json "$work/manifest.json"
+          (cd "$work" && python3 -m zipfile -c "$GITHUB_WORKSPACE/dist/ax-genealogy.mcpb" manifest.json server.mjs README.md icon.png)
+          (cd dist && sha256sum ax-genealogy.mcpb > ax-genealogy.mcpb.sha256)
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}

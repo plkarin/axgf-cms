@@ -20,7 +20,9 @@ use minijinja::context;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
-use crate::assistant::{self, Conversation, FileKind, Message, Project, Role, Space, Spaces};
+use crate::assistant::{
+    self, Commands, Conversation, FileKind, Message, OpsDone, Project, Role, Space, Spaces,
+};
 use crate::routes::Shared;
 use crate::{auth, render};
 
@@ -193,10 +195,21 @@ fn pack_json() -> Value {
 /// What is left of an answer being written once its memory block, which is
 /// not shown, is cut off.
 pub(crate) fn shown_partial(partial: &str) -> &str {
-    match partial.to_ascii_lowercase().find("<memory>") {
+    let partial = match partial.to_ascii_lowercase().find("<memory>") {
         Some(i) => &partial[..i],
         None => partial,
+    };
+    // Operations being written are drawn once they are all there, as a card.
+    match crate::ops::blocks(partial).first() {
+        Some(crate::ops::Segment::Ops(_)) => "",
+        Some(crate::ops::Segment::Text(t)) => &partial[..t.len()],
+        None => partial,
     }
+}
+
+/// Whether the answer being written has begun proposing operations.
+fn preparing(partial: &str) -> bool {
+    !crate::ops::ops_blocks(partial).is_empty()
 }
 
 /// A file's size as people read it.
@@ -208,9 +221,46 @@ fn size_text(bytes: u64) -> String {
     }
 }
 
+/// What a thread needs to draw the operations the AFG proposed
+/// (docs/adr/0045 §2): who reads them, where they are applied, and what
+/// became of each.
+pub(crate) struct OpsView<'a> {
+    pub state: &'a Shared,
+    pub viewer: crate::access::Viewer,
+    /// Where the card's form posts: `…/c/<cid>/ops`.
+    pub action: String,
+    /// What became of each block: (answer, block) → what the member did.
+    pub done: std::collections::HashMap<(String, usize), OpsDone>,
+}
+
+impl<'a> OpsView<'a> {
+    fn of(state: &'a Shared, m: &Member, pid: &str, cid: &str, messages: &[Message]) -> Self {
+        OpsView {
+            state,
+            viewer: crate::access::Viewer {
+                user: Some(m.user.clone()),
+                emergency: false,
+            },
+            action: format!("{BASE}/{pid}/c/{cid}/ops"),
+            done: messages
+                .iter()
+                .filter_map(|x| x.ops.clone())
+                .map(|o| ((o.message.clone(), o.block), o))
+                .collect(),
+        }
+    }
+}
+
 /// One message as the thread draws it; `last` when nothing follows it, the
 /// only place an answer that failed may be asked for again.
-fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> String {
+fn message_html(
+    m: &Member,
+    pid: &str,
+    cid: &str,
+    msg: &Message,
+    last: bool,
+    ops: &OpsView<'_>,
+) -> String {
     message_fragment(
         &m.chrome,
         &format!("{BASE}/{pid}/f"),
@@ -219,12 +269,119 @@ fn message_html(m: &Member, pid: &str, cid: &str, msg: &Message, last: bool) -> 
         None,
         msg,
         last,
+        Some(ops),
     )
+}
+
+/// What a card says of a block, checked now against the archive, kept while
+/// the archive does not change: a thread is drawn again at every message.
+type CardSaid = (u64, Result<Vec<String>, String>);
+
+fn card_cache() -> &'static std::sync::Mutex<std::collections::HashMap<String, CardSaid>> {
+    static CACHE: std::sync::OnceLock<
+        std::sync::Mutex<std::collections::HashMap<String, CardSaid>>,
+    > = std::sync::OnceLock::new();
+    CACHE.get_or_init(Default::default)
+}
+
+/// A block of operations as a card: what they would do, checked now against
+/// the archive as the reader would write them, and the buttons to apply them
+/// or set them aside; or what became of them.
+fn card_html(
+    chrome: &render::Chrome,
+    ops: &OpsView<'_>,
+    mid: &str,
+    block: usize,
+    json: &str,
+) -> String {
+    let done = ops.done.get(&(mid.to_string(), block));
+    let checked = || -> Result<Vec<String>, String> {
+        let batch = crate::ops::parse(json)
+            .map_err(|e| chrome.t_args("afg-ops-unreadable", &[("detail", e.into())]))?;
+        let key = format!("{}/{mid}/{block}/{}", ops.viewer.name(), chrome.lang);
+        let generation = ops.state.generation();
+        if let Some((g, said)) = card_cache().lock().ok().and_then(|c| c.get(&key).cloned()) {
+            if g == generation {
+                return said;
+            }
+        }
+        let lang = chrome.lang;
+        let quote = |n: &str| crate::ops::quoted(lang, n);
+        let said = crate::ops::check(ops.state, &ops.viewer, &batch, &quote)
+            .map(|lines| lines.iter().map(|l| l.text(lang)).collect())
+            .map_err(|r| r.text(lang));
+        if let Ok(mut c) = card_cache().lock() {
+            if c.len() > 512 {
+                c.clear();
+            }
+            c.insert(key, (generation, said.clone()));
+        }
+        said
+    };
+    let (status, lines, refusal) = match done {
+        Some(d) if d.applied => ("applied", Vec::new(), None),
+        Some(_) => ("aside", Vec::new(), None),
+        None => match checked() {
+            Ok(lines) => ("open", lines, None),
+            Err(why) => ("refused", Vec::new(), Some(why)),
+        },
+    };
+    let pretty = serde_json::from_str::<Value>(json)
+        .ok()
+        .and_then(|v| serde_json::to_string_pretty(&v).ok())
+        .unwrap_or_else(|| json.trim().to_string());
+    render::fragment_with(
+        chrome,
+        "_afg_ops.html",
+        context! {
+            card => json!({
+                "status": status,
+                "lines": lines,
+                "refusal": refusal,
+                "records": done.map(|d| d.records).unwrap_or(0),
+                "action": ops.action,
+                "message": mid,
+                "block": block,
+                "json": pretty,
+                "writes": ops.viewer.may_write(),
+            }),
+        },
+    )
+    .unwrap_or_default()
+}
+
+/// An answer drawn from its Markdown, each `axgf-ops` block in it a card
+/// when the thread can apply it, and its JSON otherwise.
+fn answer_html(
+    chrome: &render::Chrome,
+    mid: &str,
+    text: &str,
+    ops: Option<&OpsView<'_>>,
+) -> String {
+    let mut out = String::new();
+    let mut block = 0;
+    for segment in crate::ops::blocks(text) {
+        match segment {
+            crate::ops::Segment::Text(t) => out.push_str(&crate::notes::to_html(t, &|_| None)),
+            crate::ops::Segment::Ops(json) => {
+                block += 1;
+                match ops {
+                    Some(v) => out.push_str(&card_html(chrome, v, mid, block, json)),
+                    None => out.push_str(&crate::notes::to_html(
+                        &format!("```json\n{}\n```", json.trim()),
+                        &|_| None,
+                    )),
+                }
+            }
+        }
+    }
+    out
 }
 
 /// One message as a thread draws it, here or on a person's page
 /// (docs/adr/0031): its files under `files_at`, and, on a person's page,
 /// the way to ask again there.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn message_fragment(
     chrome: &render::Chrome,
     files_at: &str,
@@ -233,6 +390,7 @@ pub(crate) fn message_fragment(
     person: Option<&str>,
     msg: &Message,
     last: bool,
+    ops: Option<&OpsView<'_>>,
 ) -> String {
     let files: Vec<Value> = msg
         .files
@@ -248,7 +406,7 @@ pub(crate) fn message_fragment(
         })
         .collect();
     let html = match msg.role {
-        Role::Assistant => crate::notes::to_html(&msg.text, &|_| None),
+        Role::Assistant => answer_html(chrome, &msg.id, &msg.text, ops),
         _ => String::new(),
     };
     render::fragment_with(
@@ -289,8 +447,13 @@ pub(crate) fn live_fragment(chrome: &render::Chrome, partial: &str, seconds: u64
     } else {
         crate::notes::to_html(shown, &|_| None)
     };
-    render::fragment_with(chrome, "_assistant_live.html", context! { html, seconds })
-        .unwrap_or_default()
+    let preparing = preparing(partial);
+    render::fragment_with(
+        chrome,
+        "_assistant_live.html",
+        context! { html, seconds, preparing },
+    )
+    .unwrap_or_default()
 }
 
 /// Whether the AFG can answer: its computing set, and complete.
@@ -340,10 +503,11 @@ fn render_view(
     let (thread, live) = match (project, conversation) {
         (Some(p), Some(c)) => {
             let messages = m.space.messages(&p.id, &c.id);
+            let ops = OpsView::of(state, m, &p.id, &c.id, &messages);
             let thread: Vec<String> = messages
                 .iter()
                 .enumerate()
-                .map(|(i, msg)| message_html(m, &p.id, &c.id, msg, i + 1 == messages.len()))
+                .map(|(i, msg)| message_html(m, &p.id, &c.id, msg, i + 1 == messages.len(), &ops))
                 .collect();
             let live = state
                 .assistant_answering()
@@ -394,6 +558,8 @@ fn render_view(
             }),
             notice => said.notice,
             error => said.error,
+            guide => (view == "home").then(|| crate::guide::guide(m.chrome.lang)),
+            writes => m.user.role.may_write(),
         },
     );
     *r.status_mut() = status;
@@ -509,13 +675,14 @@ pub async fn state_of(
         return json_reply(StatusCode::NOT_FOUND, json!({"error": "gone"}));
     }
     let messages = m.space.messages(&pid, &cid);
+    let ops = OpsView::of(&state, &m, &pid, &cid, &messages);
     let new: Vec<Value> = messages
         .iter()
         .enumerate()
         .skip(q.after)
         .map(|(i, msg)| {
             let last = i + 1 == messages.len();
-            json!({"id": msg.id, "role": msg.role, "html": message_html(&m, &pid, &cid, msg, last)})
+            json!({"id": msg.id, "role": msg.role, "html": message_html(&m, &pid, &cid, msg, last, &ops)})
         })
         .collect();
     let live = state.assistant_answering().get(&m.user.id, &pid, &cid);
@@ -935,7 +1102,19 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         person: person.as_ref().map(|(id, n)| (id.as_str(), n.as_str())),
         language: language_name(m.chrome.lang),
     };
-    let prompt = assistant::chat_prompt(&m.space, &asker, project, &messages, archive.as_ref());
+    let commands = if m.user.role.may_write() {
+        Commands::Write
+    } else {
+        Commands::Read
+    };
+    let prompt = assistant::chat_prompt(
+        &m.space,
+        &asker,
+        project,
+        &messages,
+        archive.as_ref(),
+        commands,
+    );
     tracing::info!(
         account = %m.user.username,
         kind = cfg.kind.slug(),
@@ -1281,7 +1460,7 @@ pub async fn send(
         return json_reply(
             StatusCode::OK,
             json!({
-                "message": {"id": msg.id, "html": message_html(&m, &pid, &cid, &msg, true)},
+                "message": {"id": msg.id, "html": message_html(&m, &pid, &cid, &msg, true, &OpsView::of(&state, &m, &pid, &cid, &[]))},
                 "count": m.space.messages(&pid, &cid).len(),
                 "answering": answering,
             }),
@@ -1310,12 +1489,133 @@ pub async fn retry(
         .space
         .messages(&pid, &cid)
         .last()
-        .is_some_and(|msg| msg.role != Role::Assistant);
+        .is_some_and(|msg| matches!(msg.role, Role::User | Role::Error));
     let answering = waiting && start_answer(&state, &m, &p, &cid);
     if wants_json(&headers) {
         return json_reply(StatusCode::OK, json!({"answering": answering}));
     }
     Redirect::to(&format!("{BASE}/{pid}/c/{cid}")).into_response()
+}
+
+#[derive(Deserialize)]
+pub struct OpsForm {
+    /// The answer that proposed the operations, and which of its blocks.
+    msg: String,
+    block: usize,
+    /// `apply`, or anything else to set them aside.
+    #[serde(default, rename = "do")]
+    action: String,
+}
+
+/// `POST /account/assistant/:project/c/:conversation/ops` — apply the
+/// operations an answer of the AFG proposed, as the account and through the
+/// same rules as its own pages, or set them aside (docs/adr/0045 §2). What
+/// became of them is said in the thread, for the member and for the AFG.
+pub async fn apply_ops(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((pid, cid)): Path<(String, String)>,
+    Form(f): Form<OpsForm>,
+) -> Response {
+    let back = format!("{BASE}/{pid}/c/{cid}");
+    let m = match door(&state, &headers, &back) {
+        Ok(m) => m,
+        Err(r) => return r,
+    };
+    let (Some(p), Some(c)) = (m.space.project(&pid), m.space.conversation(&pid, &cid)) else {
+        return not_found(&m);
+    };
+    let messages = m.space.messages(&pid, &cid);
+    let Some(json) = messages
+        .iter()
+        .find(|x| x.id == f.msg && x.role == Role::Assistant)
+        .and_then(|x| {
+            crate::ops::ops_blocks(&x.text)
+                .get(f.block.wrapping_sub(1))
+                .map(|j| j.to_string())
+        })
+    else {
+        return not_found(&m);
+    };
+    // Applied or set aside already: once is all.
+    if messages.iter().any(|x| {
+        x.ops
+            .as_ref()
+            .is_some_and(|o| o.message == f.msg && o.block == f.block)
+    }) {
+        return Redirect::to(&back).into_response();
+    }
+    let lang = m.chrome.lang.to_string();
+    let mut done = OpsDone {
+        message: f.msg.clone(),
+        block: f.block,
+        applied: false,
+        records: 0,
+        refs: Default::default(),
+    };
+    let text = if f.action == "apply" {
+        let batch = match crate::ops::parse(&json) {
+            Ok(b) => b,
+            Err(e) => {
+                let why = m
+                    .chrome
+                    .t_args("afg-ops-unreadable", &[("detail", e.into())]);
+                return refused_ops(&state, &m, &p, &c, why);
+            }
+        };
+        let viewer = crate::access::Viewer {
+            user: Some(m.user.clone()),
+            emergency: false,
+        };
+        let (st, l) = (state.clone(), lang.clone());
+        let outcome = tokio::task::spawn_blocking(move || {
+            let quote = |n: &str| crate::ops::quoted(&l, n);
+            crate::ops::apply(&st, &viewer, "AFG", &batch, &quote)
+        })
+        .await;
+        let applied = match outcome {
+            Ok(Ok(d)) => d,
+            Ok(Err(r)) => return refused_ops(&state, &m, &p, &c, r.text(&lang)),
+            Err(_) => {
+                return refused_ops(&state, &m, &p, &c, m.chrome.t("assistant-error-not-saved"))
+            }
+        };
+        done.applied = true;
+        done.records = applied.records;
+        let mut text = m
+            .chrome
+            .t_args("afg-ops-applied-text", &[("n", applied.records.into())]);
+        for l in &applied.lines {
+            text.push_str("\n– ");
+            text.push_str(&l.text(&lang));
+        }
+        done.refs = applied.refs;
+        text
+    } else {
+        m.chrome.t("afg-ops-aside-text")
+    };
+    let mut msg = Message::new(Role::Done, text, Vec::new());
+    msg.ops = Some(done);
+    if let Err(e) = m.space.append(&pid, &cid, &msg) {
+        tracing::error!(error = %e, "assistant: what became of the operations could not be kept");
+    }
+    Redirect::to(&format!("{back}#m-{}", msg.id)).into_response()
+}
+
+/// Operations that could not be applied: the conversation, saying why.
+fn refused_ops(state: &Shared, m: &Member, p: &Project, c: &Conversation, why: String) -> Response {
+    render_view(
+        state,
+        m,
+        "conversation",
+        Some(p),
+        Some(c),
+        Said {
+            notice: None,
+            error: Some(why),
+        },
+        StatusCode::CONFLICT,
+    )
 }
 
 #[derive(Deserialize, Default)]

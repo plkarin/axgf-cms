@@ -224,6 +224,17 @@ fn render_room(
             images_open => said.images || said.canva_authorize.is_some(),
             canva_authorize => said.canva_authorize,
             comfyui_placeholder => crate::comfyui::PLACEHOLDER,
+            mcp => json!({
+                "open": state.site().mcp,
+                "url": format!("{}/mcp", state.site().public_base().unwrap_or_default()),
+                "public": state.site().public_base().is_some(),
+                "tokens": state.acl_read(|a| a
+                    .users
+                    .iter()
+                    .filter(|u| u.status == crate::acl::Status::Active)
+                    .map(|u| u.api_tokens.len())
+                    .sum::<usize>()),
+            }),
         },
     );
     *resp.status_mut() = status;
@@ -459,6 +470,48 @@ pub async fn save_images(
                 },
             ))
         },
+    )
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct McpForm {
+    #[serde(default)]
+    open: Option<String>,
+}
+
+/// `POST /admin/afg/mcp` — open the MCP to AI assistants elsewhere, each
+/// with an account's token, or close it (docs/adr/0045 §4). Closing it keeps
+/// the tokens, which open nothing until it is opened again.
+pub async fn save_mcp(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<McpForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let open = f.open.is_some();
+    let cfg = state.site().afg;
+    if let Err(e) = state.site_mutate(|s| s.mcp = open) {
+        return render_room(
+            &state,
+            &chrome,
+            &viewer,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            &cfg,
+            Said::error(chrome.t_args("afg-error-not-saved", &[("error", e.to_string().into())])),
+        );
+    }
+    tracing::warn!(by = viewer.name(), open, "the MCP was opened or closed");
+    render_room(
+        &state,
+        &chrome,
+        &viewer,
+        StatusCode::OK,
+        &cfg,
+        Said::notice(chrome.t(if open {
+            "afg-mcp-opened"
+        } else {
+            "afg-mcp-closed"
+        })),
     )
 }
 

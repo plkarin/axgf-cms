@@ -224,6 +224,23 @@
 </details>
 </section>
 
+{#- The MCP (docs/adr/0045 §4): AI assistants elsewhere reaching the
+    archive, each with an account's token. Closed until opened here. -#}
+<section class="rec-section" id="afg-mcp">
+<h2>{{ t("afg-mcp") }}</h2>
+<p class="small muted">{{ t("afg-mcp-intro") }}</p>
+<dl class="facts">
+  <dt>{{ t("afg-mcp-state") }}</dt><dd><strong>{{ t("afg-mcp-open") if mcp.open else t("afg-mcp-shut") }}</strong></dd>
+  <dt>{{ t("afg-mcp-address") }}</dt><dd><code>{{ mcp.url }}</code>{% if not mcp.public %} <span class="small muted">{{ t("afg-mcp-address-relative") }}</span>{% endif %}</dd>
+  <dt>{{ t("afg-mcp-tokens") }}</dt><dd>{{ mcp.tokens | localnum(lang) }}</dd>
+</dl>
+<div class="notice warn"><p>{{ t("afg-mcp-privacy") }}</p></div>
+<form method="post" action="/admin/afg/mcp">
+  {% if not mcp.open %}<input type="hidden" name="open" value="1">{% endif %}
+  <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("afg-mcp-close") if mcp.open else t("afg-mcp-switch") }}</button>
+</form>
+</section>
+
 <section class="rec-section" id="test">
 <h2>{{ t("afg-test") }}</h2>
 <p class="small muted">{{ t("afg-test-intro") }}</p>

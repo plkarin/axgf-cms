@@ -49,6 +49,50 @@
 <datalist id="account-persons">{% for o in options %}<option value="{{ o.label }}"></option>{% endfor %}</datalist>
 </section>
 
+{#- Access tokens for the MCP (docs/adr/0045 §3): what lets an AI assistant
+    elsewhere act as this account, each shown once, when it is made. -#}
+<section class="rec-section" id="account-tokens">
+<h2>{{ t("account-tokens-title") }}</h2>
+<p class="small muted">{{ t("account-tokens-intro") }}</p>
+{% if not mcp.open %}
+<p class="muted">{{ t("account-tokens-closed") }}{% if mcp.admin %} <a href="/admin/afg#afg-mcp">{{ t("account-tokens-open-it") }}</a>{% endif %}</p>
+{% else %}
+{% if minted %}
+<div class="notice ok token-once" role="status">
+  <p><strong>{{ t("account-token-made", label=minted.label) }}</strong></p>
+  <p class="small">{{ t("account-token-once") }}</p>
+  <label class="field"><span class="field-label">{{ t("account-token-value") }}</span>
+    <input class="token-value" type="text" readonly value="{{ minted.token }}" autocomplete="off" spellcheck="false"></label>
+  <label class="field"><span class="field-label">{{ t("account-token-address") }}</span>
+    <input class="token-value" type="text" readonly value="{{ mcp.url }}" spellcheck="false"></label>
+  <label class="field"><span class="field-label">{{ t("account-token-address-with") }}</span>
+    <input class="token-value" type="text" readonly value="{{ mcp.url }}/t/{{ minted.token }}" autocomplete="off" spellcheck="false"></label>
+  <p class="small muted">{{ t("account-token-address-with-hint") }}</p>
+</div>
+{% endif %}
+{% if tokens %}
+<ul class="brain-list">
+  {%- for k in tokens %}
+  <li class="brain-row">
+    <span class="brain-text"><strong><bdi>{{ k.label }}</bdi></strong>
+      <span class="small muted">· {{ t("account-token-writes") if k.write else t("account-token-reads") }} · {{ t("account-token-made-on", date=(k.created_at | localdate(lang))) }} · {% if k.last_used %}{{ t("account-token-used-on", date=(k.last_used | localdate(lang))) }}{% else %}{{ t("account-token-never-used") }}{% endif %}</span></span>
+    <form method="post" action="/account/tokens/{{ k.id }}/revoke" class="inline-form"><button class="btn small ghost" type="submit">{{ t("account-token-revoke") }}</button></form>
+  </li>
+  {%- endfor %}
+</ul>
+{% else %}<p class="small muted">{{ t("account-tokens-none") }}</p>{% endif %}
+{% if tokens | length < mcp.most %}
+<form method="post" action="/account/tokens" class="account-person-form">
+  <label class="field"><span class="field-label">{{ t("account-token-label") }}</span>
+    <input type="text" name="label" maxlength="{{ mcp.label_max }}" required placeholder="{{ t('account-token-label-example') }}"></label>
+  {% if mcp.may_write %}<label class="inline"><input type="checkbox" name="write" value="1"> {{ t("account-token-write") }}</label>{% endif %}
+  <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("account-token-make") }}</button>
+</form>
+{% else %}<p class="small muted">{{ t("account-tokens-too-many") }}</p>{% endif %}
+<p class="small muted">{{ t("account-tokens-how") }}{% if brain and brain.allowed %} <a href="/account/assistant#guide-11">{{ t("account-tokens-guide") }}</a> ·{% endif %} <a href="/mcp/ax-genealogy.mcpb" download>{{ t("account-tokens-connector") }}</a></p>
+{% endif %}
+</section>
+
 {#- What the AFG remembers of this account, its brain (docs/adr/0024 §6):
     the account's own to see and to forget, a fact, an exchange or all of
     it. Shown when the account may talk to the AFG, or the AFG remembers

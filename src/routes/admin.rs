@@ -1244,7 +1244,7 @@ pub(super) fn conflict_page(
 }
 
 /// A short human label for an entity, for the journal listing.
-pub(super) fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
+pub(crate) fn label_for(kind: axgf_rs::EntityKind, entity: &Value) -> Option<String> {
     match kind {
         axgf_rs::EntityKind::Person => Some(view::person_display_name(entity)),
         _ => entity
@@ -1684,7 +1684,12 @@ pub(super) fn refuse_new_dangling(
 /// Every `(path, id)` in `value` that the library's validator would call a
 /// reference: a UUID-shaped string whose nearest key ends in `_id`, arrays
 /// inheriting the key they sit under. `axgf_rs`'s `walk_ids`, with a path.
-fn reference_ids(value: &Value, path: &str, key: Option<&str>, out: &mut Vec<(String, String)>) {
+pub(crate) fn reference_ids(
+    value: &Value,
+    path: &str,
+    key: Option<&str>,
+    out: &mut Vec<(String, String)>,
+) {
     match value {
         Value::Object(map) => {
             for (k, sub) in map {

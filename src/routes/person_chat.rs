@@ -349,6 +349,7 @@ pub fn tab(
                         Some(person),
                         m,
                         i + 1 == messages.len(),
+                        None,
                     )
                 })
                 .collect();
@@ -588,6 +589,7 @@ pub async fn send(
             Some(&c.person),
             &msg,
             true,
+            None,
         );
         return json_reply(
             StatusCode::OK,
@@ -638,6 +640,7 @@ pub async fn state_of(
                 Some(&c.person),
                 m,
                 i + 1 == messages.len(),
+                None,
             );
             json!({"id": m.id, "role": m.role, "html": html})
         })

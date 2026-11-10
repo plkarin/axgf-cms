@@ -6171,3 +6171,120 @@ setup-replace-done = العائلة المستبدَلة محفوظة في نس�
 setup-replace-room-title = استبدال العائلة باستيراد
 setup-replace-room-detail = أرشيف أو GEDCOM مكان العائلة الحالية، بعد نسخة احتياطية متحقَّق منها.
 setup-replace-room-go = افتح الاستيراد
+
+# أوامر النسّابة الاصطناعي وMCP ‏(docs/adr/0045).
+ops-line-create-person = إنشاء { $name }
+ops-line-create-relative = إنشاء { $name } أيضًا
+ops-line-create-place = إنشاء المكان { $name }
+ops-line-update-person = تعديل { $name }: { $fields }
+ops-line-set-birth = ميلاد { $name }: { $fact }
+ops-line-set-death = وفاة { $name }: { $fact }
+ops-line-add-event = إضافة { $event }
+ops-line-update-event = تعديل { $event }
+ops-line-delete-event = حذف { $event }
+ops-line-add-union = جمع { $partners } ({ $kind })
+ops-line-add-child = { $child }، من أبناء { $parents }
+ops-line-remove-child = { $child } لم يعد من أبناء { $parents }
+ops-line-delete-person = إخراج { $name } من كل العائلات والأحداث، ثم حذف السجل
+ops-line-delete-union = فكّ رابطة { $partners }: يبقى الأبناء، من دون هذين الوالدين
+ops-field-name = الاسم
+ops-field-gender = الجنس
+ops-field-living = على قيد الحياة أم لا
+ops-field-visibility = الظهور
+ops-field-bio = السيرة
+ops-refused-at = العملية { $n }: { $why }
+ops-refused-empty = لا شيء يُعمل.
+ops-refused-no-person = لم يُذكر أي شخص.
+ops-refused-not-found = لا شيء في الأرشيف يطابق «{ $what }».
+ops-refused-ambiguous = أكثر من سجل يطابق «{ $what }»: سمِّه بمعرّفه.
+ops-refused-date = «{ $value }» ليس تاريخًا: اكتب 1890 أو 1890-06 أو 1890-06-14.
+ops-refused-gender = «{ $value }» ليس جنسًا: M أو F أو NB أو U.
+ops-refused-visibility = «{ $value }» ليس درجة ظهور: public أو members أو contributors أو private.
+ops-refused-category = «{ $value }» ليس فئة حدث يعرفها هذا الموقع.
+ops-refused-role-name = «{ $value }» ليس دورًا في حدث.
+ops-refused-union-kind = «{ $value }» ليس نوعًا من الروابط.
+ops-refused-partners = للرابطة شريك واحد أو شريكان.
+ops-refused-parents = سمِّ والدًا واحدًا أو اثنين، أو العائلة.
+ops-refused-own-parent = لا أحد والدُ نفسه.
+ops-refused-already-child = { $child } من أبناء هذه العائلة بالفعل.
+ops-refused-not-a-child = { $child } ليس من أبناء هذه العائلة.
+ops-refused-nothing = لن يتغيّر شيء.
+ops-refused-name = يحتاج الشخص إلى اسم شخصي أو اسم عائلة.
+ops-refused-field = { $field } «{ $typed }»: { $why }
+ops-refused-role = يستطيع هذا الحساب قراءة الأرشيف لا تعديله.
+ops-refused-scope = هذا يمسّ شخصًا خارج الفرع الذي يحق لهذا الحساب تعديله.
+ops-refused-admin = لا يحذف شخصًا إلا مدير.
+ops-refused-dangling = { $field } يشير إلى { $target }، وهو غير موجود في أي مكان من الأرشيف.
+ops-refused-invalid = لا يمكن إجراء هذه العملية هنا: { $detail }.
+ops-refused-conflict = تغيّر الأرشيف في الأثناء ولم يُكتب شيء. تحقّق مجددًا ثم طبّق.
+ops-refused-library = رفض الأرشيف ذلك ولم يُكتب شيء: { $detail }
+ops-refused-io = تعذّرت كتابة الأرشيف، ولم يُكتب شيء: { $detail }
+journal-via-afg = النسّابة الاصطناعي
+afg-ops-title = التعديلات المقترحة
+afg-ops-apply = تطبيق
+afg-ops-aside = تنحية
+afg-ops-note = لا يتغيّر شيء قبل أن تطبّق. كل ما سبق يُطبَّق معًا، أو لا يُطبَّق شيء.
+afg-ops-applied = { $n ->
+    [0] طُبِّق: لم يُكتب أي سجل.
+    [zero] طُبِّق: لم يُكتب أي سجل.
+    [one] طُبِّق: كُتب سجل واحد.
+    [two] طُبِّق: كُتب سجلّان.
+    [few] طُبِّق: كُتبت { $n } سجلات.
+    [many] طُبِّق: كُتب { $n } سجلًا.
+   *[other] طُبِّق: كُتب { $n } سجل.
+}
+afg-ops-aside-done = نُحّي: لم يُعدَّل شيء.
+afg-ops-json = العمليات كما كتبها النسّابة الاصطناعي
+afg-ops-unreadable = كتب النسّابة الاصطناعي عمليات لا يعرف هذا الموقع قراءتها: { $detail }
+afg-ops-applied-text = { $n ->
+    [0] طبّقتُ التعديلات المقترحة: لم يُكتب أي سجل.
+    [zero] طبّقتُ التعديلات المقترحة: لم يُكتب أي سجل.
+    [one] طبّقتُ التعديلات المقترحة: كُتب سجل واحد.
+    [two] طبّقتُ التعديلات المقترحة: كُتب سجلّان.
+    [few] طبّقتُ التعديلات المقترحة: كُتبت { $n } سجلات.
+    [many] طبّقتُ التعديلات المقترحة: كُتب { $n } سجلًا.
+   *[other] طبّقتُ التعديلات المقترحة: كُتب { $n } سجل.
+}
+afg-ops-aside-text = نحّيتُ التعديلات المقترحة: لم يُعدَّل شيء.
+afg-ops-preparing = النسّابة الاصطناعي يُعدّ تعديلات لاقتراحها…
+account-tokens-title = رموز الوصول لذكاء اصطناعي (MCP)
+account-tokens-intro = يتيح الرمز لذكاء اصطناعي خارجي — ChatGPT أو Claude أو أي ذكاء آخر يتحدث MCP — قراءة أرشيف العائلة باسم حسابك، وتعديله إن كان الرمز يملك الكتابة. ولا يفعل أبدًا أكثر مما يحق لحسابك.
+account-tokens-closed = بروتوكول MCP في هذا الموقع مغلق: لا يفتح أي رمز شيئًا حتى يفتحه مدير.
+account-tokens-open-it = فتحه
+account-token-made = أُنشئ الرمز «{ $label }».
+account-token-once = انسخه الآن: لا يُعرض إلا هذه المرة، ولا تُحفظ إلا بصمته. من يملكه يتصرف باسم حسابك.
+account-token-value = الرمز
+account-token-address = عنوان MCP
+account-token-address-with = العنوان والرمز في داخله
+account-token-address-with-hint = لذكاء اصطناعي لا يقبل إلا عنوانًا، مثل موصل ChatGPT أو Claude: احفظه سرًّا كما تحفظ الرمز.
+account-token-writes = يقرأ ويكتب
+account-token-reads = يقرأ فقط
+account-token-made-on = أُنشئ في { $date }
+account-token-used-on = آخر استخدام في { $date }
+account-token-never-used = لم يُستخدم قط
+account-token-revoke = إبطال
+account-token-revoked = أُبطل الرمز: لم يعد يفتح شيئًا.
+account-tokens-none = لا رمز بعد.
+account-token-label = اسم الرمز
+account-token-label-example = ChatGPT، Claude على الحاسوب المحمول…
+account-token-write = يمكنه تعديل الأرشيف، كما يحق لهذا الحساب
+account-token-make = إنشاء رمز
+account-tokens-too-many = يحتفظ الحساب بعشرة رموز على الأكثر: أبطل واحدًا لتنشئ آخر.
+account-tokens-how = يشرح دليل المساعد الشخصي كيف توصل ChatGPT وClaude وغيرهما، بالموصل المجتمعي ax-genealogy.
+account-tokens-guide = قراءة الدليل
+account-tokens-connector = تنزيل الموصل لـ Claude Desktop ‏(.mcpb)
+afg-mcp = MCP للذكاء الاصطناعي الخارجي
+afg-mcp-intro = يتيح MCP لذكاء اصطناعي خارجي — ChatGPT أو Claude أو أي ذكاء آخر يتحدث Model Context Protocol — قراءة الأرشيف وتعديله باسم حساب واحد، برمز أنشأه ذلك الحساب في صفحته. كل رمز يفعل ما يحق لحسابه، ولا أكثر.
+afg-mcp-state = الحالة
+afg-mcp-open = مفتوح
+afg-mcp-shut = مغلق
+afg-mcp-address = العنوان
+afg-mcp-address-relative = بعد العنوان العام للموقع، ولم يُضبط بعد: تضبطه وحدة التحكم.
+afg-mcp-tokens = رموز الحسابات النشطة
+afg-mcp-privacy = كل ما يحق لحساب قراءته يذهب إلى الشركة التي يقرؤه ذكاؤها الاصطناعي، والأحياء من ضمنه. لا تفتح MCP إلا إذا وافقت العائلة.
+afg-mcp-switch = فتح MCP لرموز الحسابات
+afg-mcp-close = إغلاق MCP
+afg-mcp-opened = MCP مفتوح: تُقبل رموز الحسابات.
+afg-mcp-closed = MCP مغلق: تُحفظ الرموز ولا تفتح شيئًا.
+assistant-guide-title = إدارة نسب العائلة مع النسّابة الاصطناعي
+assistant-guide-reader = حسابك يقرأ الأرشيف دون أن يعدّله: يجيب النسّابة الاصطناعي عن أسئلتك لكنه لا يقترح تعديلًا. يستطيع مدير أن يمنح حسابك دور المساهم.

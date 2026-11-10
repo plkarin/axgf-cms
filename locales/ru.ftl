@@ -5985,3 +5985,116 @@ setup-replace-done = Заменённая семья сохранена в ре�
 setup-replace-room-title = Заменить семью импортом
 setup-replace-room-detail = Архив или GEDCOM вместо нынешней семьи, после её проверенной резервной копии.
 setup-replace-room-go = Открыть импорт
+
+# Команды ИИ-генеалога и MCP (docs/adr/0045).
+ops-line-create-person = Создать { $name }
+ops-line-create-relative = Создать также { $name }
+ops-line-create-place = Создать место { $name }
+ops-line-update-person = Изменить { $name }: { $fields }
+ops-line-set-birth = Рождение: { $name }, { $fact }
+ops-line-set-death = Смерть: { $name }, { $fact }
+ops-line-add-event = Добавить { $event }
+ops-line-update-event = Изменить { $event }
+ops-line-delete-event = Удалить { $event }
+ops-line-add-union = Соединить { $partners } ({ $kind })
+ops-line-add-child = { $child }, ребёнок: { $parents }
+ops-line-remove-child = { $child } больше не ребёнок: { $parents }
+ops-line-delete-person = Убрать { $name } из всех семей и событий, затем удалить карточку
+ops-line-delete-union = Расторгнуть союз { $partners }: дети остаются, без этих родителей
+ops-field-name = имя
+ops-field-gender = пол
+ops-field-living = жив или нет
+ops-field-visibility = видимость
+ops-field-bio = биография
+ops-refused-at = Операция { $n }: { $why }
+ops-refused-empty = Делать нечего.
+ops-refused-no-person = Не указан ни один человек.
+ops-refused-not-found = Ничто в архиве не соответствует «{ $what }».
+ops-refused-ambiguous = «{ $what }» соответствуют несколько карточек: укажите её по идентификатору.
+ops-refused-date = «{ $value }» — не дата: пишите 1890, 1890-06 или 1890-06-14.
+ops-refused-gender = «{ $value }» — не пол: M, F, NB или U.
+ops-refused-visibility = «{ $value }» — не видимость: public, members, contributors или private.
+ops-refused-category = «{ $value }» — не категория события, известная этому сайту.
+ops-refused-role-name = «{ $value }» — не роль в событии.
+ops-refused-union-kind = «{ $value }» — не вид союза.
+ops-refused-partners = В союзе один или два партнёра.
+ops-refused-parents = Укажите одного или двух родителей либо семью.
+ops-refused-own-parent = Никто не может быть своим родителем.
+ops-refused-already-child = { $child } уже ребёнок этой семьи.
+ops-refused-not-a-child = { $child } не ребёнок этой семьи.
+ops-refused-nothing = Ничего бы не изменилось.
+ops-refused-name = Человеку нужно имя или фамилия.
+ops-refused-field = { $field } «{ $typed }»: { $why }
+ops-refused-role = Эта учётная запись может читать архив, но не изменять его.
+ops-refused-scope = Это затрагивает человека вне ветви, которую может редактировать эта учётная запись.
+ops-refused-admin = Удалить человека может только администратор.
+ops-refused-dangling = { $field } указывает на { $target }, которого нет нигде в архиве.
+ops-refused-invalid = Эту операцию здесь выполнить нельзя: { $detail }.
+ops-refused-conflict = Архив тем временем изменился, и ничего не записано. Проверьте ещё раз, затем примените.
+ops-refused-library = Архив отклонил это, и ничего не записано: { $detail }
+ops-refused-io = Архив не удалось записать, и ничего не записано: { $detail }
+journal-via-afg = ИИ-генеалог
+afg-ops-title = Предложенные изменения
+afg-ops-apply = Применить
+afg-ops-aside = Отложить
+afg-ops-note = Ничего не изменится, пока вы не примените. Всё, что выше, применяется вместе — или ничего.
+afg-ops-applied = { $n ->
+    [0] Применено: ни одна карточка не записана.
+    [one] Применено: записана { $n } карточка.
+    [few] Применено: записаны { $n } карточки.
+    [many] Применено: записано { $n } карточек.
+   *[other] Применено: записано { $n } карточки.
+}
+afg-ops-aside-done = Отложено: ничего не изменено.
+afg-ops-json = Операции в том виде, в каком их написал ИИ-генеалог
+afg-ops-unreadable = ИИ-генеалог написал операции, которые этот сайт не может прочитать: { $detail }
+afg-ops-applied-text = { $n ->
+    [0] Предложенные изменения применены: ни одна карточка не записана.
+    [one] Предложенные изменения применены: записана { $n } карточка.
+    [few] Предложенные изменения применены: записаны { $n } карточки.
+    [many] Предложенные изменения применены: записано { $n } карточек.
+   *[other] Предложенные изменения применены: записано { $n } карточки.
+}
+afg-ops-aside-text = Предложенные изменения отложены: ничего не изменено.
+afg-ops-preparing = ИИ-генеалог готовит изменения, чтобы предложить их…
+account-tokens-title = Токены доступа для ИИ (MCP)
+account-tokens-intro = Токен позволяет внешнему ИИ — ChatGPT, Claude или любому другому, говорящему на MCP, — читать архив семьи от имени вашей учётной записи и изменять его, если токену разрешено писать. Он никогда не делает больше, чем может ваша учётная запись.
+account-tokens-closed = MCP этого сайта закрыт: ни один токен ничего не открывает, пока администратор его не откроет.
+account-tokens-open-it = Открыть
+account-token-made = Токен «{ $label }» создан.
+account-token-once = Скопируйте его сейчас: он показывается только один раз, хранится лишь его отпечаток. Тот, у кого он есть, действует от имени вашей учётной записи.
+account-token-value = Токен
+account-token-address = Адрес MCP
+account-token-address-with = Адрес с токеном внутри
+account-token-address-with-hint = Для ИИ, который принимает только адрес, например коннектора ChatGPT или Claude: храните его в такой же тайне, как токен.
+account-token-writes = читает и пишет
+account-token-reads = только читает
+account-token-made-on = создан { $date }
+account-token-used-on = использован { $date }
+account-token-never-used = ни разу не использован
+account-token-revoke = Отозвать
+account-token-revoked = Токен отозван: он больше ничего не открывает.
+account-tokens-none = Токенов пока нет.
+account-token-label = Название токена
+account-token-label-example = ChatGPT, Claude на ноутбуке…
+account-token-write = Может изменять архив, как эта учётная запись
+account-token-make = Создать токен
+account-tokens-too-many = У учётной записи не больше десяти токенов: отзовите один, чтобы создать другой.
+account-tokens-how = Руководство личного помощника объясняет, как подключить ChatGPT, Claude и другие, с общественным коннектором ax-genealogy.
+account-tokens-guide = Читать руководство
+account-tokens-connector = Скачать коннектор для Claude Desktop (.mcpb)
+afg-mcp = MCP для внешних ИИ
+afg-mcp-intro = MCP позволяет внешнему ИИ — ChatGPT, Claude или любому другому, говорящему на Model Context Protocol, — читать и изменять архив от имени одной учётной записи, с токеном, который эта учётная запись создала на своей странице. Каждый токен делает то, что может его учётная запись, и не больше.
+afg-mcp-state = Состояние
+afg-mcp-open = открыт
+afg-mcp-shut = закрыт
+afg-mcp-address = Адрес
+afg-mcp-address-relative = после публичного адреса сайта, ещё не заданного: его задаёт консоль.
+afg-mcp-tokens = Токены активных учётных записей
+afg-mcp-privacy = Всё, что может читать учётная запись, уходит компании, чей ИИ это читает, включая живых. Открывайте MCP, только если семья согласна.
+afg-mcp-switch = Открыть MCP для токенов учётных записей
+afg-mcp-close = Закрыть MCP
+afg-mcp-opened = MCP открыт: токены учётных записей принимаются.
+afg-mcp-closed = MCP закрыт: токены сохраняются и ничего не открывают.
+assistant-guide-title = Вести семейную генеалогию с ИИ-генеалогом
+assistant-guide-reader = Ваша учётная запись читает архив, не изменяя его: ИИ-генеалог отвечает на вопросы, но не предлагает изменений. Администратор может дать вашей учётной записи роль соавтора.

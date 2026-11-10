@@ -8130,7 +8130,51 @@ a.kpi:hover { border-color: var(--border-strong); }
   font-size: var(--type-small);
   white-space: pre-wrap;
 }
+/* Operations the AFG proposed (docs/adr/0045 §2): what they would do, and
+   the member's choice to apply them or set them aside. */
+.as-ops {
+  margin: 0.85rem 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border-hairline);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+}
+.as-ops-refused { border-inline-start-color: var(--danger); }
+.as-ops-applied, .as-ops-aside { border-inline-start-color: var(--border-strong); }
+.as-ops-head { display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.4rem; color: var(--text-primary); }
+.as-ops-lines { margin: 0 0 0.65rem; padding-inline-start: 1.2rem; }
+.as-ops-lines li { margin: 0.15rem 0; }
+.as-ops-form { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.as-ops-note { margin: 0.45rem 0 0; }
+.as-ops-why { margin: 0 0 0.65rem; color: var(--text-primary); }
+.as-ops-state { display: flex; align-items: center; gap: 0.35rem; margin: 0; color: var(--text-primary); }
+.as-ops-json { margin-top: 0.5rem; }
+.as-ops-json > summary { cursor: pointer; color: var(--text-secondary); }
+.as-ops-json pre { max-height: 16rem; margin: 0.35rem 0 0; overflow: auto; font-family: var(--mono); }
+.as-ops-preparing { display: flex; align-items: center; gap: 0.35rem; margin: 0.35rem 0 0; color: var(--text-secondary); }
+.as-mark-done { color: var(--conf-certain); }
+.as-done { padding-inline-start: 0.85rem; border-inline-start: 3px solid var(--border-strong); color: var(--text-secondary); }
 .as-orphan { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; margin: -0.5rem 0 1rem; }
+/* The guide to keeping the archive through the AFG (docs/adr/0045 §6): its
+   chapters folded, each request a quote to copy. */
+.as-guide { max-width: 46rem; margin-top: 2rem; }
+.as-guide-lead { margin-bottom: 0.85rem; line-height: 1.65; }
+.as-guide-chapter { border-top: 1px solid var(--border-hairline); }
+.as-guide-chapter:last-of-type { border-bottom: 1px solid var(--border-hairline); }
+.as-guide-chapter > summary { padding: 0.7rem 0; cursor: pointer; color: var(--text-primary); font-weight: var(--weight-semi); }
+.as-guide-body { padding: 0 0 0.9rem; line-height: 1.65; }
+.as-guide-body blockquote {
+  margin: 0.55rem 0;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--border-hairline);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+.as-guide-body blockquote p { margin: 0; }
+.as-guide-body code { overflow-wrap: anywhere; }
 .as-files { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.45rem; }
 .as-file-img img {
   display: block;

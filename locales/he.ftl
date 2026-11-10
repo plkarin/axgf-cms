@@ -5774,3 +5774,116 @@ setup-replace-done = המשפחה שהוחלפה גובתה, והגיבוי או
 setup-replace-room-title = החלפת המשפחה בייבוא
 setup-replace-room-detail = ארכיון או GEDCOM במקום המשפחה הנוכחית, אחרי גיבוי מאומת שלה.
 setup-replace-room-go = פתיחת הייבוא
+
+# הפקודות של הגנאלוג המלאכותי וה־MCP ‏(docs/adr/0045).
+ops-line-create-person = ליצור את { $name }
+ops-line-create-relative = ליצור גם את { $name }
+ops-line-create-place = ליצור את המקום { $name }
+ops-line-update-person = לשנות את { $name }: { $fields }
+ops-line-set-birth = לידה של { $name }: { $fact }
+ops-line-set-death = פטירה של { $name }: { $fact }
+ops-line-add-event = להוסיף { $event }
+ops-line-update-event = לשנות { $event }
+ops-line-delete-event = למחוק { $event }
+ops-line-add-union = לאחד את { $partners } ({ $kind })
+ops-line-add-child = { $child }, ילד או ילדה של { $parents }
+ops-line-remove-child = { $child } כבר אינו ילד או ילדה של { $parents }
+ops-line-delete-person = להוציא את { $name } מכל המשפחות והאירועים, ואז למחוק את הרשומה
+ops-line-delete-union = לבטל את האיחוד של { $partners }: הילדים נשארים, בלי ההורים האלה
+ops-field-name = שם
+ops-field-gender = מגדר
+ops-field-living = בחיים או לא
+ops-field-visibility = נראות
+ops-field-bio = ביוגרפיה
+ops-refused-at = פעולה { $n }: { $why }
+ops-refused-empty = אין מה לעשות.
+ops-refused-no-person = לא צוין אף אדם.
+ops-refused-not-found = שום דבר בארכיון אינו מתאים ל“{ $what }”.
+ops-refused-ambiguous = כמה רשומות מתאימות ל“{ $what }”: יש לציין אותה לפי המזהה שלה.
+ops-refused-date = “{ $value }” אינו תאריך: יש לכתוב 1890, 1890-06 או 1890-06-14.
+ops-refused-gender = “{ $value }” אינו מגדר: M, F, NB או U.
+ops-refused-visibility = “{ $value }” אינו נראות: public, members, contributors או private.
+ops-refused-category = “{ $value }” אינו סוג אירוע שהאתר הזה מכיר.
+ops-refused-role-name = “{ $value }” אינו תפקיד באירוע.
+ops-refused-union-kind = “{ $value }” אינו סוג של איחוד.
+ops-refused-partners = לאיחוד יש בן או בת זוג אחד או שניים.
+ops-refused-parents = יש לציין הורה אחד או שניים, או את המשפחה.
+ops-refused-own-parent = אף אחד אינו ההורה של עצמו.
+ops-refused-already-child = { $child } כבר ילד או ילדה של המשפחה הזו.
+ops-refused-not-a-child = { $child } אינו ילד או ילדה של המשפחה הזו.
+ops-refused-nothing = שום דבר לא היה משתנה.
+ops-refused-name = לאדם צריך שם פרטי או שם משפחה.
+ops-refused-field = { $field } “{ $typed }”: { $why }
+ops-refused-role = החשבון הזה יכול לקרוא את הארכיון, לא לשנות אותו.
+ops-refused-scope = זה נוגע במישהו מחוץ לענף שהחשבון הזה רשאי לערוך.
+ops-refused-admin = רק מנהל רשאי למחוק אדם.
+ops-refused-dangling = { $field } מפנה אל { $target }, שאינו נמצא בשום מקום בארכיון.
+ops-refused-invalid = אי אפשר לבצע את הפעולה הזו כאן: { $detail }.
+ops-refused-conflict = הארכיון השתנה בינתיים ושום דבר לא נכתב. יש לבדוק שוב ואז להחיל.
+ops-refused-library = הארכיון דחה זאת ושום דבר לא נכתב: { $detail }
+ops-refused-io = לא ניתן היה לכתוב את הארכיון, ושום דבר לא נכתב: { $detail }
+journal-via-afg = הגנאלוג המלאכותי
+afg-ops-title = שינויים מוצעים
+afg-ops-apply = להחיל
+afg-ops-aside = להניח בצד
+afg-ops-note = שום דבר לא משתנה לפני שמחילים. כל מה שלמעלה מוחל יחד, או ששום דבר לא מוחל.
+afg-ops-applied = { $n ->
+    [0] הוחל: לא נכתבה אף רשומה.
+    [one] הוחל: נכתבה רשומה אחת.
+    [two] הוחל: נכתבו שתי רשומות.
+    [many] הוחל: נכתבו { $n } רשומות.
+   *[other] הוחל: נכתבו { $n } רשומות.
+}
+afg-ops-aside-done = הונח בצד: שום דבר לא שונה.
+afg-ops-json = הפעולות, כפי שהגנאלוג המלאכותי כתב אותן
+afg-ops-unreadable = הגנאלוג המלאכותי כתב פעולות שהאתר הזה לא יודע לקרוא: { $detail }
+afg-ops-applied-text = { $n ->
+    [0] החלתי את השינויים המוצעים: לא נכתבה אף רשומה.
+    [one] החלתי את השינויים המוצעים: נכתבה רשומה אחת.
+    [two] החלתי את השינויים המוצעים: נכתבו שתי רשומות.
+    [many] החלתי את השינויים המוצעים: נכתבו { $n } רשומות.
+   *[other] החלתי את השינויים המוצעים: נכתבו { $n } רשומות.
+}
+afg-ops-aside-text = הנחתי בצד את השינויים המוצעים: שום דבר לא שונה.
+afg-ops-preparing = הגנאלוג המלאכותי מכין שינויים להציע…
+account-tokens-title = אסימוני גישה לבינה מלאכותית (MCP)
+account-tokens-intro = אסימון מאפשר לבינה מלאכותית חיצונית — ChatGPT, ‏Claude או כל אחרת שמדברת MCP — לקרוא את ארכיון המשפחה בשם החשבון שלך, ולשנות אותו אם האסימון רשאי לכתוב. הוא לעולם לא עושה יותר ממה שהחשבון שלך רשאי.
+account-tokens-closed = ה־MCP של האתר הזה סגור: שום אסימון אינו פותח דבר עד שמנהל יפתח אותו.
+account-tokens-open-it = לפתוח אותו
+account-token-made = האסימון “{ $label }” נוצר.
+account-token-once = יש להעתיק אותו עכשיו: הוא מוצג פעם אחת בלבד, ונשמרת רק טביעת האצבע שלו. מי שמחזיק בו פועל בשם החשבון שלך.
+account-token-value = האסימון
+account-token-address = הכתובת של ה־MCP
+account-token-address-with = הכתובת עם האסימון בתוכה
+account-token-address-with-hint = לבינה מלאכותית שמקבלת כתובת בלבד, כמו מחבר של ChatGPT או של Claude: יש לשמור עליה בסוד כמו על האסימון.
+account-token-writes = קורא וכותב
+account-token-reads = קורא בלבד
+account-token-made-on = נוצר ב־{ $date }
+account-token-used-on = שימוש אחרון ב־{ $date }
+account-token-never-used = לא נעשה בו שימוש
+account-token-revoke = לבטל
+account-token-revoked = האסימון בוטל: הוא כבר לא פותח דבר.
+account-tokens-none = עדיין אין אסימון.
+account-token-label = שם האסימון
+account-token-label-example = ChatGPT, ‏Claude במחשב הנייד…
+account-token-write = הוא רשאי לשנות את הארכיון, כמו החשבון הזה
+account-token-make = ליצור אסימון
+account-tokens-too-many = לחשבון יש עשרה אסימונים לכל היותר: יש לבטל אחד כדי ליצור אחר.
+account-tokens-how = המדריך של העוזר האישי מסביר איך לחבר את ChatGPT, ‏Claude והאחרים, עם המחבר הקהילתי ax-genealogy.
+account-tokens-guide = לקרוא את המדריך
+account-tokens-connector = להוריד את המחבר ל־Claude Desktop ‏(.mcpb)
+afg-mcp = MCP לבינות מלאכותיות חיצוניות
+afg-mcp-intro = ה־MCP מאפשר לבינה מלאכותית חיצונית — ChatGPT, ‏Claude או כל אחרת שמדברת Model Context Protocol — לקרוא ולשנות את הארכיון בשם חשבון אחד, עם אסימון שהחשבון הזה יצר בדף שלו. כל אסימון עושה מה שהחשבון שלו רשאי, ולא יותר.
+afg-mcp-state = מצב
+afg-mcp-open = פתוח
+afg-mcp-shut = סגור
+afg-mcp-address = כתובת
+afg-mcp-address-relative = אחרי הכתובת הציבורית של האתר, שעוד לא הוגדרה: המסוף מגדיר אותה.
+afg-mcp-tokens = אסימונים של חשבונות פעילים
+afg-mcp-privacy = כל מה שחשבון רשאי לקרוא עובר לחברה שהבינה המלאכותית שלה קוראת אותו, כולל החיים. יש לפתוח את ה־MCP רק אם המשפחה מסכימה.
+afg-mcp-switch = לפתוח את ה־MCP לאסימונים של החשבונות
+afg-mcp-close = לסגור את ה־MCP
+afg-mcp-opened = ה־MCP פתוח: האסימונים של החשבונות מתקבלים.
+afg-mcp-closed = ה־MCP סגור: האסימונים נשמרים ואינם פותחים דבר.
+assistant-guide-title = לנהל את הגנאלוגיה המשפחתית עם הגנאלוג המלאכותי
+assistant-guide-reader = החשבון שלך קורא את הארכיון בלי לשנות אותו: הגנאלוג המלאכותי עונה לשאלות אבל לא מציע שינויים. מנהל יכול לתת לחשבון שלך את תפקיד התורם.

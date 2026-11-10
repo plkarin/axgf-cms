@@ -5571,3 +5571,113 @@ setup-replace-done = The family it replaced is backed up, and the backup verifie
 setup-replace-room-title = Replace the family with an import
 setup-replace-room-detail = An archive or a GEDCOM in place of the present family, after a verified backup of it.
 setup-replace-room-go = Open the import
+
+# The AFG's commands and the MCP: one set of operations on the archive
+# (docs/adr/0045). A line says what a batch does; a refusal says why it cannot.
+ops-line-create-person = Create { $name }
+ops-line-create-relative = Create { $name } too
+ops-line-create-place = Create the place { $name }
+ops-line-update-person = Change { $name }: { $fields }
+ops-line-set-birth = Birth of { $name }: { $fact }
+ops-line-set-death = Death of { $name }: { $fact }
+ops-line-add-event = Add { $event }
+ops-line-update-event = Change { $event }
+ops-line-delete-event = Delete { $event }
+ops-line-add-union = Unite { $partners } ({ $kind })
+ops-line-add-child = { $child }, child of { $parents }
+ops-line-remove-child = { $child } is no longer a child of { $parents }
+ops-line-delete-person = Take { $name } out of every family and event, then delete the record
+ops-line-delete-union = Undo the union of { $partners }: its children stay, without these parents
+ops-field-name = name
+ops-field-gender = gender
+ops-field-living = living or not
+ops-field-visibility = visibility
+ops-field-bio = biography
+ops-refused-at = Operation { $n }: { $why }
+ops-refused-empty = There is nothing to do.
+ops-refused-no-person = No person is named.
+ops-refused-not-found = Nothing in the archive answers to “{ $what }”.
+ops-refused-ambiguous = More than one record answers to “{ $what }”: name it by its id.
+ops-refused-date = “{ $value }” is not a date: write 1890, 1890-06 or 1890-06-14.
+ops-refused-gender = “{ $value }” is not a gender: M, F, NB or U.
+ops-refused-visibility = “{ $value }” is not a visibility: public, members, contributors or private.
+ops-refused-category = “{ $value }” is not an event category this site knows.
+ops-refused-role-name = “{ $value }” is not a role in an event.
+ops-refused-union-kind = “{ $value }” is not a kind of union.
+ops-refused-partners = A union has one or two partners.
+ops-refused-parents = Name one or two parents, or the family.
+ops-refused-own-parent = Nobody is their own parent.
+ops-refused-already-child = { $child } is already a child of this family.
+ops-refused-not-a-child = { $child } is not a child of this family.
+ops-refused-nothing = Nothing would change.
+ops-refused-name = A person needs a first name or a family name.
+ops-refused-field = { $field } “{ $typed }”: { $why }
+ops-refused-role = This account may read the archive, not change it.
+ops-refused-scope = This touches someone outside the branch this account may edit.
+ops-refused-admin = Only an administrator may delete a person.
+ops-refused-dangling = { $field } names { $target }, which is nowhere in the archive.
+ops-refused-invalid = This operation cannot be done here: { $detail }.
+ops-refused-conflict = The archive changed meanwhile, and nothing was written. Check again, then apply.
+ops-refused-library = The archive refused it, and nothing was written: { $detail }
+ops-refused-io = The archive could not be written, and nothing was: { $detail }
+journal-via-afg = AFG
+afg-ops-title = Proposed changes
+afg-ops-apply = Apply
+afg-ops-aside = Set aside
+afg-ops-note = Nothing changes before you apply. Everything above is applied together, or nothing is.
+afg-ops-applied = { $n ->
+    [0] Applied: no record written.
+    [one] Applied: one record written.
+   *[other] Applied: { $n } records written.
+}
+afg-ops-aside-done = Set aside: nothing was changed.
+afg-ops-json = The operations, as the AFG wrote them
+afg-ops-unreadable = The AFG wrote operations this site cannot read: { $detail }
+afg-ops-applied-text = { $n ->
+    [0] I applied the proposed changes: no record was written.
+    [one] I applied the proposed changes: one record written.
+   *[other] I applied the proposed changes: { $n } records written.
+}
+afg-ops-aside-text = I set the proposed changes aside: nothing was changed.
+afg-ops-preparing = The AFG is preparing changes to propose…
+account-tokens-title = Access tokens for an AI assistant (MCP)
+account-tokens-intro = A token lets an AI assistant elsewhere — ChatGPT, Claude, or any other that speaks MCP — read the family's archive as your account, and change it if the token may write. It never does more than your account may.
+account-tokens-closed = The MCP of this site is closed: no token opens anything until an administrator opens it.
+account-tokens-open-it = Open it
+account-token-made = Token “{ $label }” made.
+account-token-once = Copy it now: it is shown this once, and only a fingerprint of it is kept. Whoever holds it acts as your account.
+account-token-value = The token
+account-token-address = The MCP's address
+account-token-address-with = The address with the token in it
+account-token-address-with-hint = For an assistant that takes an address and nothing else, such as a ChatGPT or Claude connector: keep it as secret as the token.
+account-token-writes = reads and writes
+account-token-reads = reads only
+account-token-made-on = made { $date }
+account-token-used-on = last used { $date }
+account-token-never-used = never used
+account-token-revoke = Revoke
+account-token-revoked = The token is revoked: it opens nothing any more.
+account-tokens-none = No token yet.
+account-token-label = Name of the token
+account-token-label-example = ChatGPT, Claude on the laptop…
+account-token-write = It may change the archive, as this account may
+account-token-make = Make a token
+account-tokens-too-many = An account keeps ten tokens at most: revoke one to make another.
+account-tokens-how = The guide of the personal assistant explains how to connect ChatGPT, Claude and the others, with the community connector ax-genealogy.
+account-tokens-guide = Read the guide
+account-tokens-connector = Download the connector for Claude Desktop (.mcpb)
+afg-mcp = MCP for AI assistants elsewhere
+afg-mcp-intro = The MCP lets an AI assistant elsewhere — ChatGPT, Claude, or any other that speaks the Model Context Protocol — read and change the archive as one account, with a token that account made on its own page. Each token does what its account may, and nothing more.
+afg-mcp-state = State
+afg-mcp-open = open
+afg-mcp-shut = closed
+afg-mcp-address = Address
+afg-mcp-address-relative = after the site’s public address, not set yet: the console sets it.
+afg-mcp-tokens = Tokens of active accounts
+afg-mcp-privacy = Whatever an account may read leaves for the company whose assistant reads it, the living included. Open the MCP only if the family agrees.
+afg-mcp-switch = Open the MCP to accounts' tokens
+afg-mcp-close = Close the MCP
+afg-mcp-opened = The MCP is open: accounts' tokens are accepted.
+afg-mcp-closed = The MCP is closed: tokens are kept, and open nothing.
+assistant-guide-title = Keeping the family's genealogy through the AFG
+assistant-guide-reader = Your account reads the archive and does not change it: the AFG answers your questions but proposes no change. An administrator can give your account the contributor role.

@@ -45,18 +45,63 @@ pub async fn page(
         Some("forgotten") => Some(chrome.t("account-brain-forgotten")),
         Some("forgotten-all") => Some(chrome.t("account-brain-forgotten-all")),
         Some("already") => Some(chrome.t("account-brain-already")),
+        Some("revoked") => Some(chrome.t("account-token-revoked")),
         _ => None,
     };
-    render_page(&state, &chrome, &viewer, notice, None, StatusCode::OK)
+    render_page(
+        &state,
+        &chrome,
+        &viewer,
+        &headers,
+        notice,
+        None,
+        StatusCode::OK,
+    )
 }
 
 fn render_page(
     state: &Shared,
     chrome: &render::Chrome,
     viewer: &crate::access::Viewer,
+    headers: &HeaderMap,
     notice: Option<String>,
     error: Option<String>,
     status: StatusCode,
+) -> Response {
+    render_with(state, chrome, viewer, headers, notice, error, status, None)
+}
+
+/// The address AI assistants reach the MCP at: under the public address
+/// when one is set, else under the one this page was asked for.
+fn mcp_url(state: &Shared, headers: &HeaderMap) -> String {
+    let base = state.site().public_base().unwrap_or_else(|| {
+        let host = headers
+            .get("x-forwarded-host")
+            .or_else(|| headers.get(axum::http::header::HOST))
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.split(',').next())
+            .map(str::trim)
+            .unwrap_or("localhost");
+        let scheme = if crate::session::is_tls(headers) {
+            "https"
+        } else {
+            "http"
+        };
+        format!("{scheme}://{host}")
+    });
+    format!("{base}/mcp")
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_with(
+    state: &Shared,
+    chrome: &render::Chrome,
+    viewer: &crate::access::Viewer,
+    headers: &HeaderMap,
+    notice: Option<String>,
+    error: Option<String>,
+    status: StatusCode,
+    minted: Option<(String, String)>,
 ) -> Response {
     // The account as stored now, not as the session saw it at sign-in.
     let user = viewer
@@ -120,6 +165,22 @@ fn render_page(
             brain,
             notice,
             error,
+            tokens => user.as_ref().map(|u| u.api_tokens.iter().map(|t| json!({
+                "id": t.id,
+                "label": t.label,
+                "write": t.write,
+                "created_at": t.created_at,
+                "last_used": t.last_used,
+            })).collect::<Vec<_>>()).unwrap_or_default(),
+            mcp => json!({
+                "open": state.site().mcp,
+                "admin": viewer.is_admin(),
+                "may_write": viewer.may_write(),
+                "url": mcp_url(state, headers),
+                "most": crate::tokens::MOST,
+                "label_max": crate::tokens::LABEL_MAX,
+            }),
+            minted => minted.map(|(label, token)| json!({"label": label, "token": token})),
         },
     );
     *resp.status_mut() = status;
@@ -154,6 +215,7 @@ pub async fn person(
             &state,
             &chrome,
             &viewer,
+            &headers,
             None,
             Some(chrome.t("account-emergency-page")),
             StatusCode::BAD_REQUEST,
@@ -178,6 +240,7 @@ pub async fn person(
                     &state,
                     &chrome,
                     &viewer,
+                    &headers,
                     None,
                     Some(msg),
                     StatusCode::BAD_REQUEST,
@@ -189,6 +252,7 @@ pub async fn person(
                     &state,
                     &chrome,
                     &viewer,
+                    &headers,
                     None,
                     Some(msg),
                     StatusCode::BAD_REQUEST,
@@ -207,6 +271,7 @@ pub async fn person(
             &state,
             &chrome,
             &viewer,
+            &headers,
             None,
             Some(chrome.t("account-person-io")),
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -254,6 +319,7 @@ pub async fn forget(
             &state,
             &chrome,
             &viewer,
+            &headers,
             None,
             Some(chrome.t("account-emergency-page")),
             StatusCode::BAD_REQUEST,
@@ -268,6 +334,7 @@ pub async fn forget(
                 &state,
                 &chrome,
                 &viewer,
+                &headers,
                 None,
                 Some(chrome.t("account-brain-confirm-needed")),
                 StatusCode::BAD_REQUEST,
@@ -303,8 +370,127 @@ pub async fn forget(
                 &state,
                 &chrome,
                 &viewer,
+                &headers,
                 None,
                 Some(chrome.t_args("account-brain-error", &[("error", e.to_string().into())])),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
+}
+
+#[derive(Deserialize, Default)]
+pub struct TokenForm {
+    #[serde(default)]
+    label: String,
+    /// Present for a token that may write.
+    #[serde(default)]
+    write: Option<String>,
+}
+
+/// `POST /account/tokens` — a new access token for the MCP (docs/adr/0045
+/// §3), shown on the page this once and never again: only its digest is
+/// kept. Refused while the MCP is closed.
+pub async fn make_token(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(form): Form<TokenForm>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    if !viewer.signed_in() {
+        return Redirect::to("/admin/login").into_response();
+    }
+    let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
+    let refuse = |key: &str, status| {
+        render_page(
+            &state,
+            &chrome,
+            &viewer,
+            &headers,
+            None,
+            Some(chrome.t(key)),
+            status,
+        )
+    };
+    let Some(id) = viewer.user.as_ref().map(|u| u.id.clone()) else {
+        return refuse("account-emergency-page", StatusCode::BAD_REQUEST);
+    };
+    if !state.site().mcp {
+        return refuse("account-tokens-closed", StatusCode::FORBIDDEN);
+    }
+    let write = form.write.is_some() && viewer.may_write();
+    let (kept, token) = crate::tokens::mint(&form.label, write, &crate::view::now_iso8601());
+    let label = kept.label.clone();
+    let added = state.acl_mutate(move |acl| {
+        let Some(u) = acl.users.iter_mut().find(|u| u.id == id) else {
+            return false;
+        };
+        if u.api_tokens.len() >= crate::tokens::MOST {
+            return false;
+        }
+        u.api_tokens.push(kept);
+        true
+    });
+    match added {
+        Ok(true) => {
+            tracing::info!(account = %viewer.name(), write, "an access token for the MCP was made");
+            render_with(
+                &state,
+                &chrome,
+                &viewer,
+                &headers,
+                None,
+                None,
+                StatusCode::OK,
+                Some((label, token)),
+            )
+        }
+        Ok(false) => refuse("account-tokens-too-many", StatusCode::BAD_REQUEST),
+        Err(e) => {
+            tracing::error!(error = %e, "could not store an access token");
+            refuse("account-person-io", StatusCode::INTERNAL_SERVER_ERROR)
+        }
+    }
+}
+
+/// `POST /account/tokens/:id/revoke` — a token of this account's, gone: it
+/// opens nothing any more.
+pub async fn revoke_token(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    axum::extract::Path(tid): axum::extract::Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    if !viewer.signed_in() {
+        return Redirect::to("/admin/login").into_response();
+    }
+    let Some(id) = viewer.user.as_ref().map(|u| u.id.clone()) else {
+        return Redirect::to("/account").into_response();
+    };
+    let removed = state.acl_mutate(move |acl| {
+        acl.users
+            .iter_mut()
+            .find(|u| u.id == id)
+            .map(|u| {
+                let before = u.api_tokens.len();
+                u.api_tokens.retain(|t| t.id != tid);
+                before != u.api_tokens.len()
+            })
+            .unwrap_or(false)
+    });
+    match removed {
+        Ok(_) => Redirect::to("/account?done=revoked#account-tokens").into_response(),
+        Err(e) => {
+            tracing::error!(error = %e, "could not revoke an access token");
+            let chrome =
+                render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
+            render_page(
+                &state,
+                &chrome,
+                &viewer,
+                &headers,
+                None,
+                Some(chrome.t("account-person-io")),
                 StatusCode::INTERNAL_SERVER_ERROR,
             )
         }

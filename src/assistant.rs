@@ -192,6 +192,25 @@ pub enum Role {
     Assistant,
     /// The AFG could not answer: what went wrong, said in the thread.
     Error,
+    /// The member applied the operations an answer proposed, or set them
+    /// aside (docs/adr/0045 §2): what became of them, said in the thread.
+    Done,
+}
+
+/// What became of the operations an answer of the AFG proposed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OpsDone {
+    /// The answer that proposed them, and which of its blocks.
+    pub message: String,
+    pub block: usize,
+    /// Applied, or set aside.
+    pub applied: bool,
+    /// The records written.
+    #[serde(default)]
+    pub records: usize,
+    /// The ids the operations' `ref`s took, for the AFG's next answers.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub refs: std::collections::BTreeMap<String, String>,
 }
 
 /// What a file sent with a message is.
@@ -241,6 +260,9 @@ pub struct Message {
     pub cost_usd: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seconds: Option<u64>,
+    /// On a `done` message: which operations, and what became of them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ops: Option<OpsDone>,
 }
 
 impl Message {
@@ -258,6 +280,7 @@ impl Message {
             output_tokens: None,
             cost_usd: None,
             seconds: None,
+            ops: None,
         }
     }
 }
@@ -1005,12 +1028,48 @@ pub struct Asker<'a> {
     pub language: &'a str,
 }
 
+/// What a member may have the AFG do to the family's archive
+/// (docs/adr/0045).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Commands {
+    /// Their account reads the archive and cannot change it.
+    Read,
+    /// The AFG proposes changes in `axgf-ops` blocks, which they apply.
+    Write,
+}
+
+/// What the AFG is told of the commands, when the archive goes with the
+/// project.
+fn commands_text(commands: Commands) -> String {
+    match commands {
+        Commands::Read => "\n\nTheir account may read the archive, not change it. When they ask \
+            for a change, say that an administrator can let their account write, and write no \
+            axgf-ops block."
+            .to_string(),
+        Commands::Write => format!(
+            "\n\nYou can also change the archive when they ask you to: add a person, correct \
+             a name or a date, record a baptism or a burial, unite two people, add a child. You \
+             never change it yourself: you propose, they decide. Say in a sentence or two what \
+             you propose, then end your answer with one block, and nothing after it but a \
+             <memory> block if any:\n\n```axgf-ops\n[ {{\"op\": \"…\", …}} ]\n```\n\nThey \
+             see in plain words what it does, then apply it or set it aside; nothing changes \
+             before they apply it. Everything in one block is applied together, or nothing is. \
+             Name people and families by the ids of the archive you were given, and never \
+             invent one. When a record is ambiguous or a fact uncertain, ask before you \
+             propose. Never say a change is made: they apply it, and the conversation tells \
+             you when they have.\n\n<operations>\n{}\n</operations>",
+            crate::ops::CATALOGUE
+        ),
+    }
+}
+
 /// The system prompt of a project's conversations.
 pub fn system_prompt(
     asker: &Asker,
     project: &Project,
     memory: &str,
     archive: Option<&crate::afg::Archive>,
+    commands: Commands,
 ) -> String {
     let mut s = String::from(
         "You are the Artificial family genealogist (AFG) of an ax·genealogy archive, here \
@@ -1057,15 +1116,19 @@ pub fn system_prompt(
          project's memory. Never repeat there what the memory already holds.",
     );
     match archive {
-        Some(a) => s.push_str(&format!(
-            "\n\nThe family's archive goes with this project: the AXGF bundle given with \
-             the conversation, {} JSON files, {} persons, {} families, without the \
-             photographs. When you answer from it, name the records your answer rests on.",
-            a.count, a.persons, a.families
-        )),
+        Some(a) => {
+            s.push_str(&format!(
+                "\n\nThe family's archive goes with this project: the AXGF bundle given with \
+                 the conversation, {} JSON files, {} persons, {} families, without the \
+                 photographs. When you answer from it, name the records your answer rests on.",
+                a.count, a.persons, a.families
+            ));
+            s.push_str(&commands_text(commands));
+        }
         None => s.push_str(
             "\n\nThe family's archive does not go with this project: if they ask about the \
-             family's records, tell them it can be given to you in the project's settings.",
+             family's records, or to change them, tell them it can be given to you in the \
+             project's settings.",
         ),
     }
     s
@@ -1153,7 +1216,8 @@ pub fn turns(space: &Space, pid: &str, messages: &[Message]) -> Vec<Turn> {
     }
     for (i, m) in said.iter().enumerate().skip(start) {
         let speaker = match m.role {
-            Role::User => Speaker::User,
+            // What the member did with proposed operations is theirs to say.
+            Role::User | Role::Done => Speaker::User,
             _ => Speaker::Assistant,
         };
         let mut parts = Vec::new();
@@ -1162,7 +1226,14 @@ pub fn turns(space: &Space, pid: &str, messages: &[Message]) -> Vec<Turn> {
                 parts.push(file_part(space, pid, f, i >= recent_from));
             }
         }
-        if !m.text.trim().is_empty() {
+        if m.role == Role::Done {
+            let mut said = m.text.trim().to_string();
+            if let Some(refs) = m.ops.as_ref().map(|o| &o.refs).filter(|r| !r.is_empty()) {
+                let pairs: Vec<String> = refs.iter().map(|(r, id)| format!("{r} = {id}")).collect();
+                said.push_str(&format!("\nIds: {}", pairs.join(", ")));
+            }
+            parts.push(Part::Text(format!("[{said}]")));
+        } else if !m.text.trim().is_empty() {
             parts.push(Part::Text(m.text.clone()));
         }
         if parts.is_empty() {
@@ -1201,9 +1272,16 @@ pub fn chat_prompt(
     project: &Project,
     messages: &[Message],
     archive: Option<&crate::afg::Archive>,
+    commands: Commands,
 ) -> ChatPrompt {
     ChatPrompt {
-        system: system_prompt(asker, project, &space.recall(&project.id), archive),
+        system: system_prompt(
+            asker,
+            project,
+            &space.recall(&project.id),
+            archive,
+            commands,
+        ),
         context: archive.map(archive_context).unwrap_or_default(),
         turns: turns(space, &project.id, messages),
     }
@@ -1491,7 +1569,7 @@ mod tests {
             person: None,
             language: "French",
         };
-        let prompt = chat_prompt(&space, &asker, &p, &ms, None);
+        let prompt = chat_prompt(&space, &asker, &p, &ms, None, Commands::Write);
         assert!(prompt
             .system
             .contains("<code-of-conduct>\nTutoie-moi.\n</code-of-conduct>"));

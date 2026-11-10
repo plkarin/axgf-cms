@@ -8,6 +8,9 @@
     {%- else %}
     <div class="as-typing" aria-hidden="true"><i></i><i></i><i></i></div>
     {%- endif %}
+    {%- if preparing %}
+    <p class="as-ops-preparing small">{{ ic.icon("pen") }}<span>{{ t("afg-ops-preparing") }}</span></p>
+    {%- endif %}
     <div class="as-meta small muted">{{ t("assistant-writing") }} · {{ t("afg-run-seconds", s=seconds) }}</div>
   </div>
 </article>

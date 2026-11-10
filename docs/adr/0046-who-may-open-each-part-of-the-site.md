@@ -1,6 +1,6 @@
 # ADR 0046 — Who may open each part of the site
 
-**Status:** accepted (1.15.0) · **Builds on:** docs/adr/0012 (the rules of
+**Status:** accepted, v1.15.0 (2026-11-10) · **Builds on:** docs/adr/0012 (the rules of
 entry), docs/adr/0001 (the lens), docs/adr/0002 §9 (the masthead's
 controls) · **Applies to:** `src/site.rs` (`Doors`, `Level`, `Part`),
 `src/doors.rs`, `src/routes/mod.rs` (`doors`), `src/render.rs`

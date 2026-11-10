@@ -205,9 +205,10 @@ If you write your own instead, five things matter:
 
 * `X-Forwarded-Proto` — without it the session cookie is issued without
   `Secure`, over TLS, and nothing says so.
-* `X-Forwarded-For`, **set** from the peer rather than appended to. The login
-  throttle counts per client, and a client that supplies its own value picks
-  its own bucket.
+* `X-Forwarded-For`, **set** from the peer rather than appended to. The
+  sign-in jail counts per client (README, "Rate limiting and jail"), and a
+  client that supplies its own value picks its own bucket — or, without the
+  header at all, every visitor shares the proxy's.
 * a body limit just above the 200 MB a request with a file may be. A file is
   at most 50 MB; a larger one is read to its end and refused by the product's
   own page rather than by a bare 413.

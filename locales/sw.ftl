@@ -159,6 +159,15 @@ login-submit = Ingia
 login-wrong = Jina la mtumiaji na nenosiri hayalingani.
 login-token-wrong = Tokeni hiyo si sahihi.
 login-throttled = Majaribio mengi mno yameshindwa. Subiri dakika chache kisha ujaribu tena.
+login-jailed-minutes = Majaribio mengi mno yameshindwa kutoka anwani hii. Jaribu tena baada ya { $n ->
+        [one] dakika moja
+       *[other] dakika { $n }
+    }.
+login-jailed-hours = Majaribio mengi mno yameshindwa kutoka anwani hii. Jaribu tena baada ya { $n ->
+        [one] saa moja
+       *[other] saa { $n }
+    }.
+login-token-closed = Tokeni nyingi mno zisizo sahihi, kutoka anwani zote kwa pamoja: tokeni ya dharura inakataliwa kwa kila mtu hadi mwisho wa saa hii. Kuanzisha upya huduma kunaifungua tena.
 login-no-accounts-title = Usakinishaji huu bado hauna akaunti.
 login-no-accounts-detail = Kwa makusudi hakuna ukurasa wa kuanzisha hapa — kipindi kati ya kusambaza na kuingia kwa mara ya kwanza ndicho hasa ambapo usakinishaji hauna ulinzi, kwa hiyo msimamizi wa kwanza huundwa kutoka kwenye mstari wa amri.
 login-no-accounts-note = Inachapisha nenosiri lililotengenezwa kwenye stderr mara moja tu. Hadi wakati huo njia pekee ya kuingia ni tokeni ya dharura iliyo hapa chini.

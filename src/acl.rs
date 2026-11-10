@@ -569,6 +569,36 @@ pub fn verify_password(password: &str, phc: &str) -> bool {
     }
 }
 
+/// Password checks under way at once, at most: half the cores, one to four.
+///
+/// Each is an Argon2id hash over 19 MiB. Run on the async workers, a burst of
+/// sign-ins held every page for as long as it lasted; run unbounded on the
+/// blocking pool, it would take memory by the gigabyte. Bounded, they queue
+/// and the pages go on.
+fn hashing() -> &'static tokio::sync::Semaphore {
+    static HASHING: std::sync::OnceLock<tokio::sync::Semaphore> = std::sync::OnceLock::new();
+    HASHING.get_or_init(|| {
+        let cores = std::thread::available_parallelism().map_or(2, |n| n.get());
+        tokio::sync::Semaphore::new((cores / 2).clamp(1, 4))
+    })
+}
+
+/// [`verify_password`], off the async workers and a few at a time. The slot
+/// is held by the hash itself, so a reader who gives up waiting does not free
+/// it before the work is done.
+pub async fn check_password(password: String, phc: String) -> bool {
+    let Ok(slot) = hashing().acquire().await else {
+        return false;
+    };
+    tokio::task::spawn_blocking(move || {
+        let ok = verify_password(&password, &phc);
+        drop(slot);
+        ok
+    })
+    .await
+    .unwrap_or(false)
+}
+
 /// A generated password, printed once and never stored in the clear.
 ///
 /// Four groups of five characters from an unambiguous alphabet: no `0`/`O`,

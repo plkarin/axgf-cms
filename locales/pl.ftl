@@ -185,6 +185,19 @@ login-submit = Zaloguj się
 login-wrong = Ta nazwa użytkownika i hasło nie pasują do siebie.
 login-token-wrong = Ten token jest nieprawidłowy.
 login-throttled = Zbyt wiele nieudanych prób. Odczekaj kilka minut i spróbuj ponownie.
+login-jailed-minutes = Zbyt wiele nieudanych prób z tego adresu. Spróbuj ponownie za { $n ->
+        [one] minutę
+        [few] { $n } minuty
+        [many] { $n } minut
+       *[other] { $n } minuty
+    }.
+login-jailed-hours = Zbyt wiele nieudanych prób z tego adresu. Spróbuj ponownie za { $n ->
+        [one] godzinę
+        [few] { $n } godziny
+        [many] { $n } godzin
+       *[other] { $n } godziny
+    }.
+login-token-closed = Zbyt wiele błędnych tokenów, ze wszystkich adresów razem: token awaryjny jest odrzucany wszystkim do końca godziny. Ponowne uruchomienie usługi znów go otwiera.
 login-no-accounts-title = Ta instalacja nie ma jeszcze żadnych kont.
 login-no-accounts-detail = Celowo nie ma tu strony konfiguracji — okno między wdrożeniem a pierwszym logowaniem to dokładnie ten moment, w którym instalacja jest bezbronna, więc pierwszego administratora tworzy się z wiersza poleceń.
 login-no-accounts-note = Wypisuje wygenerowane hasło na stderr raz i nigdy więcej. Do tego czasu jedynym wejściem jest awaryjny token poniżej.

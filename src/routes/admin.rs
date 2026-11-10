@@ -17,6 +17,7 @@ use crate::access::Viewer;
 use crate::admin::{
     apply_form, fields_for, get_path, kind_from_str, paginate, policy_from_str, KINDS,
 };
+use crate::jail::{Refusal, Way};
 use crate::routes::Shared;
 use crate::state::MutationOutcome;
 use crate::{auth, documents, render, view};
@@ -207,9 +208,12 @@ pub struct LoginForm {
 
 /// `POST /admin/login`
 ///
-/// Throttled on two keys: the username, so one account cannot be ground
+/// Counted on two keys: the username, so one account cannot be ground
 /// through a dictionary, and the client address, so one client cannot grind
-/// through the accounts. Either being exhausted refuses the attempt.
+/// through the accounts. An address that keeps failing serves a term in the
+/// sign-in jail ([`crate::jail`]), refused with a 429 that says how long; an
+/// account that keeps failing from many addresses is refused for the rest of
+/// the quarter hour ([`crate::session::MAX_ACCOUNT_FAILURES`]).
 ///
 /// The reply is the same for an unknown username, a wrong password and a
 /// disabled account. Distinguishing them would turn this form into an oracle
@@ -222,7 +226,10 @@ pub async fn login(
     Form(f): Form<LoginForm>,
 ) -> Response {
     let secure = crate::session::is_tls(&headers);
-    let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+    let peer = peer.map(|c| c.0);
+    let client = crate::session::client_key(&headers, peer);
+    let addr = crate::session::client_addr(&headers, peer)
+        .map_or_else(|| "unknown".to_string(), |ip| ip.to_string());
     // Nobody is signed in yet by definition, so the chrome here comes from the
     // cookie and Accept-Language alone — which is exactly right: the sign-in
     // page should already be in the reader's language before they have an
@@ -230,20 +237,31 @@ pub async fn login(
     let chrome = render::Chrome::resolve(&auth::viewer(&state, &headers), &headers, "/admin/login")
         .with_archive(&state);
 
-    // Throttled before anything is compared, and before the token branch
+    // Charged before anything is compared, and before the token branch
     // rather than after it: the token used to be checked above this gate, so
     // guesses at it were counted and never refused. A shared token an operator
     // chose by hand is exactly the credential that needs the limit most.
-    if state.sessions().is_throttled(&client) {
-        tracing::warn!(client = %client, "refused a throttled sign-in attempt");
-        return login_refused(&state, &chrome, &chrome.t("login-throttled"));
-    }
+    let way = if f.token.is_empty() {
+        Way::Password
+    } else {
+        Way::Token
+    };
+    let charge = match state.sessions().jail().begin(&client, &addr, way) {
+        Ok(charge) => charge,
+        Err(refusal) => {
+            // Not at `warn`: a term is written once, when it starts, and an
+            // address that keeps knocking would fill the journal otherwise.
+            tracing::debug!(client = %addr, "refused a sign-in attempt from a jailed address");
+            return login_jailed(&state, &chrome, refusal);
+        }
+    };
 
     // The emergency token, kept as a recovery path and nothing more.
-    if !f.token.is_empty() {
+    if way == Way::Token {
         if !state.admin_token().is_empty()
             && crate::session::constant_time_eq(f.token.as_bytes(), state.admin_token().as_bytes())
         {
+            charge.succeeded();
             let cookie = state.sessions().open(None, true);
             tracing::warn!(
                 client = %client,
@@ -259,43 +277,46 @@ pub async fn login(
             )
                 .into_response();
         }
-        state.sessions().record_failure(&client);
+        charge.failed();
         // Loudly, and whether it worked or not: somebody guessing at the
         // emergency token is the one authentication event in this application
         // worth waking up for.
         tracing::warn!(
-            client = %client,
-            "a wrong emergency admin token was offered"
+            client = %addr,
+            "a wrong emergency admin token was offered from {addr}"
         );
         return login_refused(&state, &chrome, &chrome.t("login-token-wrong"));
     }
 
     let username = f.username.trim().to_ascii_lowercase();
-    if state.sessions().is_throttled(&username) {
+    if state.sessions().account_throttled(&username) {
+        // Counted against the address too: grinding at an account already
+        // shut is still grinding.
+        charge.failed();
         return login_refused(&state, &chrome, &chrome.t("login-throttled"));
     }
 
     let user = state.acl_read(|acl| acl.active(&username).cloned());
-    let ok = match &user {
-        Some(u) => crate::acl::verify_password(&f.password, &u.password_hash),
-        // Hash anyway against a throwaway so an unknown username costs the
-        // same wall-clock time as a known one. Argon2id at these parameters
-        // takes long enough that skipping it would be plainly measurable.
-        None => {
-            let _ = crate::acl::verify_password(&f.password, crate::acl::DUMMY_HASH);
-            false
-        }
-    };
+    // Hashed anyway against a throwaway when the username is unknown, so it
+    // costs the same wall-clock time as a known one: Argon2id at these
+    // parameters takes long enough that skipping it would be plainly
+    // measurable.
+    let hash = user
+        .as_ref()
+        .map_or(crate::acl::DUMMY_HASH, |u| u.password_hash.as_str())
+        .to_string();
+    let ok = crate::acl::check_password(f.password.clone(), hash).await && user.is_some();
 
     let Some(user) = user.filter(|_| ok) else {
-        state.sessions().record_failure(&client);
+        charge.failed();
         if !username.is_empty() {
             state.sessions().record_failure(&username);
         }
+        tracing::info!(client = %addr, "a sign-in failed from {addr}");
         return login_refused(&state, &chrome, &chrome.t("login-wrong"));
     };
 
-    state.sessions().clear_failures(&client);
+    charge.succeeded();
     state.sessions().clear_failures(&username);
 
     // The right password, under a policy that takes passwords away from this
@@ -328,6 +349,45 @@ pub async fn login(
         Redirect::to("/admin"),
     )
         .into_response()
+}
+
+/// A sign-in refused before anything was compared: a 429, with how long to
+/// wait in the reader's language and in `Retry-After`.
+fn login_jailed(state: &Shared, chrome: &render::Chrome, refusal: Refusal) -> Response {
+    let message = match refusal {
+        Refusal::Jailed(wait) => wait_message(chrome, wait),
+        Refusal::TokenClosed(_) => chrome.t("login-token-closed"),
+    };
+    state.events().record(crate::events::Kind::SignInFailed);
+    (
+        StatusCode::TOO_MANY_REQUESTS,
+        [retry_after(refusal.wait())],
+        render::page_with(chrome, "admin_login.html", login_context(state, &message)),
+    )
+        .into_response()
+}
+
+/// A wait in whole seconds, rounded up, and never nothing.
+fn whole_seconds(wait: std::time::Duration) -> u64 {
+    (wait.as_secs() + u64::from(wait.subsec_nanos() > 0)).max(1)
+}
+
+/// "Try again in …", in minutes up to the hour and in hours past it,
+/// rounded up: an estimate too short only sends the reader back too soon.
+pub(super) fn wait_message(chrome: &render::Chrome, wait: std::time::Duration) -> String {
+    let secs = whole_seconds(wait);
+    let minutes = secs.div_ceil(60);
+    if minutes < 60 {
+        chrome.t_args("login-jailed-minutes", &[("n", (minutes as i64).into())])
+    } else {
+        let hours = secs.div_ceil(3600);
+        chrome.t_args("login-jailed-hours", &[("n", (hours as i64).into())])
+    }
+}
+
+/// The `Retry-After` header for a wait, in whole seconds.
+pub(super) fn retry_after(wait: std::time::Duration) -> (header::HeaderName, String) {
+    (header::RETRY_AFTER, whole_seconds(wait).to_string())
 }
 
 fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str) -> Response {

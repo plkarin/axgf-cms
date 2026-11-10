@@ -6,6 +6,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+The sign-in jail and rate limiting the operator asked for on 10 November
+2026, with ax-genealogy.com's sign-in page in front of the internet
+(docs/adr/0047).
+
+### Added
+
+- **The sign-in jail.** An address that fails eight sign-ins in a quarter of
+  an hour, or offers three wrong emergency tokens, is shut out of the
+  sign-in, the emergency token and the registration for 15 minutes, then
+  1 hour, 6 hours and a day, and a day again while it keeps coming back. The
+  refusal is a 429 with `Retry-After`, and the page says how long. Each term
+  is one line in the journal with the address in it, which the README's
+  fail2ban filter bans on. Wrong emergency tokens are also counted from every
+  address together: twenty in an hour, and the token is refused to everyone
+  until the hour is out. A restart empties the jail.
+- **Rate limiting at the door.** The shipped nginx configuration counts the
+  sign-in and registration posts per address — ten a minute, a burst of ten,
+  a 429 past them — and never the page itself. The README has the fail2ban
+  filter and jail, and what to do when the proxy is on another machine.
+
+### Changed
+
+- **Attempts are counted before they are compared.** A burst of sign-ins sent
+  at once used to pass the count together and cost a password hash each; the
+  hashes now run off the request workers, a few at a time, so a burst no
+  longer holds every page of the site.
+- **An account is shut only by many addresses**: 24 failures in a quarter of
+  an hour, where 8 from a single address used to shut it against its owner.
+- **The client address is an address.** `X-Forwarded-For` is read only when
+  it holds one; an IPv6 client is counted with its /64.
+
 ### Fixed
 
 - **The import of a family through the proxy.** The nginx and Caddy

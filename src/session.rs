@@ -97,8 +97,14 @@ pub fn set_instance(bundle: &Path) {
     let _ = INSTANCE_COOKIE.set(instance_cookie_name(bundle));
 }
 
-/// Failed logins allowed per username, and per client address, in a window.
+/// Attempts to register allowed per client address in a window. A client
+/// address that keeps failing to sign in is jailed instead ([`crate::jail`]).
 pub const MAX_ATTEMPTS: u32 = 8;
+/// Failed sign-ins allowed per account in a window, from every address
+/// together. Three addresses' worth: one address is jailed long before it
+/// could shut the account against its owner, and guesses spread over many
+/// addresses still run out.
+pub const MAX_ACCOUNT_FAILURES: u32 = 3 * crate::jail::MAX_FAILURES;
 /// The window failed logins are counted over.
 pub const ATTEMPT_WINDOW: Duration = Duration::from_secs(15 * 60);
 
@@ -112,11 +118,12 @@ pub struct Session {
     expires: SystemTime,
 }
 
-/// Live sessions and the login throttle.
+/// Live sessions, the login throttle and the sign-in jail.
 pub struct SessionStore {
     secret: [u8; 32],
     sessions: RwLock<HashMap<String, Session>>,
     attempts: RwLock<HashMap<String, Attempts>>,
+    jail: crate::jail::Jail,
     /// Where the accounts' sessions are kept between runs. `None` keeps them
     /// in memory only.
     file: Option<PathBuf>,
@@ -165,6 +172,7 @@ impl SessionStore {
             secret,
             sessions: RwLock::new(HashMap::new()),
             attempts: RwLock::new(HashMap::new()),
+            jail: crate::jail::Jail::new(),
             file: None,
             writing: Mutex::new(()),
         }
@@ -373,11 +381,25 @@ impl SessionStore {
 
     // -- login throttling ---------------------------------------------------
 
-    /// Whether `key` — a username or a client address — is out of attempts.
+    /// The sign-in jail, where client addresses are counted.
+    pub fn jail(&self) -> &crate::jail::Jail {
+        &self.jail
+    }
+
+    /// Whether `key` — a client's registrations — is out of attempts.
     pub fn is_throttled(&self, key: &str) -> bool {
+        self.count_reaches(key, MAX_ATTEMPTS)
+    }
+
+    /// Whether the account `username` is out of failed sign-ins.
+    pub fn account_throttled(&self, username: &str) -> bool {
+        self.count_reaches(username, MAX_ACCOUNT_FAILURES)
+    }
+
+    fn count_reaches(&self, key: &str, limit: u32) -> bool {
         let map = self.attempts.read().unwrap_or_else(|e| e.into_inner());
         match map.get(key) {
-            Some(a) if a.window_start.elapsed() < ATTEMPT_WINDOW => a.count >= MAX_ATTEMPTS,
+            Some(a) if a.window_start.elapsed() < ATTEMPT_WINDOW => a.count >= limit,
             _ => false,
         }
     }
@@ -451,22 +473,47 @@ pub fn is_tls(headers: &HeaderMap) -> bool {
         })
 }
 
-/// The client's address, for rate limiting.
+/// The client's address.
 ///
-/// `X-Forwarded-For`'s first entry when a proxy set one, else the peer address
-/// axum recorded. Absent both, every anonymous attempt shares one bucket,
-/// which throttles harder rather than less.
+/// `X-Forwarded-For`'s first entry when a proxy set one and it reads as an
+/// address, else the peer address axum recorded. Only an address: a value
+/// that is not one used to be taken whole, so whoever could set the header
+/// chose their own bucket and wrote what they liked into the journal line
+/// that names them.
+pub fn client_addr(
+    headers: &HeaderMap,
+    peer: Option<std::net::SocketAddr>,
+) -> Option<std::net::IpAddr> {
+    use std::net::{IpAddr, SocketAddr};
+    let forwarded = headers
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .and_then(|xff| xff.split(',').next())
+        .map(str::trim)
+        .and_then(|first| {
+            first
+                .parse::<IpAddr>()
+                .ok()
+                .or_else(|| first.parse::<SocketAddr>().ok().map(|a| a.ip()))
+        });
+    forwarded.or(peer.map(|a| a.ip())).map(|ip| match ip {
+        IpAddr::V6(v6) => v6.to_ipv4_mapped().map_or(IpAddr::V6(v6), IpAddr::V4),
+        v4 => v4,
+    })
+}
+
+/// The bucket a client's attempts count against: its address, or for IPv6
+/// the /64 it is in, since an IPv6 client can take any address of its /64 at
+/// will. Without an address, every anonymous attempt shares one bucket, which
+/// throttles harder rather than less.
 pub fn client_key(headers: &HeaderMap, peer: Option<std::net::SocketAddr>) -> String {
-    if let Some(xff) = headers.get("x-forwarded-for").and_then(|v| v.to_str().ok()) {
-        if let Some(first) = xff.split(',').next() {
-            let first = first.trim();
-            if !first.is_empty() {
-                return first.to_string();
-            }
+    use std::net::{IpAddr, Ipv6Addr};
+    match client_addr(headers, peer) {
+        Some(IpAddr::V6(v6)) => {
+            let s = v6.segments();
+            format!("{}/64", Ipv6Addr::new(s[0], s[1], s[2], s[3], 0, 0, 0, 0))
         }
-    }
-    match peer {
-        Some(a) => a.ip().to_string(),
+        Some(ip) => ip.to_string(),
         None => "unknown".into(),
     }
 }
@@ -628,6 +675,30 @@ mod tests {
             HeaderValue::from_static("203.0.113.7, 10.0.0.1"),
         );
         assert_eq!(client_key(&h, Some(peer)), "203.0.113.7");
+    }
+
+    #[test]
+    fn the_client_key_is_an_address_or_nothing() {
+        let peer: std::net::SocketAddr = "127.0.0.1:5555".parse().unwrap();
+        let key = |xff: &'static str| {
+            let mut h = HeaderMap::new();
+            h.insert("x-forwarded-for", HeaderValue::from_static(xff));
+            client_key(&h, Some(peer))
+        };
+        assert_eq!(key("203.0.113.7:4711"), "203.0.113.7");
+        assert_eq!(key("::ffff:203.0.113.7"), "203.0.113.7");
+        assert_eq!(
+            key("2001:db8:1:2:aaaa:bbbb:cccc:dddd"),
+            "2001:db8:1:2::/64",
+            "an IPv6 client with its whole /64"
+        );
+        assert_eq!(key("[2001:db8:1:2::9]:443"), "2001:db8:1:2::/64");
+        assert_eq!(
+            key("1.2.3.4 shut out for 900 s"),
+            "127.0.0.1",
+            "not an address: the peer's, and nothing written in the journal"
+        );
+        assert_eq!(key("unknown"), "127.0.0.1");
     }
 
     #[test]

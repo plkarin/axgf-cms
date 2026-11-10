@@ -165,6 +165,15 @@ login-submit = Se connecter
 login-wrong = Ce nom d'utilisateur et ce mot de passe ne correspondent pas.
 login-token-wrong = Ce jeton n'est pas correct.
 login-throttled = Trop de tentatives échouées. Attendez quelques minutes et réessayez.
+login-jailed-minutes = Trop de tentatives échouées depuis cette adresse. Réessayez dans { $n ->
+        [one] une minute
+       *[other] { $n } minutes
+    }.
+login-jailed-hours = Trop de tentatives échouées depuis cette adresse. Réessayez dans { $n ->
+        [one] une heure
+       *[other] { $n } heures
+    }.
+login-token-closed = Trop de jetons faux, toutes adresses confondues : le jeton de secours est refusé à tous jusqu'à la fin de l'heure. Redémarrer le service le rouvre.
 login-no-accounts-title = Cette installation n'a encore aucun compte.
 login-no-accounts-detail = Il n'y a délibérément pas de page d'installation ici — la fenêtre entre le déploiement et la première connexion est précisément le moment où une installation n'est pas protégée : le premier administrateur est donc créé en ligne de commande.
 login-no-accounts-note = Un mot de passe généré est affiché une seule fois sur la sortie d'erreur. D'ici là, le seul accès est le jeton de secours ci-dessous.

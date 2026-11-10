@@ -182,6 +182,15 @@ login-submit = Entrar
 login-wrong = Esse nome de utilizador e essa palavra-passe não correspondem.
 login-token-wrong = Esse testemunho não está correcto.
 login-throttled = Demasiadas tentativas falhadas. Espere alguns minutos e tente outra vez.
+login-jailed-minutes = Demasiadas tentativas falhadas a partir deste endereço. Tente outra vez dentro de { $n ->
+        [one] um minuto
+       *[other] { $n } minutos
+    }.
+login-jailed-hours = Demasiadas tentativas falhadas a partir deste endereço. Tente outra vez dentro de { $n ->
+        [one] uma hora
+       *[other] { $n } horas
+    }.
+login-token-closed = Demasiados testemunhos errados, contando todos os endereços: o testemunho de emergência é recusado a todos até ao fim da hora. Reiniciar o serviço volta a abri-lo.
 login-no-accounts-title = Esta instalação ainda não tem contas.
 login-no-accounts-detail = Não há aqui página de configuração de propósito: o intervalo entre a entrada em serviço e o primeiro acesso é precisamente o momento em que uma instalação está desprotegida, por isso o primeiro administrador cria-se na linha de comandos.
 login-no-accounts-note = Imprime uma palavra-passe gerada no stderr uma vez e nunca mais. Até lá a única entrada é o testemunho de emergência abaixo.

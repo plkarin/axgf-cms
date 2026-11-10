@@ -618,6 +618,118 @@ async fn repeated_failures_are_throttled() {
     assert!(body.contains("Too many failed attempts"));
 }
 
+/// A sign-in from `addr`, as the proxy reports it.
+async fn login_from(app: &axum::Router, addr: &str, password: &str) -> axum::http::Response<Body> {
+    let req = Request::builder()
+        .uri("/admin/login")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+        .header("x-forwarded-for", addr)
+        .body(Body::from(format!("username=ada&password={password}")))
+        .unwrap();
+    app.clone().oneshot(req).await.expect("request")
+}
+
+#[tokio::test]
+async fn a_jailed_address_is_told_how_long_and_another_is_not() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-jail", &[("ada", Role::Admin, &[])]);
+    let jailed = "203.0.113.7";
+    for i in 0..axgf_cms::jail::MAX_FAILURES {
+        let resp = login_from(&app, jailed, &format!("wrong{i}")).await;
+        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "attempt {i}");
+    }
+    // The right password, from the jailed address: refused before it is
+    // compared, with how long to wait.
+    let resp = login_from(&app, jailed, PASSWORD).await;
+    assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS);
+    // A first term, a quarter of an hour, counted from the eighth failure:
+    // a busy machine may have spent a second or two since.
+    let wait: u64 = resp
+        .headers()
+        .get(header::RETRY_AFTER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.parse().ok())
+        .expect("Retry-After, in seconds");
+    assert!((890..=900).contains(&wait), "{wait}");
+    let body = body_string(resp).await;
+    assert!(body.contains("Try again in 15 minutes."), "{body}");
+
+    // The account is not shut: its failures came from one address, and the
+    // address is what serves the term.
+    let resp = login_from(&app, "198.51.100.1", PASSWORD).await;
+    assert!(resp.status().is_redirection(), "{}", resp.status());
+}
+
+#[tokio::test]
+async fn an_account_ground_from_many_addresses_is_shut_for_the_quarter_hour() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-many", &[("ada", Role::Admin, &[])]);
+    let per_address = axgf_cms::jail::MAX_FAILURES;
+    let addresses = axgf_cms::session::MAX_ACCOUNT_FAILURES / per_address;
+    for a in 0..addresses {
+        for i in 0..per_address {
+            login_from(&app, &format!("192.0.2.{a}"), &format!("wrong{i}")).await;
+        }
+    }
+    // A fresh address, the right password: the account is what is shut now.
+    let resp = login_from(&app, "198.51.100.2", PASSWORD).await;
+    assert_eq!(resp.status(), StatusCode::UNAUTHORIZED);
+    let body = body_string(resp).await;
+    assert!(
+        body.contains("Too many failed attempts. Wait a few minutes"),
+        "{body}"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn attempts_sent_at_once_cannot_pass_the_count_together() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-burst", &[("ada", Role::Admin, &[])]);
+    let burst: Vec<_> = (0..24)
+        .map(|i| {
+            let app = app.clone();
+            tokio::spawn(async move {
+                login_from(&app, "203.0.113.9", &format!("wrong{i}"))
+                    .await
+                    .status()
+            })
+        })
+        .collect();
+    let mut statuses = Vec::new();
+    for attempt in burst {
+        statuses.push(attempt.await.expect("attempt"));
+    }
+    let compared = statuses
+        .iter()
+        .filter(|s| **s == StatusCode::UNAUTHORIZED)
+        .count();
+    let refused = statuses
+        .iter()
+        .filter(|s| **s == StatusCode::TOO_MANY_REQUESTS)
+        .count();
+    assert_eq!(
+        compared as u32,
+        axgf_cms::jail::MAX_FAILURES,
+        "{statuses:?}"
+    );
+    assert_eq!(compared + refused, statuses.len(), "{statuses:?}");
+}
+
+#[tokio::test]
+async fn an_ipv6_client_is_jailed_with_its_whole_network() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-jail-v6", &[("ada", Role::Admin, &[])]);
+    for i in 0..axgf_cms::jail::MAX_FAILURES {
+        let addr = format!("2001:db8:1:2::{:x}", i + 1);
+        login_from(&app, &addr, "wrong").await;
+    }
+    let resp = login_from(&app, "2001:db8:1:2:ffff::1", PASSWORD).await;
+    assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS, "same /64");
+    let resp = login_from(&app, "2001:db8:1:3::1", PASSWORD).await;
+    assert!(resp.status().is_redirection(), "another /64");
+}
+
 #[tokio::test]
 async fn signing_out_ends_the_session() {
     use axgf_cms::acl::Role;

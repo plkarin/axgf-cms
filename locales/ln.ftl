@@ -167,6 +167,15 @@ login-submit = Kota
 login-wrong = Nkombo ya mosaleli mpe liloba ya sekele eyokani te.
 login-token-wrong = Elembo yango ezali malamu te.
 login-throttled = Komeka mingi elongi te. Zela miniti mwa moke mpe meka lisusu.
+login-jailed-minutes = Komeka mingi elongi te na adresi oyo. Meka lisusu nsima ya { $n ->
+        [one] miniti moko
+       *[other] miniti { $n }
+    }.
+login-jailed-hours = Komeka mingi elongi te na adresi oyo. Meka lisusu nsima ya { $n ->
+        [one] ngonga moko
+       *[other] bangonga { $n }
+    }.
+login-token-closed = Bilembo mingi ya mabe, na ba adresi nyonso esangani: elembo ya likama eboyami na moto nyonso tii ngonga oyo esila. Kobanda mosala lisusu efungolaka yango lisusu.
 login-no-accounts-title = Bosimbi oyo ezali naino na konti te.
 login-no-accounts-detail = Na mokano lokasa ya kobongisa ezali awa te — ntango kati na kotia site mpe kokota ya liboso ezali mpenza ntango oyo bosimbi ezali na libateli te, yango wana mokambi ya liboso asalemaka na molongo ya mitindo.
 login-no-accounts-note = Ebimisaka liloba ya sekele oyo esalemi na stderr mbala moko mpe lisusu te. Kino wana nzela kaka ya kokota ezali elembo ya likama oyo ezali awa na nse.

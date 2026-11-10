@@ -99,12 +99,16 @@ that can disagree with this file.
 `AXGF_CMS_ADMIN_TOKEN` is the way back in when the accounts file is lost or
 every administrator is locked out. It is not an account. Paste it into the
 **token** field on the sign-in page; it opens an ordinary administrator
-session, it is rate-limited like any other sign-in, and every use — and every
-wrong guess — is a warning in the journal:
+session, and every use — and every wrong guess — is a warning in the journal:
 
 ```sh
 journalctl -u axgf-cms | grep -i 'emergency admin token'
 ```
+
+Three wrong tokens from one address and that address is jailed, like eight
+wrong passwords (below). Twenty wrong tokens in an hour from every address
+together, and the token is refused to everyone until the hour is out; the
+page says so. A restart opens it again.
 
 Once somebody can sign in normally, delete that line and restart. Until you
 do, the admin dashboard says so on every visit.
@@ -129,6 +133,31 @@ that signs their cookies (docs/adr/0028).
 
 - **The emergency token's session** is never written there, and still ends
   with the process.
+
+### The sign-in jail
+
+*(1.16.0, docs/adr/0047.)* An address that fails eight sign-ins in a quarter
+of an hour, or offers three wrong emergency tokens, is shut out of the
+sign-in, the token and the registration: 15 minutes, then 1 hour, 6 hours, a
+day, and a day again each time it comes back within the day. Each term is
+one warning in the journal, with the address in it — the line a fail2ban
+filter bans on (README, "Rate limiting and jail"):
+
+```sh
+journalctl -u axgf-cms -g 'sign-in jail'
+journalctl -u axgf-cms --since today -g 'sign-in failed from'
+```
+
+- **The address must be the visitor's.** Fail once on purpose from outside:
+  the second command should show your own address. If it shows `127.0.0.1`
+  or a proxy's, the proxy is not passing `X-Forwarded-For` and every visitor
+  shares one cell — this machine's own address is never jailed for longer
+  than a quarter of an hour for that reason, and the journal says so.
+- **To let an address back in,** restart the service: the jail lives in
+  memory. A ban fail2ban added is lifted with
+  `sudo fail2ban-client set axgf-cms unbanip <address>`.
+- **An account** is shut for the rest of the quarter hour only after 24
+  failures from several addresses; one address is jailed long before.
 
 ## What systemctl status tells you
 
@@ -387,9 +416,9 @@ keep if you write your own:
 
 - `X-Forwarded-Proto` — without it the session cookie is issued without
   `Secure`, over TLS, and nothing says so.
-- `X-Forwarded-For`, **set** from the peer rather than appended to — the login
-  rate limit buckets by client, and a client that supplies its own value picks
-  its own bucket.
+- `X-Forwarded-For`, **set** from the peer rather than appended to — the
+  sign-in jail counts by client, and a client that supplies its own value picks
+  its own bucket; without the header, every visitor shares the proxy's.
 - a body limit just above the 200 MB a request with a file may be. A file is
   at most 50 MB; a larger one is read to its end and refused by a page that
   explains itself rather than by a bare 413.

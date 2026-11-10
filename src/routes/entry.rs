@@ -26,6 +26,7 @@ use serde_json::json;
 
 use crate::acl::{Identity, Role, Status};
 use crate::events::Kind as Event;
+use crate::jail::Way;
 use crate::routes::Shared;
 use crate::site::RegistrationMode;
 use crate::sso::{self, Intent, Kind};
@@ -35,6 +36,27 @@ use crate::{auth, render};
 /// an account counts, made or refused.
 fn register_key(client: &str) -> String {
     format!("register:{client}")
+}
+
+/// The client's bucket and its address as the journal writes it.
+fn client_of(
+    headers: &HeaderMap,
+    peer: Option<axum::extract::ConnectInfo<std::net::SocketAddr>>,
+) -> (String, String) {
+    let peer = peer.map(|c| c.0);
+    let addr = crate::session::client_addr(headers, peer)
+        .map_or_else(|| "unknown".to_string(), |ip| ip.to_string());
+    (crate::session::client_key(headers, peer), addr)
+}
+
+/// A refusal while the address serves a term in the sign-in jail: the page
+/// says how long, and so does `Retry-After`.
+fn jailed(mut response: Response, wait: std::time::Duration) -> Response {
+    let (name, value) = super::admin::retry_after(wait);
+    if let Ok(v) = HeaderValue::from_str(&value) {
+        response.headers_mut().insert(name, v);
+    }
+    response
 }
 
 fn chrome_for(state: &Shared, headers: &HeaderMap, path: &str) -> render::Chrome {
@@ -143,7 +165,7 @@ pub async fn register(
     Form(f): Form<RegisterForm>,
 ) -> Response {
     let chrome = chrome_for(&state, &headers, "/register");
-    let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+    let (client, addr) = client_of(&headers, peer);
     let key = register_key(&client);
     let site = state.site();
     let refuse = |status: StatusCode, msg: String| {
@@ -151,6 +173,10 @@ pub async fn register(
     };
     if !offer(&site).form {
         return refuse(StatusCode::FORBIDDEN, chrome.t("register-form-closed"));
+    }
+    if let Some(wait) = state.sessions().jail().term_left(&client) {
+        let msg = super::admin::wait_message(&chrome, wait);
+        return jailed(refuse(StatusCode::TOO_MANY_REQUESTS, msg), wait);
     }
     if state.sessions().is_throttled(&key) {
         return refuse(
@@ -162,7 +188,11 @@ pub async fn register(
     if site.registration.mode == RegistrationMode::Secret
         && !site.registration.secret_matches(&f.secret)
     {
-        tracing::warn!(client = %client, "a wrong registration secret was offered");
+        state
+            .sessions()
+            .jail()
+            .record_failure(&client, &addr, Way::Password);
+        tracing::warn!(client = %addr, "a wrong registration secret was offered from {addr}");
         return refuse(
             StatusCode::UNPROCESSABLE_ENTITY,
             chrome.t("register-secret-wrong"),
@@ -307,8 +337,19 @@ pub async fn start(
             return render_register(&state, &chrome, StatusCode::FORBIDDEN, None, "");
         }
         if site.registration.mode == RegistrationMode::Secret && !f.secret.trim().is_empty() {
-            let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+            let (client, addr) = client_of(&headers, peer);
             let key = register_key(&client);
+            if let Some(wait) = state.sessions().jail().term_left(&client) {
+                let msg = super::admin::wait_message(&chrome, wait);
+                let page = render_register(
+                    &state,
+                    &chrome,
+                    StatusCode::TOO_MANY_REQUESTS,
+                    Some(msg),
+                    "",
+                );
+                return jailed(page, wait);
+            }
             if state.sessions().is_throttled(&key) {
                 return render_register(
                     &state,
@@ -321,6 +362,10 @@ pub async fn start(
             secret_ok = site.registration.secret_matches(&f.secret);
             if !secret_ok {
                 state.sessions().record_failure(&key);
+                state
+                    .sessions()
+                    .jail()
+                    .record_failure(&client, &addr, Way::Password);
                 return render_register(
                     &state,
                     &chrome,
@@ -656,8 +701,13 @@ pub async fn finish(
         state.flows().release(&token);
         return sso_refused(&chrome, StatusCode::FORBIDDEN, "sso-no-account");
     }
-    let client = crate::session::client_key(&headers, peer.map(|c| c.0));
+    let (client, addr) = client_of(&headers, peer);
     let key = register_key(&client);
+    if let Some(wait) = state.sessions().jail().term_left(&client) {
+        let msg = super::admin::wait_message(&chrome, wait);
+        let page = render_finish(&chrome, StatusCode::TOO_MANY_REQUESTS, &p, Some(msg));
+        return jailed(page, wait);
+    }
     if state.sessions().is_throttled(&key) {
         return render_finish(
             &chrome,
@@ -670,6 +720,10 @@ pub async fn finish(
         && !site.registration.secret_matches(&f.secret)
     {
         state.sessions().record_failure(&key);
+        state
+            .sessions()
+            .jail()
+            .record_failure(&client, &addr, Way::Password);
         return render_finish(
             &chrome,
             StatusCode::UNPROCESSABLE_ENTITY,

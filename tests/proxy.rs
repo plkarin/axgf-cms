@@ -20,6 +20,11 @@
 //! answered `/admin/setup` with a 301 to `/admin/setup/`, which the
 //! application does not serve.
 //!
+//! The nginx file also counts sign-in attempts per address at the door, the
+//! posts only, beside the application's own jail (docs/adr/0047), and sets
+//! the headers the application reads once for every location: nginx gives a
+//! location the server's `proxy_set_header` lines only if it sets none.
+//!
 //! Where nginx is installed, `nginx -t` runs over the real file.
 
 mod common;
@@ -30,8 +35,9 @@ use std::process::Command;
 /// The proxies' 210 MB hold the largest request the application reads.
 const _: () = assert!(axgf_cms::documents::MAX_REQUEST <= 210 * 1024 * 1024);
 /// Their 4200 MiB on the import hold an archive at the application's default
-/// limit, and the megabyte of form around it.
-const _: () = assert!(axgf_cms::limits::ARCHIVE.default_mb + 1 <= 4200);
+/// limit and the megabyte of form around it: that is, the default is under
+/// 4200 MiB.
+const _: () = assert!(axgf_cms::limits::ARCHIVE.default_mb < 4200);
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -94,15 +100,60 @@ fn the_nginx_config_forwards_what_the_application_reads() {
     assert!(conf.contains("add_header Strict-Transport-Security"));
 }
 
-/// The location of the import, from its first line to its closing brace.
-fn import_location(conf: &str) -> &str {
-    let start = conf
-        .find("location ^~ /admin/setup {")
-        .expect("a location for the import of a whole family");
+/// The location that opens with `head`, from its first line to its closing
+/// brace.
+fn location<'a>(conf: &'a str, head: &str) -> &'a str {
+    let start = conf.find(head).unwrap_or_else(|| panic!("no {head}"));
     let end = conf[start..]
         .find("\n    }")
         .expect("the location is closed");
     &conf[start..start + end]
+}
+
+#[test]
+fn every_location_inherits_the_headers_the_application_reads() {
+    // A location that set a proxy_set_header of its own would lose the
+    // server's four — the cookie's `Secure` and the per-client counting with
+    // them — and nothing would say so.
+    let conf = read("deploy/proxy/nginx-axgf-cms.conf");
+    let tls = &conf[conf.find("listen 443").expect("the TLS server")..];
+    let heads: Vec<&str> = tls
+        .lines()
+        .map(str::trim)
+        .filter(|l| l.starts_with("location ") && l.ends_with('{'))
+        .collect();
+    for head in &heads {
+        let block = location(tls, head);
+        assert!(
+            !block.contains("proxy_set_header"),
+            "this location would drop the server's headers:\n{block}"
+        );
+        assert!(
+            block.contains("proxy_pass http://127.0.0.1:8080;"),
+            "{block}"
+        );
+    }
+    let locations = heads.len();
+    assert_eq!(locations, 4, "/, the sign-in, the registration, the import");
+}
+
+#[test]
+fn the_nginx_config_counts_sign_in_attempts_at_the_door() {
+    let conf = read("deploy/proxy/nginx-axgf-cms.conf");
+    // The posts only: an empty key is not limited, so the page is never
+    // refused, and the key is the address nginx sees.
+    assert!(conf.contains(
+        "map $request_method $axgf_sign_in {\n    POST    $binary_remote_addr;\n    default \"\";\n}"
+    ));
+    assert!(conf.contains("limit_req_zone $axgf_sign_in zone=axgf_sign_in:10m rate=10r/m;"));
+    for head in ["location = /admin/login {", "location ^~ /register {"] {
+        let block = location(&conf, head);
+        assert!(
+            block.contains("limit_req zone=axgf_sign_in burst=10 nodelay;"),
+            "{block}"
+        );
+        assert!(block.contains("limit_req_status 429;"), "{block}");
+    }
 }
 
 #[test]
@@ -114,24 +165,18 @@ fn the_nginx_config_lets_a_whole_family_through_to_its_import() {
         !conf.contains("location ^~ /admin/setup/"),
         "the import's prefix must not end in a slash"
     );
-    let import = import_location(&conf);
+    let import = location(&conf, "location ^~ /admin/setup {");
     assert!(
         import.contains("client_max_body_size 4200m;"),
         "an archive of the application's default size must get through"
     );
-    // The same four the application reads, in this location as in the other.
-    for line in [
-        "proxy_pass http://127.0.0.1:8080;",
-        "proxy_set_header Host              $host;",
-        "proxy_set_header X-Forwarded-For   $remote_addr;",
-        "proxy_set_header X-Forwarded-Proto $scheme;",
-    ] {
-        assert!(import.contains(line), "the import location lacks {line}");
-    }
     assert!(
         import.contains("proxy_read_timeout    900s;"),
         "an import must have the time to be read"
     );
+    // Streamed: nginx writes nothing to disk for a visitor the application
+    // turns away at the first bytes.
+    assert!(import.contains("proxy_request_buffering off;"), "{import}");
 }
 
 #[tokio::test]

@@ -964,8 +964,9 @@ allow uploads up to the application's own limit, and wait long enough for a
 large save. [docs/OPERATOR.md](docs/OPERATOR.md#publishing-it-tls-and-a-reverse-proxy)
 has the details.
 
-Inside, passwords are hashed with Argon2id, sign-in attempts are throttled,
-and the session cookie is `HttpOnly` and `SameSite=Strict`. Every form must
+Inside, passwords are hashed with Argon2id, an address that keeps failing to
+sign in is jailed ([below](#rate-limiting-and-jail)), and the session cookie
+is `HttpOnly` and `SameSite=Strict`. Every form must
 be posted from the site itself (its `Origin`, else its `Referer`), and a page
 shown to someone signed in is never cached. Sign-in services use the
 authorization code with PKCE, `state` and `nonce`, and check every claim of
@@ -980,6 +981,112 @@ dates.
 settings, so an imported tree has none. Until you set them person by person,
 anyone recorded as living is shown only to signed-in relatives and everybody
 else is public. Check that is what you want.
+
+### Rate limiting and jail
+
+*(New in 1.16.0.)* **The application jails an address that keeps failing to
+get in.** Eight failed sign-ins in a quarter of an hour, or three wrong
+emergency tokens, and the address is shut out of the sign-in, the emergency
+token and the registration for 15 minutes; then 1 hour, 6 hours, a day, and a
+day again for as long as it comes back. It is answered with a 429 that says
+how long, in the reader's language. Attempts are counted before they are
+compared, so a burst sent at once cannot slip through together, and an
+account is shut only by 24 failures from several addresses, never by one
+address alone. Wrong emergency tokens are also counted from every address
+together: twenty in an hour, and the token is refused to everyone until the
+hour is out. The jail lives in memory: **restarting the service empties it**,
+which is the way back in if you shut yourself out.
+[docs/adr/0047](docs/adr/0047-the-sign-in-jail.md) has the details.
+
+Each term is one line in the journal, with the address in it:
+
+```sh
+journalctl -u axgf-cms -g 'sign-in jail'
+# sign-in jail: 203.0.113.7 shut out for 900 s, after 8 failed sign-ins (term 1)
+```
+
+**Check that the address is the visitor's.** The jail counts the address the
+proxy reports in `X-Forwarded-For`. Fail to sign in once on purpose, from
+outside, and look for your own address:
+
+```sh
+journalctl -u axgf-cms --since -10min -g 'sign-in failed from'
+```
+
+If it names the proxy instead — `127.0.0.1`, or the address of a proxy on
+another machine — every visitor shares one cell, and one bot shuts the
+sign-in for all: put the proxy right first (docs/DEPLOY.md, "five things
+matter").
+
+**At the door, nginx.** The shipped
+[`nginx-axgf-cms.conf`](deploy/proxy/nginx-axgf-cms.conf) also counts the
+sign-in and registration posts per address: ten a minute with a burst of
+ten, then a 429 from nginx, before the application spends anything. The page
+itself is never limited. Keep its `map` and `limit_req_zone` at the top of
+the file, outside the `server` blocks.
+
+**At the firewall, fail2ban.** To ban a jailed address from the whole
+machine, on every port and for longer — the application only closes its
+ways in — give fail2ban the journal line. On Ubuntu:
+
+```sh
+sudo apt install -y fail2ban
+sudo tee /etc/fail2ban/filter.d/axgf-cms.conf >/dev/null <<'EOF'
+[INCLUDES]
+before = common.conf
+
+[Definition]
+_daemon = axgf-cms
+failregex = ^%(__prefix_line)ssign-in jail: <HOST> shut out for \d+ s\b
+ignoreregex =
+journalmatch = _SYSTEMD_UNIT=axgf-cms.service
+EOF
+sudo tee /etc/fail2ban/jail.d/axgf-cms.local >/dev/null <<'EOF'
+[axgf-cms]
+enabled  = true
+backend  = systemd
+filter   = axgf-cms
+# The application has counted already: one term is enough.
+maxretry = 1
+findtime = 1d
+bantime  = 1d
+bantime.increment = true
+bantime.maxtime   = 4w
+port     = http,https
+EOF
+sudo systemctl restart fail2ban
+sudo fail2ban-client status axgf-cms
+```
+
+`sudo fail2ban-regex systemd-journal /etc/fail2ban/filter.d/axgf-cms.conf`
+checks the filter against the journal; it was tested with Ubuntu 24.04's
+fail2ban 1.0.2. nginx's own refusals can be banned the same way with the
+`nginx-limit-req` filter fail2ban ships.
+
+**If the proxy is on another machine** — a load balancer, HAProxy, a relay —
+the visitors' connections end there, and a firewall ban on the machine
+running axgf-cms never meets them. Ban where they arrive, or ban at the nginx
+in front of axgf-cms: once `real_ip` gives it the visitor's address, an nginx
+`deny` refuses that visitor. An action that writes such lines, used with
+`banaction = nginx-deny` in the jail above and
+`include /etc/nginx/axgf-deny.conf;` in the `server` block (create the file
+empty first, with `sudo touch`, so nginx finds it before fail2ban starts):
+
+```ini
+# /etc/fail2ban/action.d/nginx-deny.conf
+[Definition]
+actionstart = touch /etc/nginx/axgf-deny.conf
+actionstop  = truncate -s 0 /etc/nginx/axgf-deny.conf && nginx -s reload
+actionban   = echo 'deny <ip>;' >> /etc/nginx/axgf-deny.conf && nginx -s reload
+actionunban = sed -i '/^deny <ip>;$/d' /etc/nginx/axgf-deny.conf && nginx -s reload
+```
+
+With `real_ip`, do not restrict who may reach that nginx with `allow` and
+`deny`: they see the visitor's address too, and would refuse every visitor.
+Restrict it at the firewall, or on `$realip_remote_addr`.
+
+**Caddy** has no rate limiting without a plugin: behind it, the application's
+jail and fail2ban do the work.
 
 ## Backup and restore
 

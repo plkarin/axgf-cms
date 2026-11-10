@@ -1117,20 +1117,70 @@ async fn guesses_at_the_emergency_token_run_out() {
     // network. The right token is offered last, and must be refused too —
     // the limit is on the client, not on the guess.
     let (app, _p) = app_with_empty_bundle("token-throttle");
-    for i in 0..axgf_cms::session::MAX_ATTEMPTS {
+    for i in 0..axgf_cms::jail::MAX_TOKEN_FAILURES {
         let resp = post_form(&app, "/admin/login", &format!("token=wrong{i}"), false).await;
         assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "attempt {i}");
     }
     let resp = post_form(&app, "/admin/login", &format!("token={TOKEN}"), false).await;
     assert_eq!(
         resp.status(),
-        StatusCode::UNAUTHORIZED,
-        "the correct token should still be refused while throttled"
+        StatusCode::TOO_MANY_REQUESTS,
+        "the correct token should still be refused while jailed"
+    );
+    let wait: u64 = resp
+        .headers()
+        .get(axum::http::header::RETRY_AFTER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.parse().ok())
+        .expect("Retry-After, in seconds");
+    assert!(
+        (890..=900).contains(&wait),
+        "a first term, a quarter of an hour: {wait}"
     );
     let page = body_string(resp).await;
     assert!(
-        page.contains("Too many failed attempts"),
+        page.contains("Too many failed attempts from this address. Try again in 15 minutes."),
         "and say why:\n{}",
+        &page[..page.len().min(400)]
+    );
+}
+
+/// A sign-in from `addr`, as the proxy reports it.
+async fn login_from(
+    app: &axum::Router,
+    addr: &str,
+    body: &str,
+) -> axum::http::Response<axum::body::Body> {
+    use tower::ServiceExt as _;
+    let req = axum::http::Request::builder()
+        .uri("/admin/login")
+        .method("POST")
+        .header(
+            axum::http::header::CONTENT_TYPE,
+            "application/x-www-form-urlencoded",
+        )
+        .header("x-forwarded-for", addr)
+        .body(axum::body::Body::from(body.to_string()))
+        .unwrap();
+    app.clone().oneshot(req).await.expect("request")
+}
+
+#[tokio::test]
+async fn wrong_tokens_from_everywhere_close_the_token_for_everyone() {
+    // One guess from each of many addresses: no address is jailed, and the
+    // guesses are counted together all the same.
+    let (app, _p) = app_with_empty_bundle("token-anywhere");
+    for i in 0..axgf_cms::jail::MAX_TOKEN_FAILURES_ANYWHERE {
+        let resp = login_from(&app, &format!("192.0.2.{i}"), "token=wrong").await;
+        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "guess {i}");
+    }
+    let resp = login_from(&app, "198.51.100.7", &format!("token={TOKEN}")).await;
+    assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS);
+    assert!(resp.headers().contains_key(axum::http::header::RETRY_AFTER));
+    let page = body_string(resp).await;
+    assert!(
+        page.contains("the emergency token is refused to everyone"),
+        "{}",
         &page[..page.len().min(400)]
     );
 }

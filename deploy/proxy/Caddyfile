@@ -30,26 +30,56 @@ tree.example.org {
 	# make it.
 	header Strict-Transport-Security "max-age=31536000"
 
-	# A document upload is at most 50 MB. The application reads a larger one
-	# to its end, up to 200 MB a request, and refuses it with a page that
-	# explains itself. Sitting just above those 200 MB means the reader gets
-	# the explanation rather than a bare 413.
-	request_body {
-		max_size 210MB
+	# The import of a whole family (docs/adr/0042): an .axgf archive, its
+	# photographs inside, or a GEDCOM, sent to /admin/setup and the addresses
+	# under it. The application sets its own limits there — 4 GB for an
+	# archive by default, up to 64 GB, in Administration → Uploads — so this
+	# lets a request through up to just above that default (in MiB, as the
+	# application counts: 4200MB would be less than its 4 GB). With the
+	# 210 MB below, an archive of a few hundred megabytes is refused with a
+	# bare 413. Raise this one with the application's, if you raise that.
+	#
+	# `handle` blocks are exclusive: the first that matches is the only one
+	# that runs. Two `request_body` directives on the same request would
+	# both apply, and the smaller limit would win.
+	handle /admin/setup* {
+		request_body {
+			max_size 4200MiB
+		}
+		reverse_proxy 127.0.0.1:8080 {
+			# An archive takes time to arrive, and once it has, the
+			# application reads it whole — and, before it replaces a family,
+			# writes and verifies a backup of it.
+			transport http {
+				dial_timeout 10s
+				response_header_timeout 900s
+			}
+		}
 	}
 
-	reverse_proxy 127.0.0.1:8080 {
-		# Caddy sets Host, X-Forwarded-For, X-Forwarded-Host and
-		# X-Forwarded-Proto by itself, and overwrites a client-supplied
-		# X-Forwarded-For rather than appending to it — which is what keeps
-		# the login rate limit's per-client bucket honest.
+	handle {
+		# A document upload is at most 50 MB. The application reads a larger
+		# one to its end, up to 200 MB a request, and refuses it with a page
+		# that explains itself. Sitting just above those 200 MB means the
+		# reader gets the explanation rather than a bare 413.
+		request_body {
+			max_size 210MB
+		}
 
-		# Saving a large bundle rebuilds the whole archive. Caddy has no read
-		# timeout by default, so a long save already works; these are the
-		# bounds that keep a wedged upstream from being held open forever.
-		transport http {
-			dial_timeout 10s
-			response_header_timeout 300s
+		reverse_proxy 127.0.0.1:8080 {
+			# Caddy sets Host, X-Forwarded-For, X-Forwarded-Host and
+			# X-Forwarded-Proto by itself, and overwrites a client-supplied
+			# X-Forwarded-For rather than appending to it — which is what
+			# keeps the login rate limit's per-client bucket honest.
+
+			# Saving a large bundle rebuilds the whole archive. Caddy has no
+			# read timeout by default, so a long save already works; these
+			# are the bounds that keep a wedged upstream from being held
+			# open forever.
+			transport http {
+				dial_timeout 10s
+				response_header_timeout 300s
+			}
 		}
 	}
 }

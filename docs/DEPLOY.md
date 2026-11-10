@@ -196,8 +196,12 @@ Replace `tree.example.org` in whichever you use. What was tested, on nginx
 | an 11 MB one | 413 **from the application**, with a page that explains itself |
 | a 13-second save | 200 |
 | the same save with `proxy_read_timeout 5s` | 504 at exactly 5.0 s |
+| `/admin/setup`, the import page | the application's page, never a redirect |
+| a 300 MB archive sent to the import, signed in | through, read whole by the application |
+| the same, not signed in | refused by the application at once; nothing spooled |
+| the same archive anywhere else, through nginx | 413 from the proxy |
 
-If you write your own instead, four things matter:
+If you write your own instead, five things matter:
 
 * `X-Forwarded-Proto` — without it the session cookie is issued without
   `Secure`, over TLS, and nothing says so.
@@ -207,7 +211,19 @@ If you write your own instead, four things matter:
 * a body limit just above the 200 MB a request with a file may be. A file is
   at most 50 MB; a larger one is read to its end and refused by the product's
   own page rather than by a bare 413.
-* a read timeout well past 60 seconds. A save rebuilds the whole archive.
+* **one exception to that limit, the import of a whole family.**
+  `/admin/setup` and the addresses under it take an `.axgf` archive with its
+  photographs inside, up to 4 GB by default (Administration → Uploads, up to
+  64 GB). Let them through up to just above that — the files above say
+  4200 MiB — or a family of a few hundred megabytes is refused with a bare
+  413. In nginx, write the prefix without a trailing slash:
+  `location ^~ /admin/setup/` answers the import page itself, `/admin/setup`,
+  with a 301 to an address the application does not serve. In Caddy, give it
+  a `handle` of its own: two `request_body` limits on one request both apply,
+  and the smaller wins.
+* a read timeout well past 60 seconds. A save rebuilds the whole archive; an
+  import reads one whole, after backing up the family it replaces. The files
+  above give a save five minutes and an import fifteen.
 
 And one thing not to do: **do not set `Content-Security-Policy`,
 `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options` or

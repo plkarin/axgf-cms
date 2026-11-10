@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **The import of a family through the proxy.** The nginx and Caddy
+  configurations in `deploy/proxy/` refused any request above 210 MB with a
+  bare 413, the import of an archive of a few hundred megabytes included —
+  found on ax-genealogy.com with one of 428 MB. `/admin/setup` and the
+  addresses under it now go through up to just above the application's own
+  4 GB, with fifteen minutes to arrive and be read; everything else keeps its
+  210 MB. The nginx prefix has no trailing slash, which would have sent the
+  import page itself to "Not found".
+
 ## [1.15.0] — 2026-11-10
 
 Who may open each part of the site, as the operator asked on 10 November

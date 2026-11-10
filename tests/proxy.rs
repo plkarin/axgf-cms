@@ -12,6 +12,14 @@
 //! with the product's own limit from 10 MB to 50 MB, without running them
 //! again.
 //!
+//! In v1.15.1 both gained a way through for the import of a whole family
+//! (docs/adr/0042): `/admin/setup` and the addresses under it, up to just
+//! above the archive's 4 GB, where the 210 MB answered a few hundred
+//! megabytes with a bare 413 — found on ax-genealogy.com with a 428 MB
+//! archive. The nginx location has no trailing slash: with one, nginx
+//! answered `/admin/setup` with a 301 to `/admin/setup/`, which the
+//! application does not serve.
+//!
 //! Where nginx is installed, `nginx -t` runs over the real file.
 
 mod common;
@@ -21,6 +29,9 @@ use std::process::Command;
 
 /// The proxies' 210 MB hold the largest request the application reads.
 const _: () = assert!(axgf_cms::documents::MAX_REQUEST <= 210 * 1024 * 1024);
+/// Their 4200 MiB on the import hold an archive at the application's default
+/// limit, and the megabyte of form around it.
+const _: () = assert!(axgf_cms::limits::ARCHIVE.default_mb + 1 <= 4200);
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -83,11 +94,75 @@ fn the_nginx_config_forwards_what_the_application_reads() {
     assert!(conf.contains("add_header Strict-Transport-Security"));
 }
 
+/// The location of the import, from its first line to its closing brace.
+fn import_location(conf: &str) -> &str {
+    let start = conf
+        .find("location ^~ /admin/setup {")
+        .expect("a location for the import of a whole family");
+    let end = conf[start..]
+        .find("\n    }")
+        .expect("the location is closed");
+    &conf[start..start + end]
+}
+
+#[test]
+fn the_nginx_config_lets_a_whole_family_through_to_its_import() {
+    let conf = read("deploy/proxy/nginx-axgf-cms.conf");
+    // With a trailing slash, nginx answers /admin/setup — the import page —
+    // with a 301 to /admin/setup/, which the application does not serve.
+    assert!(
+        !conf.contains("location ^~ /admin/setup/"),
+        "the import's prefix must not end in a slash"
+    );
+    let import = import_location(&conf);
+    assert!(
+        import.contains("client_max_body_size 4200m;"),
+        "an archive of the application's default size must get through"
+    );
+    // The same four the application reads, in this location as in the other.
+    for line in [
+        "proxy_pass http://127.0.0.1:8080;",
+        "proxy_set_header Host              $host;",
+        "proxy_set_header X-Forwarded-For   $remote_addr;",
+        "proxy_set_header X-Forwarded-Proto $scheme;",
+    ] {
+        assert!(import.contains(line), "the import location lacks {line}");
+    }
+    assert!(
+        import.contains("proxy_read_timeout    900s;"),
+        "an import must have the time to be read"
+    );
+}
+
+#[tokio::test]
+async fn the_application_serves_the_import_page_without_a_trailing_slash() {
+    // Why the proxies' prefix has none: the page is /admin/setup, and
+    // /admin/setup/ is nothing.
+    let (app, _dir) = common::app_with_empty_bundle("proxy-setup-path");
+    let page = common::get(&app, "/admin/setup").await;
+    assert_ne!(page.status(), axum::http::StatusCode::NOT_FOUND);
+    let slashed = common::get(&app, "/admin/setup/").await;
+    assert_eq!(slashed.status(), axum::http::StatusCode::NOT_FOUND);
+}
+
 #[test]
 fn the_caddyfile_says_the_same_things() {
     let conf = read("deploy/proxy/Caddyfile");
     assert!(conf.contains("reverse_proxy 127.0.0.1:8080"));
     assert!(conf.contains("max_size 210MB"), "the same 210 MB ceiling");
+    // The import in a `handle` of its own: two `request_body` on one request
+    // would both apply, and the 210 MB would win. In MiB, as the application
+    // counts: 4200MB is less than its 4 GB.
+    let import = &conf[conf
+        .find("handle /admin/setup* {")
+        .expect("a handle for the import of a whole family")..];
+    let import = &import[..import.find("\n\t}").expect("the handle is closed")];
+    assert!(import.contains("max_size 4200MiB"), "{import}");
+    assert!(import.contains("response_header_timeout 900s"), "{import}");
+    assert!(
+        conf.contains("\thandle {"),
+        "everything else in a handle of its own, exclusive of the import's"
+    );
     assert!(
         conf.contains("header Strict-Transport-Security"),
         "HSTS is the proxy's to add"

@@ -393,9 +393,17 @@ keep if you write your own:
 - a body limit just above the 200 MB a request with a file may be. A file is
   at most 50 MB; a larger one is read to its end and refused by a page that
   explains itself rather than by a bare 413.
+- the import of a whole family as the exception: `/admin/setup` and the
+  addresses under it, up to just above the archive limit in Uploads (4 GB
+  unless you changed it; the files say 4200 MiB). Raise the proxy's with the
+  application's. In nginx the prefix has no trailing slash — with one, nginx
+  answers `/admin/setup` with a 301 to `/admin/setup/`, which is "Not found";
+  in Caddy it has a `handle` of its own, since two `request_body` limits on
+  one request both apply and the smaller wins.
 - a read timeout well past 60 seconds. A save rebuilds the whole archive; at
   five seconds the same save reaches the reader as a 504 while the write
-  carries on regardless.
+  carries on regardless. An import reads a whole archive after backing up the
+  family it replaces: the files give it fifteen minutes.
 - **no** `Content-Security-Policy`, `X-Frame-Options`, `Referrer-Policy`,
   `X-Content-Type-Options` or `Permissions-Policy`. The application sets all
   five on every response. Adding them at the proxy sends two of each, and two

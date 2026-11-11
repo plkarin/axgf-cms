@@ -186,6 +186,16 @@ fn the_nginx_config_lets_a_whole_family_through_to_its_import() {
     assert!(import.contains("proxy_request_buffering off;"), "{import}");
 }
 
+#[test]
+fn the_readme_bans_on_the_line_the_jail_writes() {
+    // tests/journal.rs pins the sentence; this pins the filter that reads it.
+    let readme = read("README.md");
+    assert!(
+        readme.contains(r"failregex = ^%(__prefix_line)ssign-in jail: <HOST> shut out for \d+ s\b")
+    );
+    assert!(readme.contains("journalmatch = _SYSTEMD_UNIT=axgf-cms.service"));
+}
+
 #[tokio::test]
 async fn the_application_serves_the_import_page_without_a_trailing_slash() {
     // Why the proxies' prefix has none: the page is /admin/setup, and

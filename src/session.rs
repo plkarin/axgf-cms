@@ -123,6 +123,8 @@ pub struct SessionStore {
     secret: [u8; 32],
     sessions: RwLock<HashMap<String, Session>>,
     attempts: RwLock<HashMap<String, Attempts>>,
+    /// The size of `attempts` at which its expired entries are next swept.
+    attempts_sweep: std::sync::atomic::AtomicUsize,
     jail: crate::jail::Jail,
     /// Where the accounts' sessions are kept between runs. `None` keeps them
     /// in memory only.
@@ -172,6 +174,7 @@ impl SessionStore {
             secret,
             sessions: RwLock::new(HashMap::new()),
             attempts: RwLock::new(HashMap::new()),
+            attempts_sweep: std::sync::atomic::AtomicUsize::new(1024),
             jail: crate::jail::Jail::new(),
             file: None,
             writing: Mutex::new(()),
@@ -396,14 +399,12 @@ impl SessionStore {
     /// attempts. Checked and counted at once, as the jail counts addresses:
     /// checked before the hash and counted after it, a burst from many
     /// addresses at once was compared in full. A success clears the count
-    /// ([`Self::clear_failures`]); a failure stays counted.
+    /// ([`Self::clear_account`]); a failure stays counted.
     pub fn charge_account(&self, username: &str) -> bool {
         let mut map = self.attempts.write().unwrap_or_else(|e| e.into_inner());
         let now = Instant::now();
-        if map.len() > 1024 {
-            map.retain(|_, a| a.window_start.elapsed() < ATTEMPT_WINDOW);
-        }
-        let e = map.entry(username.to_string()).or_insert(Attempts {
+        self.sweep_attempts(&mut map);
+        let e = map.entry(account_key(username)).or_insert(Attempts {
             count: 0,
             window_start: now,
         });
@@ -418,6 +419,24 @@ impl SessionStore {
         true
     }
 
+    /// The expired counts out, now and then rather than at every attempt:
+    /// each sweep sets the next at twice what it kept.
+    fn sweep_attempts(&self, map: &mut HashMap<String, Attempts>) {
+        use std::sync::atomic::Ordering::Relaxed;
+        if map.len() >= self.attempts_sweep.load(Relaxed) {
+            map.retain(|_, a| a.window_start.elapsed() < ATTEMPT_WINDOW);
+            self.attempts_sweep
+                .store((map.len() * 2).max(1024), Relaxed);
+        }
+    }
+
+    /// Forget the failed sign-ins against the account `username`: its owner
+    /// got in.
+    pub fn clear_account(&self, username: &str) {
+        let mut map = self.attempts.write().unwrap_or_else(|e| e.into_inner());
+        map.remove(&account_key(username));
+    }
+
     fn count_reaches(&self, key: &str, limit: u32) -> bool {
         let map = self.attempts.read().unwrap_or_else(|e| e.into_inner());
         match map.get(key) {
@@ -430,7 +449,7 @@ impl SessionStore {
     pub fn record_failure(&self, key: &str) {
         let mut map = self.attempts.write().unwrap_or_else(|e| e.into_inner());
         let now = Instant::now();
-        map.retain(|_, a| a.window_start.elapsed() < ATTEMPT_WINDOW);
+        self.sweep_attempts(&mut map);
         let e = map.entry(key.to_string()).or_insert(Attempts {
             count: 0,
             window_start: now,
@@ -447,6 +466,16 @@ impl SessionStore {
         let mut map = self.attempts.write().unwrap_or_else(|e| e.into_inner());
         map.remove(key);
     }
+}
+
+/// The key an account's sign-in attempts are counted under: a digest of the
+/// name, so that a name of two megabytes, sent before any password is
+/// compared, costs what any other does; and in a namespace of its own, so that
+/// no name can be a registration's bucket (`register:<address>`).
+fn account_key(username: &str) -> String {
+    let digest = Sha256::digest(username.as_bytes());
+    let hex: String = digest.iter().map(|b| format!("{b:02x}")).collect();
+    format!("account:{hex}")
 }
 
 /// The session cookie's value, if the request carries one.
@@ -668,6 +697,25 @@ mod tests {
         assert!(!store.is_throttled("someone-else"), "buckets are per key");
         store.clear_failures("karin");
         assert!(!store.is_throttled("karin"));
+    }
+
+    #[test]
+    fn an_account_is_counted_under_a_short_key_of_its_own() {
+        let store = SessionStore::new();
+        // A name that is a registration's bucket shuts the account of that
+        // name, not the registrations of that address.
+        let name = "register:203.0.113.7";
+        for _ in 0..MAX_ACCOUNT_FAILURES {
+            assert!(store.charge_account(name));
+        }
+        assert!(!store.charge_account(name), "the account is shut");
+        assert!(!store.is_throttled(name), "the registrations are not");
+        store.clear_account(name);
+        assert!(store.charge_account(name), "its owner got in");
+        // Two megabytes of name cost a key of fixed size.
+        assert!(store.charge_account(&"x".repeat(2 << 20)));
+        let map = store.attempts.read().unwrap();
+        assert!(map.keys().all(|k| k.len() == "account:".len() + 64));
     }
 
     #[test]

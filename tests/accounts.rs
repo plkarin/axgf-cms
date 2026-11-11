@@ -630,6 +630,138 @@ async fn login_from(app: &axum::Router, addr: &str, password: &str) -> axum::htt
     app.clone().oneshot(req).await.expect("request")
 }
 
+/// A sign-in from the peer `peer`, as axum records it, carrying `forwarded`
+/// in X-Forwarded-For if any.
+async fn login_from_peer(
+    app: &axum::Router,
+    peer: &str,
+    forwarded: Option<&str>,
+    body: &str,
+) -> axum::http::Response<Body> {
+    let mut req = Request::builder()
+        .uri("/admin/login")
+        .method("POST")
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded");
+    if let Some(f) = forwarded {
+        req = req.header("x-forwarded-for", f);
+    }
+    let mut req = req.body(Body::from(body.to_string())).unwrap();
+    let peer: std::net::SocketAddr = peer.parse().unwrap();
+    req.extensions_mut()
+        .insert(axum::extract::ConnectInfo(peer));
+    app.clone().oneshot(req).await.expect("request")
+}
+
+#[tokio::test]
+async fn a_client_elsewhere_cannot_name_another_address() {
+    // Bound wider with no proxy: what the peer says of itself is not believed,
+    // so a new X-Forwarded-For at every guess buys no new cell.
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-peer", &[("ada", Role::Admin, &[])]);
+    for i in 0..axgf_cms::jail::MAX_FAILURES {
+        let named = format!("198.51.100.{i}");
+        let resp = login_from_peer(
+            &app,
+            "192.168.1.66:40000",
+            Some(&named),
+            "username=ada&password=wrong",
+        )
+        .await;
+        assert_eq!(resp.status(), StatusCode::UNAUTHORIZED, "guess {i}");
+    }
+    let body = format!("username=ada&password={PASSWORD}");
+    let resp = login_from_peer(&app, "192.168.1.66:40001", Some("203.0.113.99"), &body).await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::TOO_MANY_REQUESTS,
+        "the peer's own cell"
+    );
+
+    // From this machine — the proxy — the header names the visitor.
+    let (app, _scratch) = app_with_accounts("acc-peer-proxy", &[("ada", Role::Admin, &[])]);
+    for _ in 0..axgf_cms::jail::MAX_FAILURES {
+        login_from_peer(
+            &app,
+            "127.0.0.1:50000",
+            Some("203.0.113.7"),
+            "username=ada&password=wrong",
+        )
+        .await;
+    }
+    let resp = login_from_peer(&app, "127.0.0.1:50001", Some("203.0.113.7"), &body).await;
+    assert_eq!(resp.status(), StatusCode::TOO_MANY_REQUESTS, "that visitor");
+    let resp = login_from_peer(&app, "127.0.0.1:50002", Some("198.51.100.7"), &body).await;
+    assert!(resp.status().is_redirection(), "another visitor gets in");
+}
+
+#[tokio::test]
+async fn signing_in_to_one_account_does_not_wash_the_guesses_at_another() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts(
+        "acc-wash",
+        &[("ada", Role::Admin, &[]), ("bob", Role::Viewer, &[])],
+    );
+    let from = |body: String| {
+        let app = app.clone();
+        async move {
+            let req = Request::builder()
+                .uri("/admin/login")
+                .method("POST")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header("x-forwarded-for", "203.0.113.40")
+                .body(Body::from(body))
+                .unwrap();
+            app.oneshot(req).await.expect("request").status()
+        }
+    };
+    for _ in 0..axgf_cms::jail::MAX_FAILURES - 1 {
+        assert_eq!(
+            from("username=ada&password=wrong".into()).await,
+            StatusCode::UNAUTHORIZED
+        );
+    }
+    let bob = format!("username=bob&password={PASSWORD}");
+    assert!(from(bob.clone()).await.is_redirection(), "bob gets in");
+    assert_eq!(
+        from("username=ada&password=wrong".into()).await,
+        StatusCode::UNAUTHORIZED
+    );
+    assert_eq!(
+        from(bob).await,
+        StatusCode::TOO_MANY_REQUESTS,
+        "the eighth guess at ada started the term, bob's sign-in between"
+    );
+}
+
+#[tokio::test]
+async fn the_owners_sign_in_clears_the_accounts_count() {
+    use axgf_cms::acl::Role;
+    let (app, _scratch) = app_with_accounts("acc-clear", &[("ada", Role::Admin, &[])]);
+    let per_address = axgf_cms::jail::MAX_FAILURES;
+    // One short of shutting the account, from three addresses.
+    for (a, n) in [(1, per_address), (2, per_address), (3, per_address - 1)] {
+        for i in 0..n {
+            login_from(&app, &format!("192.0.2.{a}"), &format!("wrong{i}")).await;
+        }
+    }
+    // Its owner gets in, and the count starts again: eight more guesses do
+    // not shut it.
+    assert!(login_from(&app, "198.51.100.4", PASSWORD)
+        .await
+        .status()
+        .is_redirection());
+    for i in 0..per_address {
+        login_from(&app, "192.0.2.5", &format!("wrong{i}")).await;
+    }
+    assert!(
+        login_from(&app, "198.51.100.6", PASSWORD)
+            .await
+            .status()
+            .is_redirection(),
+        "23 and 8 would have shut it, had the owner's sign-in not cleared it"
+    );
+}
+
 #[tokio::test]
 async fn a_jailed_address_is_told_how_long_and_another_is_not() {
     use axgf_cms::acl::Role;

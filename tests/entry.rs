@@ -541,6 +541,104 @@ async fn under_the_secret_a_services_user_is_asked_for_it_before_anything_is_cre
 }
 
 #[tokio::test(flavor = "multi_thread")]
+async fn a_term_in_the_jail_closes_every_way_to_register_and_says_how_long() {
+    let fake = fake_provider().await;
+    let (app, bundle) = app_with_bundle("entry-jail", &sample());
+    let admin = admin_cookie(&app).await;
+    configure(&app, &admin, &fake, "secret").await;
+    let secret = acl_of(&bundle)["site"]["registration"]["secret"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    // Held for the secret before the term begins, so the finish is asked too.
+    let s = start(&app, "register", "").await;
+    let resp = come_back(
+        &app,
+        &fake,
+        &s,
+        "c1",
+        claims(
+            &fake,
+            &s.nonce,
+            "subject-7",
+            Some(("cy@family.example", true)),
+        ),
+    )
+    .await;
+    let held = cookie_named(&resp, "axgf_reg").expect("held for the secret");
+
+    // Eight wrong secrets on the small form: the eighth starts a term.
+    let post = |uri: &'static str, cookie: Option<String>, body: String| {
+        let app = app.clone();
+        async move {
+            let mut req = Request::builder()
+                .uri(uri)
+                .method("POST")
+                .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+                .header("x-forwarded-for", "203.0.113.30");
+            if let Some(c) = cookie {
+                req = req.header(header::COOKIE, c);
+            }
+            app.oneshot(req.body(Body::from(body)).unwrap())
+                .await
+                .unwrap()
+        }
+    };
+    for i in 0..axgf_cms::jail::MAX_FAILURES {
+        let r = post(
+            "/register",
+            None,
+            form(&[
+                ("username", &format!("guess{i}x")),
+                ("password", "long-enough-password"),
+                ("secret", "wrong"),
+            ]),
+        )
+        .await;
+        assert_eq!(r.status(), StatusCode::UNPROCESSABLE_ENTITY, "guess {i}");
+    }
+
+    // Every way in from that address, the right secret and the token
+    // included: a 429 that says how long, in the header and on the page —
+    // the jail's, not the registration throttle's, which says neither.
+    for (uri, cookie, body) in [
+        (
+            "/register",
+            None,
+            form(&[
+                ("username", "late"),
+                ("password", "long-enough-password"),
+                ("secret", &secret),
+            ]),
+        ),
+        (
+            "/auth/oidc/start",
+            None,
+            form(&[("intent", "register"), ("secret", &secret)]),
+        ),
+        (
+            "/register/finish",
+            Some(held.clone()),
+            form(&[("secret", &secret)]),
+        ),
+        ("/admin/login", None, format!("token={TOKEN}")),
+    ] {
+        let r = post(uri, cookie, body).await;
+        assert_eq!(r.status(), StatusCode::TOO_MANY_REQUESTS, "{uri}");
+        let wait: u64 = r
+            .headers()
+            .get(header::RETRY_AFTER)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse().ok())
+            .unwrap_or_else(|| panic!("{uri}: Retry-After"));
+        assert!((890..=900).contains(&wait), "{uri}: {wait}");
+        let page = body_string(r).await;
+        assert!(page.contains("Try again in 15 minutes."), "{uri}");
+    }
+    assert!(user_named(&acl_of(&bundle), "late").is_none());
+}
+
+#[tokio::test(flavor = "multi_thread")]
 async fn a_verified_address_links_the_account_an_administrator_made_and_nothing_else_does() {
     let fake = fake_provider().await;
     let (app, bundle) = app_with_bundle("entry-link", &sample());

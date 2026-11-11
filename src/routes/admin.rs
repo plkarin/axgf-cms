@@ -317,7 +317,7 @@ pub async fn login(
     };
 
     charge.succeeded();
-    state.sessions().clear_failures(&username);
+    state.sessions().clear_account(&username);
 
     // The right password, under a policy that takes passwords away from this
     // account's role (Connectivity, docs/adr/0012): the services only. Said

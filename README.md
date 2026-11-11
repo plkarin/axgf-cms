@@ -1031,9 +1031,16 @@ real_ip_header   X-Forwarded-For;
 The proxy in front must set `X-Forwarded-For` to the visitor's address
 rather than append to what the visitor sent (HAProxy:
 `http-request set-header X-Forwarded-For %[src]`). Caddy in the same place
-takes `trusted_proxies static 192.0.2.10` in its global `servers` options.
+takes `trusted_proxies 192.0.2.10` inside each of its `reverse_proxy` blocks —
+the form Caddy 2.6, Ubuntu 24.04's, understands; the global `servers` option
+of later versions is refused there, and a Caddy that refuses its file keeps
+the old one on reload and does not start again.
 With `real_ip`, nginx's `allow` and `deny` see the visitor too: restrict who
-may reach that nginx at the firewall, or on `$realip_remote_addr`.
+may reach that nginx at the firewall, or on `$realip_remote_addr`. Every
+proxy of the chain also needs the import's exception — a body limit above
+the archive's and a fifteen-minute wait on `/admin/setup` (HAProxy 2.4 and
+later: `http-request set-timeout server 900s if { path_beg /admin/setup }`) —
+or the first one to give up answers for all.
 
 **At the door, nginx.** The shipped
 [`nginx-axgf-cms.conf`](deploy/proxy/nginx-axgf-cms.conf) also counts the
@@ -1085,7 +1092,10 @@ ports; `banaction = %(banaction_allports)s` in place of
 `ignoreip` before you choose it. `sudo fail2ban-regex systemd-journal
 /etc/fail2ban/filter.d/axgf-cms.conf` checks the filter against the journal;
 it was tested with Ubuntu 24.04's fail2ban 1.0.2. nginx's own refusals can
-be banned the same way with the `nginx-limit-req` filter fail2ban ships.
+be banned with the `nginx-limit-req` jail fail2ban ships, which reads
+nginx's log files (`/var/log/nginx/*error.log`) rather than the journal: on
+Ubuntu, where every jail reads the journal by default, give it
+`backend = auto`, or it reads nothing.
 
 **If the proxy is on another machine** — a load balancer, HAProxy, a relay —
 the visitors' connections end there, and a firewall ban on the machine

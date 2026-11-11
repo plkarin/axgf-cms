@@ -73,9 +73,13 @@ pub const TOKEN_HOUR: Duration = Duration::from_secs(60 * 60);
 /// sweep now and then, not one per attempt.
 const SWEEP_ABOVE: usize = 1024;
 
-/// Past this many addresses, even after a sweep, the ones merely counted are
-/// let go and only those serving a term are kept: a flood from more addresses
-/// than this loses its partial counts rather than the process its memory.
+/// The most addresses kept. The sweeps never wait past it, and a sweep that
+/// still finds more than half of it after the forgotten ones are out is under
+/// a flood: the addresses merely counted are let go, and if terms alone are
+/// still more than half, the ones that end soonest, until half is left. The
+/// next sweep is then half the most away, however long the flood lasts. A
+/// flood from more addresses than this loses its partial counts, and at worst
+/// its shortest terms, rather than the process its memory.
 const MOST_CELLS: usize = 100_000;
 
 /// A way in.
@@ -193,6 +197,8 @@ struct Inner {
     cells: HashMap<String, Cell>,
     /// The size at which the next sweep runs.
     next_sweep: usize,
+    /// Sweeps run so far, for the tests that keep them rare.
+    sweeps: u64,
     /// Wrong emergency tokens from every address, and when the hour began.
     tokens_anywhere: u32,
     tokens_since: Option<Instant>,
@@ -201,9 +207,20 @@ struct Inner {
 }
 
 /// The sign-in jail. One per process, in [`crate::session::SessionStore`].
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Jail {
     inner: Mutex<Inner>,
+    /// The most addresses kept: [`MOST_CELLS`], fewer in a test.
+    most: usize,
+}
+
+impl Default for Jail {
+    fn default() -> Self {
+        Jail {
+            inner: Mutex::default(),
+            most: MOST_CELLS,
+        }
+    }
 }
 
 /// An attempt that has been charged. Say how it went: dropped without a
@@ -278,12 +295,30 @@ impl Jail {
 
     fn begin_at(&self, key: &str, addr: &str, way: Way, now: Instant) -> Result<(), Refusal> {
         let mut inner = self.lock();
-        if inner.cells.len() >= inner.next_sweep.max(SWEEP_ABOVE) {
+        let (least, most) = (SWEEP_ABOVE.min(self.most), self.most);
+        if inner.cells.len() >= inner.next_sweep.clamp(least, most) {
+            inner.sweeps += 1;
             inner.cells.retain(|_, c| !c.forgotten(now));
-            if inner.cells.len() >= MOST_CELLS {
-                inner.cells.retain(|_, c| c.term_left(now).is_some());
+            // The address of the attempt in progress keeps its count: it is
+            // the one being counted now.
+            let half = most / 2;
+            if inner.cells.len() > half {
+                inner
+                    .cells
+                    .retain(|k, c| k == key || c.term_left(now).is_some());
             }
-            inner.next_sweep = (inner.cells.len() * 2).max(SWEEP_ABOVE);
+            if inner.cells.len() > half {
+                let mut by_end: Vec<(Instant, String)> = inner
+                    .cells
+                    .iter()
+                    .filter_map(|(k, c)| c.until.map(|until| (until, k.clone())))
+                    .collect();
+                by_end.sort_unstable_by_key(|b| std::cmp::Reverse(b.0));
+                let kept: std::collections::HashSet<String> =
+                    by_end.into_iter().take(half).map(|(_, k)| k).collect();
+                inner.cells.retain(|k, _| k == key || kept.contains(k));
+            }
+            inner.next_sweep = (inner.cells.len() * 2).clamp(least, most);
         }
         if way == Way::Token {
             if let Some(left) = inner
@@ -480,6 +515,18 @@ mod tests {
     }
 
     #[test]
+    fn through_its_charge_a_success_gives_back_only_itself() {
+        // The path the sign-in takes: begin, then say how it went.
+        let jail = Jail::new();
+        for _ in 0..MAX_FAILURES - 1 {
+            jail.begin(KEY, KEY, Way::Password).unwrap().failed();
+        }
+        jail.begin(KEY, KEY, Way::Password).unwrap().succeeded();
+        jail.begin(KEY, KEY, Way::Password).unwrap().failed();
+        assert!(jail.term_left(KEY).is_some());
+    }
+
+    #[test]
     fn a_success_does_not_wipe_the_record() {
         let jail = Jail::new();
         let t = Instant::now();
@@ -607,7 +654,7 @@ mod tests {
     }
 
     #[test]
-    fn a_flood_of_addresses_is_swept_now_and_then_and_bounded() {
+    fn a_flood_of_addresses_is_swept_now_and_then() {
         let jail = Jail::new();
         let t = Instant::now();
         for i in 0..(3 * SWEEP_ABOVE) {
@@ -618,7 +665,11 @@ mod tests {
         // sweep waits for twice as many rather than running at every attempt.
         let inner = jail.lock();
         assert_eq!(inner.cells.len(), 3 * SWEEP_ABOVE);
-        assert!(inner.next_sweep >= 2 * SWEEP_ABOVE, "{}", inner.next_sweep);
+        assert!(
+            inner.next_sweep > inner.cells.len(),
+            "the next sweep waits for more than there are: {}",
+            inner.next_sweep
+        );
     }
 
     #[test]
@@ -651,6 +702,104 @@ mod tests {
             jail.lock().cells.len(),
             2,
             "only the addresses still counted"
+        );
+    }
+
+    impl Jail {
+        /// A jail that keeps at most `most` addresses.
+        fn with_most(most: usize) -> Self {
+            Jail {
+                inner: Mutex::default(),
+                most,
+            }
+        }
+    }
+
+    #[test]
+    fn under_a_flood_of_terms_a_new_address_is_still_counted_and_jailed() {
+        // As many addresses serving a term as the jail keeps, less one, then
+        // somebody new: counted, jailed at the eighth, and swept rarely.
+        let most = 64;
+        let jail = Jail::with_most(most);
+        let t = Instant::now();
+        for i in 0..most - 1 {
+            let addr = format!("192.0.2.{i}");
+            for _ in 0..MAX_FAILURES {
+                fail(&jail, &addr, Way::Password, t).unwrap();
+            }
+        }
+        let before = jail.lock().sweeps;
+        for _ in 0..MAX_FAILURES {
+            fail(&jail, KEY, Way::Password, t).unwrap();
+        }
+        assert_eq!(
+            jail.term_left_at(KEY, t),
+            Some(TERMS[0]),
+            "jailed at the eighth, like anyone"
+        );
+        let inner = jail.lock();
+        assert!(
+            inner.sweeps - before <= 1,
+            "{} sweeps",
+            inner.sweeps - before
+        );
+        assert!(inner.cells.len() <= most);
+    }
+
+    #[test]
+    fn a_stream_of_new_addresses_under_a_flood_of_terms_is_swept_rarely() {
+        // Terms fill the jail but one, then twenty newcomers try once each:
+        // the sweep forced by the most must leave room, or every newcomer
+        // pays for a sweep and drops the one before it.
+        let most = 64;
+        let jail = Jail::with_most(most);
+        let t = Instant::now();
+        for i in 0..most - 1 {
+            let addr = format!("192.0.2.{i}");
+            for _ in 0..MAX_FAILURES {
+                fail(&jail, &addr, Way::Password, t).unwrap();
+            }
+        }
+        let before = jail.lock().sweeps;
+        for i in 0..20 {
+            let addr = format!("198.51.100.{i}");
+            jail.begin_at(&addr, &addr, Way::Password, t).unwrap();
+        }
+        let inner = jail.lock();
+        assert!(
+            inner.sweeps - before <= 1,
+            "{} sweeps",
+            inner.sweeps - before
+        );
+        assert!(inner.cells.contains_key("198.51.100.1"), "still counted");
+    }
+
+    #[test]
+    fn past_half_the_most_in_terms_the_soonest_ending_go_first() {
+        let most = 64;
+        let jail = Jail::with_most(most);
+        let t = Instant::now();
+        for i in 0..most {
+            let addr = format!("192.0.2.{i}");
+            let at = t + Duration::from_millis(i as u64);
+            for _ in 0..MAX_FAILURES {
+                fail(&jail, &addr, Way::Password, at).unwrap();
+            }
+        }
+        let late = t + Duration::from_millis(most as u64);
+        jail.begin_at(KEY, KEY, Way::Password, late).unwrap();
+        let inner = jail.lock();
+        assert!(inner.cells.len() <= most, "{}", inner.cells.len());
+        assert!(inner.sweeps <= 2, "{} sweeps", inner.sweeps);
+        assert!(
+            !inner.cells.contains_key("192.0.2.0"),
+            "the soonest ending let go"
+        );
+        drop(inner);
+        assert!(
+            jail.term_left_at(&format!("192.0.2.{}", most - 1), late)
+                .is_some(),
+            "the latest kept, and jailed at its eighth"
         );
     }
 

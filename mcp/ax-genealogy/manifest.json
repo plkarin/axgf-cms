@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "ax-genealogy",
   "display_name": "AX Genealogy",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Read and keep a family's genealogy on an ax·genealogy site, as one of its accounts.",
   "long_description": "The community connector of the MCP of an ax·genealogy site (axgf-cms). Give it the site's address and a token made on your account's page: your assistant can then search the family, read records, and — if the token may write — add people, correct names and dates, record events and unions, all checked by the site with your account's rights, and journalled under your name.",
   "author": {

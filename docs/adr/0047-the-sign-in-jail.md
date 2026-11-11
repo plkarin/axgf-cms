@@ -1,6 +1,6 @@
 # ADR 0047 — The sign-in jail
 
-**Status:** accepted (1.16.0) · **Builds on:** docs/adr/0012 (the ways in),
+**Status:** accepted, v1.16.0 (2026-11-11) · **Builds on:** docs/adr/0012 (the ways in),
 docs/adr/0046 (the site closed by default) · **Applies to:** `src/jail.rs`,
 `src/session.rs` (`client_addr`, `client_key`, `MAX_ACCOUNT_FAILURES`),
 `src/acl.rs` (`check_password`), `src/routes/admin.rs` (`login`),

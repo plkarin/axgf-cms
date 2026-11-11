@@ -1,5 +1,6 @@
 //! The sign-in jail: an address that keeps failing to get in is shut out of
-//! every way in for a while, and for longer each time (docs/adr/0047).
+//! every way in that is a guess for a while, and for longer each time
+//! (docs/adr/0047).
 //!
 //! The login throttle it replaces counted failures per address, eight in a
 //! quarter of an hour, and refused the ninth until the quarter was out. An
@@ -75,11 +76,13 @@ const SWEEP_ABOVE: usize = 1024;
 
 /// The most addresses kept. The sweeps never wait past it, and a sweep that
 /// still finds more than half of it after the forgotten ones are out is under
-/// a flood: the addresses merely counted are let go, and if terms alone are
-/// still more than half, the ones that end soonest, until half is left. The
-/// next sweep is then half the most away, however long the flood lasts. A
-/// flood from more addresses than this loses its partial counts, and at worst
-/// its shortest terms, rather than the process its memory.
+/// a flood: the addresses not serving a term — merely counted, or remembered
+/// from an earlier one, whose next term is then the first again — are let go,
+/// and if terms alone are still more than half, the ones that end soonest,
+/// until half is left. The next sweep is then half the most away, however long
+/// the flood lasts. A flood from more addresses than this loses its partial
+/// counts and its repeat offenders' escalation, and at worst its shortest
+/// terms, rather than the process its memory.
 const MOST_CELLS: usize = 100_000;
 
 /// A way in.
@@ -609,7 +612,7 @@ mod tests {
                 jail.begin_at(KEY, KEY, Way::Password, t),
                 Err(Refusal::Jailed(_))
             ),
-            "a term closes every way in"
+            "a term closes every way in that is a guess"
         );
     }
 

@@ -38,8 +38,8 @@ The sign-in jail and rate limiting the operator asked for on 10 November
 - **An account is shut only by many addresses**: 24 failures in a quarter of
   an hour, where 8 from a single address used to shut it against its owner.
 - **The client address is an address.** `X-Forwarded-For` is read only when
-  it holds one, and only from a proxy on this machine; an IPv6 client is
-  counted with its /64.
+  it holds one, and only from a proxy that connects over loopback; an IPv6
+  client is counted with its /64.
 - **"Import" leaves the masthead once a family is there.** The first step,
   taken; `/convert` stays where it was, behind its door.
 
@@ -4968,7 +4968,25 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.16.0
+[1.15.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.15.0
+[1.14.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.14.0
+[1.13.1]: https://github.com/plkarin/axgf-cms/releases/tag/v1.13.1
+[1.13.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.13.0
+[1.12.1]: https://github.com/plkarin/axgf-cms/releases/tag/v1.12.1
+[1.12.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.12.0
+[1.11.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.11.0
+[1.10.2]: https://github.com/plkarin/axgf-cms/releases/tag/v1.10.2
+[1.10.1]: https://github.com/plkarin/axgf-cms/releases/tag/v1.10.1
+[1.10.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.10.0
+[1.9.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.9.0
+[1.8.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.8.0
+[1.7.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.7.0
+[1.6.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.6.0
+[1.5.1]: https://github.com/plkarin/axgf-cms/releases/tag/v1.5.1
+[1.5.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.5.0
+[1.4.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.4.0
 [1.3.1]: https://github.com/plkarin/axgf-cms/releases/tag/v1.3.1
 [1.3.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.3.0
 [1.2.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.2.0

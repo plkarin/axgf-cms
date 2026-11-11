@@ -92,8 +92,9 @@ compared 24 times, not once per attempt; the owner's success clears it.
 ### 6. An address is an address
 
 `session::client_addr` takes `X-Forwarded-For`'s first entry only if it reads
-as an address (with or without a port), and only from a peer on this machine —
-where the documented proxy runs — else the peer's address. It used to take any
+as an address (with or without a port), and only from a peer that connects over
+loopback (`127.0.0.1`, `::1`) — as the documented proxy does — else the peer's
+address. It used to take any
 text from anyone, so whoever could set the header chose their bucket, named
 somebody else's address to have it jailed, and wrote what they liked into the
 journal. Bound wider with no proxy, the application now counts each client at

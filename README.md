@@ -723,9 +723,9 @@ language follow them to every device.
 
 The latest release is **v1.16.0**: **a jail for the sign-in**. An
 address that fails eight sign-ins in a quarter of an hour, or offers three
-wrong emergency tokens, is shut out of every way in for 15 minutes, then an
-hour, six hours, a day; each term is one line in the journal that fail2ban
-can ban on, and the shipped nginx file counts the sign-in attempts at the
+wrong emergency tokens, is shut out of the sign-in, the emergency token and
+the registration for 15 minutes, then an hour, six hours, a day; each term is
+one line in the journal that fail2ban can ban on, and the shipped nginx file counts the sign-in attempts at the
 door. The nginx and Caddy files now let the import of a whole family
 through, and *Import* leaves the masthead once a family is there.
 
@@ -1011,9 +1011,10 @@ journalctl -u axgf-cms -g 'sign-in jail'
 ```
 
 **Check that the address is the visitor's.** The jail counts the address the
-proxy reports in `X-Forwarded-For`, believed from a proxy on this machine
-and from no one else — bound wider with no proxy, each client is counted at
-its own address and cannot name another. Fail to sign in once on purpose, from
+proxy reports in `X-Forwarded-For`, believed only from a proxy that connects
+over loopback (`127.0.0.1` or `::1`), as the documented one does — bound wider
+with no proxy, each client is counted at its own address and cannot name
+another. Fail to sign in once on purpose, from
 outside, and look for your own address:
 
 ```sh

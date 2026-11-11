@@ -12,7 +12,7 @@
 //! with the product's own limit from 10 MB to 50 MB, without running them
 //! again.
 //!
-//! In v1.15.1 both gained a way through for the import of a whole family
+//! In v1.16.0 both gained a way through for the import of a whole family
 //! (docs/adr/0042): `/admin/setup` and the addresses under it, up to just
 //! above the archive's 4 GB, where the 210 MB answered a few hundred
 //! megabytes with a bare 413 — found on ax-genealogy.com with a 428 MB

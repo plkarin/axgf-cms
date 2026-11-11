@@ -153,8 +153,8 @@ journalctl -u axgf-cms --since today -g 'sign-in failed from'
   proxy does not set `X-Forwarded-For`; another proxy's address means a chain
   whose nginx does not believe the proxy before it (`set_real_ip_from`,
   README, "Rate limiting and jail"). Either way every visitor shares one
-  cell. This machine's own address is never jailed for longer than a
-  quarter of an hour for that reason, and the journal says so; another
+  cell. This machine's loopback address (`127.0.0.1`, `::1`) is never jailed
+  for longer than a quarter of an hour for that reason, and the journal says so; another
   proxy's would be, so put it right before anything else.
 - **To let an address back in,** restart the service: the jail lives in
   memory. A ban fail2ban added is lifted with

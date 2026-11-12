@@ -666,6 +666,33 @@ masthead offers each reader what is open to them, and the server refuses
 the rest. Why it works this way:
 [Who may open each part of the site](docs/adr/0046-who-may-open-each-part-of-the-site.md).
 
+### Forgot your password? Mail from the site
+
+*(New in 1.17.0.)* Give the site a mail relay under **Connectivity** — a
+Gmail account made for the site, a provider's relay, or one on the machine
+itself — and it writes to the family:
+
+- **Forgot your password?** on the sign-in page. A user name or an address,
+  and a link to choose a new password goes to the account's address: it works
+  once, for an hour, signs the member in, and the account is told its
+  password changed. The page answers the same whether the account exists or
+  not.
+- **A welcome** to every account you make with an address, in the language
+  you choose for it, with a link to choose its password — or, for a role that
+  may not use one, the services to sign in with: no password is shown on your
+  screen, and none ever travels by mail. An account a sign-in service
+  opens is welcomed at the address the service verified, with the service to
+  sign in with.
+- **The notice that a password changed**, whoever changed it.
+
+Every message has the family's name, the site's colours and the language of
+the account it goes to, the fourteen included, right to left too. The test
+button says what the relay answered; the dashboard says when mail stopped,
+and why. A signed-out reader sent to the sign-in comes back, signed in, to
+the page they were going to. Setting it up, the three relays and the
+sandbox: [docs/OPERATOR.md, "Mail"](docs/OPERATOR.md#mail); why it works
+this way: [docs/adr/0048](docs/adr/0048-mail.md).
+
 ### Make it yours
 
 [![The overview page under the six themes. Canopy: "Every life is a source. Every family, a river." over terraced hills, in gold. Fusion: "Every life is a leaf. Every family, a tree." over a glowing tree, in neon red-orange. Galaxy: "Every life is a star. Every family, a galaxy." over planets and orbits, in violet. Summit: "Every life is a step. Every family, an ascent." over a mountain at sunrise, in a book face. Clarity, light: "Every generation is a ring. Every family, a funnel." beside a crystal funnel lit pink and blue, in orange, its frosted card over a prism of violet, pink and orange light. Genealogy: "Every life is a portrait. Every family, a tree to climb." in a book face and gold beside a golden tree and empty oval frames, on dark green with antique vines along the page's edges, its cards cream.](docs/screenshots/theme-heroes.jpg)](docs/screenshots/theme-heroes.jpg)
@@ -1046,14 +1073,18 @@ may reach that nginx at the firewall, or on `$realip_remote_addr`. Every
 proxy of the chain also needs the import's exception — a body limit above
 the archive's and a fifteen-minute wait on `/admin/setup` (HAProxy 2.4 and
 later: `http-request set-timeout server 900s if { path_beg /admin/setup }`) —
-or the first one to give up answers for all.
+or the first one to give up answers for all. And each keeps a log of its
+own: keep `/mail/` out of it, where a mailed link's token is in the address
+until it is used or expires (HAProxy:
+`http-request set-log-level silent if { path_beg /mail/ }`).
 
 **At the door, nginx.** The shipped
 [`nginx-axgf-cms.conf`](deploy/proxy/nginx-axgf-cms.conf) also counts the
 posts to the sign-in, the registration and the services' sign-in per
-address: ten a minute with a burst of ten, then a 429 from nginx, before the
-application spends anything. The page
-itself is never limited. Keep its `map` and `limit_req_zone` at the top of
+address, and everything under `/mail/` — the forgotten password and the page
+its link opens, which it also keeps out of its access log: ten a minute with
+a burst of ten, then a 429 from nginx, before the application spends
+anything. The sign-in page itself is never limited. Keep its `map` and `limit_req_zone` at the top of
 the file, outside the `server` blocks.
 
 **At the firewall, fail2ban.** To ban a jailed address from the whole site

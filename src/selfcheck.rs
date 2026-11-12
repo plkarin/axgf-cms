@@ -135,6 +135,8 @@ pub fn run(x: &Inputs) -> Vec<Item> {
         item.ok("infra-failures-ok")
     });
 
+    out.push(mail(state));
+
     // -- data: the operational checks /health already makes ----------------
     let health = state.health();
     for (name, title) in [
@@ -299,6 +301,52 @@ pub fn run(x: &Inputs) -> Vec<Item> {
     });
 
     out
+}
+
+/// Failed attempts in a row past which mail is said to be failing.
+pub const MAIL_FAILURES_WARN: u32 = 3;
+
+/// Mail (docs/adr/0048). The forgotten password and the welcome are ways in,
+/// so a relay that stopped is a matter of access: green without a relay, which
+/// is a choice; otherwise whether the last messages got through. The
+/// dashboard shows the same item to an administrator when it is not green.
+pub fn mail(state: &crate::state::AppState) -> Item {
+    let site = state.site();
+    let mailer = state.mailer();
+    let item = Item::new("mail", "access", "infra-mail-title").link("/admin/connectivity#mail");
+    // The configuration's relay, refused before it was tried: why, in the
+    // section's own words — the sender missing, no TLS to another machine…
+    if let Some(r) = mailer.env_refused() {
+        return item.warn(r.key(), "infra-mail-env-refused-fix");
+    }
+    if mailer.relay(&site).is_none() {
+        return item.ok("infra-mail-off");
+    }
+    if site.public_base().is_none() {
+        return item.warn("infra-mail-no-address", "infra-mail-no-address-fix");
+    }
+    let ledger = mailer.ledger();
+    match ledger.paused.as_deref() {
+        Some("auth") if mailer.set_by_env() => {
+            return item.fail("infra-mail-auth", "infra-mail-auth-env-fix")
+        }
+        Some("auth") => return item.fail("infra-mail-auth", "infra-mail-auth-fix"),
+        Some("quota") => return item.warn("infra-mail-quota", "infra-mail-quota-fix"),
+        _ => {}
+    }
+    let ceiling = site.mail.ceiling();
+    let today = crate::view::now_iso8601();
+    if today.starts_with(&ledger.day) && !ledger.day.is_empty() && ledger.today >= ceiling {
+        return item
+            .num("n", ceiling)
+            .warn("infra-mail-ceiling", "infra-mail-ceiling-fix");
+    }
+    if ledger.failures_in_a_row >= MAIL_FAILURES_WARN {
+        return item
+            .num("n", ledger.failures_in_a_row)
+            .warn("infra-mail-failing", "infra-mail-failing-fix");
+    }
+    item.ok("infra-mail-ok")
 }
 
 /// How long ago, as whole days, hours or minutes — for "counting for".

@@ -130,12 +130,71 @@ fn render_connectivity(
                 .map(|p| json!({"part": p.slug(), "level": site.doors.level(p).slug()}))
                 .collect::<Vec<_>>(),
             levels => crate::site::Level::ALL.iter().map(|l| l.slug()).collect::<Vec<_>>(),
+            // The mail relay (docs/adr/0048).
+            mail => mail_view(state, chrome),
             error,
             notice,
         },
     );
     *r.status_mut() = status;
     r
+}
+
+/// What the mail section shows: where the relay comes from, whether links
+/// can be made, the day's counts, the last success and the last failure apart
+/// — and never the password.
+fn mail_view(state: &Shared, chrome: &render::Chrome) -> serde_json::Value {
+    let site = state.site();
+    let m = &site.mail;
+    let mailer = state.mailer();
+    let ledger = mailer.ledger();
+    let today = crate::view::now_iso8601()
+        .get(..10)
+        .unwrap_or_default()
+        .to_string();
+    let accepted = ledger.recent.iter().filter(|(_, ok)| *ok).count();
+    let refused_count = ledger.recent.len() - accepted;
+    let admin_refused = if mailer.set_by_env() || m.host.trim().is_empty() {
+        None
+    } else {
+        crate::mail::Relay::from_settings(m).err().map(|r| r.key())
+    };
+    let gmail_sender = m.host.trim().eq_ignore_ascii_case("smtp.gmail.com")
+        && !m.from_address.trim().is_empty()
+        && !m
+            .from_address
+            .trim()
+            .eq_ignore_ascii_case(m.username.trim());
+    let test_to = chrome.viewer_email.clone().unwrap_or_default();
+    json!({
+        "env": mailer.set_by_env(),
+        "env_refused": mailer.env_refused().map(|r| r.key()),
+        "env_host": mailer.env_relay().map(|r| r.host.clone()),
+        "env_from": mailer.env_relay().map(|r| r.from_address.clone()),
+        "from_without_url": mailer.from_without_url(),
+        "host": m.host,
+        "port": if m.port == 0 { String::new() } else { m.port.to_string() },
+        "security": m.security.as_str(),
+        "securities": ["starttls", "tls", "none"],
+        "username": m.username,
+        "password_set": !m.password.is_empty(),
+        "from_address": m.from_address,
+        "from_name": m.from_name,
+        "reply_to": m.reply_to,
+        "language": m.language,
+        "daily_limit": m.ceiling(),
+        "ready": mailer.relay(&site).is_some(),
+        "admin_refused": admin_refused,
+        "gmail_sender_warning": gmail_sender,
+        "links": site.public_base().is_some(),
+        "paused": ledger.paused,
+        "today": if ledger.day == today { ledger.today } else { 0 },
+        "last_ok": ledger.last_ok,
+        "last_failure": ledger.last_failure,
+        "accepted": accepted,
+        "refused": refused_count,
+        "test_to": test_to,
+    })
 }
 
 fn refused(state: &Shared, chrome: &render::Chrome, msg: String) -> Response {
@@ -486,4 +545,229 @@ pub async fn save_registration(
     // Back to the page, at the section, so a reload does not post it again.
     let _ = &chrome;
     Redirect::to("/admin/users#registration").into_response()
+}
+
+// ---------------------------------------------------------------------------
+// The mail relay (docs/adr/0048 §1)
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Default, Deserialize)]
+pub struct MailForm {
+    #[serde(default)]
+    host: String,
+    #[serde(default)]
+    port: String,
+    #[serde(default)]
+    security: String,
+    #[serde(default)]
+    username: String,
+    #[serde(default)]
+    password: String,
+    #[serde(default)]
+    clear_password: Option<String>,
+    #[serde(default)]
+    from_address: String,
+    #[serde(default)]
+    from_name: String,
+    #[serde(default)]
+    reply_to: String,
+    #[serde(default)]
+    language: String,
+    #[serde(default)]
+    daily_limit: String,
+}
+
+/// `POST /admin/connectivity/mail` — the relay, checked before it is kept. A
+/// blank password keeps the stored one; saving again lifts a pause the relay's
+/// refusal of the credentials put on.
+pub async fn save_mail(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<MailForm>,
+) -> Response {
+    use crate::mail::{valid_address, Security};
+    let (viewer, chrome) = admin_only!(state, headers);
+    // What the section adds to any relay: where replies go, the language for
+    // an account without one, the day's ceiling.
+    let reply_to = f.reply_to.trim().to_string();
+    if !reply_to.is_empty() && !valid_address(&reply_to) {
+        return refused(&state, &chrome, chrome.t("mail-reply-to-invalid"));
+    }
+    let language = match f.language.trim() {
+        "" => String::new(),
+        l => match crate::i18n::Locale::find(l) {
+            Some(locale) => locale.tag.to_string(),
+            None => return refused(&state, &chrome, chrome.t("mail-language-invalid")),
+        },
+    };
+    let daily_limit: u32 = match f.daily_limit.trim() {
+        "" => 0,
+        n => match n.parse::<u32>() {
+            Ok(n) if (1..=10_000).contains(&n) => n,
+            _ => return refused(&state, &chrome, chrome.t("mail-limit-invalid")),
+        },
+    };
+    // The configuration's relay: its own fields are for show, and only what
+    // the section adds is kept.
+    if state.mailer().set_by_env() {
+        if let Err(e) = state.site_mutate(|s| {
+            s.mail.reply_to = reply_to.clone();
+            s.mail.language = language.clone();
+            s.mail.daily_limit = daily_limit;
+        }) {
+            return refused(
+                &state,
+                &chrome,
+                chrome.t_args("connectivity-not-saved", &[("error", e.to_string().into())]),
+            );
+        }
+        // Not a pause lifted: the relay's credentials are the configuration's,
+        // and only a restart with new ones, or a test that gets through,
+        // changes anything for them.
+        tracing::info!(
+            by = viewer.name(),
+            "mail settings beside the configuration's relay changed"
+        );
+        return saved(&state, &chrome, "mail-saved");
+    }
+    // A choice of three; anything else is STARTTLS, which never sends a
+    // password in the clear.
+    let security = Security::parse(&f.security).unwrap_or(Security::Starttls);
+    let port: u16 = match f.port.trim() {
+        "" => 0,
+        p => match p.parse::<u16>() {
+            Ok(n) if n > 0 => n,
+            _ => return refused(&state, &chrome, chrome.t("mail-port-invalid")),
+        },
+    };
+    let effective = if port == 0 {
+        security.default_port()
+    } else {
+        port
+    };
+    if (effective == 465 && security == Security::Starttls)
+        || (effective == 587 && security == Security::Tls)
+    {
+        return refused(&state, &chrome, chrome.t("mail-port-mismatch"));
+    }
+    let host = f.host.trim().to_string();
+    let from_address = f.from_address.trim().to_string();
+    if !host.is_empty() && !valid_address(&from_address) {
+        return refused(&state, &chrome, chrome.t("mail-refused-sender"));
+    }
+    let old = state.site().mail;
+    let mut new = old.clone();
+    new.host = host.clone();
+    new.port = port;
+    new.security = security;
+    new.username = f.username.trim().to_string();
+    let password_changed = f.clear_password.is_some() || !f.password.trim().is_empty();
+    // The stored password goes only to the relay it was given for: a new
+    // host, port, security or user name needs it typed again, or a stolen
+    // session could point the relay at its own server and press the test.
+    let port_of = |m: &crate::mail::Settings| {
+        if m.port == 0 {
+            m.security.default_port()
+        } else {
+            m.port
+        }
+    };
+    let elsewhere = new.host != old.host
+        || port_of(&new) != port_of(&old)
+        || new.security != old.security
+        || new.username != old.username;
+    if elsewhere && !old.password.is_empty() && !password_changed && !host.is_empty() {
+        return refused(&state, &chrome, chrome.t("mail-password-again"));
+    }
+    if f.clear_password.is_some() {
+        new.password.clear();
+    } else if !f.password.trim().is_empty() {
+        // Gmail prints its app passwords in groups of four.
+        new.password = f.password.split_whitespace().collect();
+    }
+    new.from_address = from_address;
+    new.from_name = f.from_name.trim().to_string();
+    new.reply_to = reply_to;
+    new.language = language;
+    new.daily_limit = daily_limit;
+    if !host.is_empty() {
+        if let Err(r) = crate::mail::Relay::from_settings(&new) {
+            return refused(&state, &chrome, chrome.t(r.key()));
+        }
+    }
+    if let Err(e) = state.site_mutate(|s| s.mail = new.clone()) {
+        return refused(
+            &state,
+            &chrome,
+            chrome.t_args("connectivity-not-saved", &[("error", e.to_string().into())]),
+        );
+    }
+    // Saving lifts a pause for refused credentials; a pause for the relay's
+    // own daily limit lifts only with another relay or account, or a test
+    // that gets through.
+    if elsewhere {
+        state.mailer().resume_all();
+    } else {
+        state.mailer().resume();
+    }
+    tracing::info!(by = viewer.name(), host = %host, password_changed, "mail relay changed");
+    saved(&state, &chrome, "mail-saved")
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct MailTestForm {
+    #[serde(default)]
+    to: String,
+}
+
+/// `POST /admin/connectivity/mail/test` — the one page that waits on the
+/// relay: fifteen seconds at most, outside the queue, and a plain account of
+/// what came back.
+pub async fn test_mail(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Form(f): Form<MailTestForm>,
+) -> Response {
+    let (viewer, chrome) = admin_only!(state, headers);
+    let to = f.to.trim().to_string();
+    if !crate::mail::valid_address(&to) {
+        return refused(&state, &chrome, chrome.t("mail-test-to-invalid"));
+    }
+    let site = state.site();
+    let Some(relay) = state.mailer().relay(&site) else {
+        return refused(&state, &chrome, chrome.t("mail-not-ready"));
+    };
+    let user = viewer.user.as_ref();
+    let head = crate::mail_messages::letterhead(&state, user, Some(chrome.lang));
+    let shape = crate::mail_messages::test(&head);
+    let message = crate::mail_messages::outgoing(&shape, &head, &to, "test");
+    let host = relay.host.clone();
+    match state.mailer().send_now(relay, message).await {
+        Ok(reply) => render_connectivity(
+            &state,
+            &chrome,
+            StatusCode::OK,
+            None,
+            Some(chrome.t_args(
+                "mail-test-ok",
+                &[
+                    ("host", host.into()),
+                    ("reply", crate::mail::scrub(&reply).into()),
+                ],
+            )),
+        ),
+        Err(failure) => {
+            tracing::info!(host = %host, failure = failure.kind(), detail = %failure.detail(), "the mail relay test did not get through");
+            render_connectivity(
+                &state,
+                &chrome,
+                StatusCode::OK,
+                Some(chrome.t_args(
+                    &format!("mail-test-failed-{}", failure.kind()),
+                    &[("host", host.into()), ("detail", failure.detail().into())],
+                )),
+                None,
+            )
+        }
+    }
 }

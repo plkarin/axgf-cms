@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ t("forgot-title") }} — {{ t("app-name") }}{% endblock %}
+{% import "_logo.html" as logo %}
+{% block content %}
+<div class="login-mark">{{ logo.mark("lg", "login-logo") }}</div>
+<h1>{{ t("forgot-title") }}</h1>
+{% if not available %}
+<p class="lede">{{ t("forgot-unavailable") }}</p>
+{% elif sent %}
+<div class="notice ok" style="max-width:34rem"><p>{{ t("forgot-sent") }}</p></div>
+{% else %}
+<p class="lede">{{ t("forgot-lede") }}</p>
+<form method="post" action="/mail/forgot" class="card" style="max-width:34rem">
+  <div class="field">
+    <label for="who">{{ t("forgot-field") }}</label>
+    <input type="text" id="who" name="who" autocomplete="username"
+           autocapitalize="none" spellcheck="false" maxlength="254" required autofocus>
+  </div>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("forgot-submit") }}</button>
+</form>
+{% endif %}
+<p style="max-width:34rem"><a href="/admin/login">{{ t("forgot-back") }}</a></p>
+{% endblock %}

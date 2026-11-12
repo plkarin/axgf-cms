@@ -653,9 +653,10 @@ CapabilityBoundingSet=
 AmbientCapabilities=
 # It answers a reverse proxy on the same machine and calls nothing out.
 #
-# If you turn the place-name geocoder on (--geocoder-contact), this process
-# starts making outbound HTTPS calls to Nominatim and they will be refused
-# here. Widen it deliberately rather than by deleting the pair:
+# If you turn the place-name geocoder on (--geocoder-contact), or give it a
+# mail relay on another machine (Connectivity, Mail — Gmail's, say), this
+# process starts making outbound calls and they will be refused here. Widen
+# it deliberately rather than by deleting the pair:
 #
 #   sudo systemctl edit axgf-cms
 #   [Service]
@@ -1430,6 +1431,15 @@ AXGF_CMS_CACHE_DIR=${DATA_DIR}/cache
 # How much reaches the journal. \`info\` is a handful of lines a day;
 # \`axgf_cms=debug\` is several per request and will bury the week you need.
 RUST_LOG=axgf_cms=info,tower_http=warn
+
+# Mail: the forgotten password's link, the welcome of an account made here,
+# the notice that a password changed (docs/adr/0048). Usually set in the
+# administration, Connectivity, Mail; set here, it wins and the page only
+# shows it. A relay on another machine needs the sandbox opened first:
+# docs/OPERATOR.md, "Mail". The user name and the password are written with
+# % for what a URL cannot hold: @ as %40, % as %25, ? as %3F, / as %2F.
+#AXGF_CMS_SMTP_URL=smtp://family%40gmail.com:app-password@smtp.gmail.com:587
+#AXGF_CMS_MAIL_FROM=The family <family@gmail.com>
 
 # The way back in when the accounts file is lost or every administrator is
 # locked out. It is not an account: it opens an administrator session through

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — {{ t("app-name") }}{% endblock %}
+{% import "_logo.html" as logo %}
+{% block content %}
+<div class="login-mark">{{ logo.mark("lg", "login-logo") }}</div>
+<h1>{{ heading }}</h1>
+{% if usable %}
+<p class="lede">{{ lede }}</p>
+{% if error %}<div class="notice error"><p>{{ error }}</p></div>{% endif %}
+<form method="post" action="/mail/set/{{ token }}" class="card" style="max-width:34rem">
+  <div class="field">
+    <label for="password">{{ t("set-password") }}</label>
+    <input type="password" id="password" name="password" autocomplete="new-password" minlength="{{ min }}" required autofocus>
+  </div>
+  <div class="field">
+    <label for="again">{{ t("set-password-again") }}</label>
+    <input type="password" id="again" name="again" autocomplete="new-password" minlength="{{ min }}" required>
+  </div>
+  <p class="small">{{ min_note }}</p>
+  <button class="btn primary" type="submit" data-busy="{{ t('busy-working') }}">{{ t("set-submit") }}</button>
+</form>
+{% else %}
+<div class="notice warn" style="max-width:34rem"><p>{{ message }}</p></div>
+<p style="max-width:34rem"><a href="/mail/forgot">{{ t("set-ask-again") }}</a></p>
+{% endif %}
+{% endblock %}

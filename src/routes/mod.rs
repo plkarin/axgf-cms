@@ -13,6 +13,7 @@ mod editors;
 mod entry;
 mod impact;
 mod limits;
+mod mail;
 mod mcp;
 mod merge;
 mod notes;
@@ -146,7 +147,7 @@ async fn same_site_writes(
                 state.events().record(crate::events::Kind::CrossSiteRefused);
                 tracing::warn!(
                     origin = %origin,
-                    path = %req.uri().path(),
+                    path = %loggable(req.uri().path()),
                     "refused a form posted from another site"
                 );
                 let viewer = crate::auth::viewer(&state, headers);
@@ -162,6 +163,16 @@ async fn same_site_writes(
         }
     }
     next.run(req).await
+}
+
+/// A path as the journal may write it: a mailed link's token is a key to an
+/// account for as long as it holds, and stays out (docs/adr/0048 §2).
+fn loggable(path: &str) -> &str {
+    if path.starts_with("/mail/set/") {
+        "/mail/set/…"
+    } else {
+        path
+    }
 }
 
 /// Who may open each part of the site (docs/adr/0046), applied before any
@@ -217,7 +228,12 @@ async fn doors(
         return Redirect::to("/about").into_response();
     }
     if !viewer.signed_in() {
-        return Redirect::to("/admin/login").into_response();
+        let wanted = req
+            .uri()
+            .path_and_query()
+            .map_or(path.as_str(), |pq| pq.as_str())
+            .to_string();
+        return Redirect::to(&crate::render::sign_in_to(&wanted)).into_response();
     }
     let chrome = crate::render::Chrome::resolve(&viewer, req.headers(), "/").with_archive(&state);
     crate::render::error_page_in(
@@ -361,8 +377,13 @@ fn security_headers(router: Router, csp: &str) -> Router {
         // A family tree's URLs name people — `/person/<id>` and the search
         // query alongside it. `same-origin` keeps them off every outbound
         // link, while leaving them on internal navigation where they are
-        // needed for the back button and the active-nav highlight.
-        .layer(fixed(header::REFERRER_POLICY, "same-origin"))
+        // needed for the back button and the active-nav highlight. A page
+        // may say less: those of mail carry a link's token in their address
+        // and say `strict-origin` themselves (docs/adr/0048).
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::REFERRER_POLICY,
+            HeaderValue::from_static("same-origin"),
+        ))
         // Nothing here uses a camera, a microphone or a location, and saying
         // so costs one header.
         .layer(fixed(
@@ -675,6 +696,15 @@ fn routes(state: Shared) -> Router {
         )
         // Who may open each part of the site (docs/adr/0046).
         .route("/admin/connectivity/pages", post(connectivity::save_pages))
+        // The mail relay (docs/adr/0048).
+        .route("/admin/connectivity/mail", post(connectivity::save_mail))
+        .route(
+            "/admin/connectivity/mail/test",
+            post(connectivity::test_mail),
+        )
+        // The visitor pages of mail (docs/adr/0048 §5), outside every part.
+        .route("/mail/forgot", get(mail::forgot_form).post(mail::forgot))
+        .route("/mail/set/:token", get(mail::set_form).post(mail::set))
         .route("/register", get(entry::register_form).post(entry::register))
         .route(
             "/register/finish",
@@ -683,6 +713,7 @@ fn routes(state: Shared) -> Router {
         .route("/auth/:provider/start", post(entry::start))
         .route("/auth/:provider/callback", get(entry::callback))
         .route("/admin/users/:id", post(admin::update_user))
+        .route("/admin/users/:id/welcome", post(admin::resend_welcome))
         .route("/admin/validate", post(admin::validate))
         .route("/admin/dedup", post(admin::dedup))
         .route("/admin/export", get(admin::export))

@@ -229,6 +229,25 @@ pub struct User {
     /// as a digest: what an AI assistant elsewhere acts as this account with.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub api_tokens: Vec<crate::tokens::ApiToken>,
+    /// The language the account was made in (docs/adr/0048 §3): the one the
+    /// administrator picked for its welcome, or the visitor's. What its mail
+    /// is written in when the member has not chosen an interface language —
+    /// kept apart from `language`, which would also set the interface.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mail_language: Option<String>,
+    /// The language of the account's last sign-in, as the browser asked for
+    /// it: what its mail falls back to after the two above.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seen_language: Option<String>,
+    /// Counts the changes that end the links mailed to the account for good
+    /// — a disabling, a new role, a new address — so that undoing the change
+    /// does not bring them back (docs/adr/0048 §4).
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub link_epoch: u32,
+}
+
+fn is_zero_u32(n: &u32) -> bool {
+    *n == 0
 }
 
 /// One provider's identifier for an account's person.
@@ -583,6 +602,22 @@ fn hashing() -> &'static tokio::sync::Semaphore {
     })
 }
 
+/// [`hash_password`], off the async workers and through the same few slots
+/// as the checks: a burst of password changes holds no page.
+pub async fn hash_password_bounded(password: String) -> Result<String> {
+    let slot = hashing()
+        .acquire()
+        .await
+        .map_err(|e| anyhow::anyhow!("hashing closed: {e}"))?;
+    tokio::task::spawn_blocking(move || {
+        let hash = hash_password(&password);
+        drop(slot);
+        hash
+    })
+    .await
+    .map_err(|e| anyhow::anyhow!("hashing stopped: {e}"))?
+}
+
 /// [`verify_password`], off the async workers and a few at a time. The slot
 /// is held by the hash itself, so a reader who gives up waiting does not free
 /// it before the work is done.
@@ -643,6 +678,9 @@ pub fn new_user(username: &str, password: &str, role: Role) -> Result<User> {
         person_id: None,
         afg: false,
         api_tokens: Vec::new(),
+        mail_language: None,
+        link_epoch: 0,
+        seen_language: None,
     })
 }
 
@@ -676,6 +714,9 @@ pub fn new_provider_user(username: &str, identity: Identity, email: Option<Strin
         identities: vec![identity],
         afg: false,
         api_tokens: Vec::new(),
+        mail_language: None,
+        link_epoch: 0,
+        seen_language: None,
     }
 }
 
@@ -900,6 +941,8 @@ mod tests {
         u.language = Some("pl".into());
         u.theme = Some("galaxy".into());
         u.family_scope = vec!["11111111-1111-4111-8111-111111111111".into()];
+        u.mail_language = Some("he".into());
+        u.seen_language = Some("fr".into());
         acl.users.push(u);
         acl.bind_to(
             Some(&json!({"family": {"name": "Trecki"}, "created_at": "2026-08-09T13:15:54Z"})),
@@ -914,6 +957,8 @@ mod tests {
         assert_eq!(u.username, "karin");
         assert_eq!(u.role, Role::Contributor);
         assert_eq!(u.language.as_deref(), Some("pl"));
+        assert_eq!(u.mail_language.as_deref(), Some("he"));
+        assert_eq!(u.seen_language.as_deref(), Some("fr"));
         assert_eq!(u.family_scope.len(), 1);
         assert!(verify_password("correct horse battery", &u.password_hash));
     }

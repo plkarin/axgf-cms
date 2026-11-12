@@ -135,8 +135,8 @@ fn every_location_inherits_the_headers_the_application_reads() {
     }
     let locations = heads.len();
     assert_eq!(
-        locations, 5,
-        "/, the sign-in, the registration, the services, the import"
+        locations, 6,
+        "/, the sign-in, the registration, the services, mail, the import"
     );
 }
 
@@ -153,6 +153,7 @@ fn the_nginx_config_counts_sign_in_attempts_at_the_door() {
         "location = /admin/login {",
         "location ^~ /register {",
         "location ^~ /auth/ {",
+        "location ^~ /mail/ {",
     ] {
         let block = location(&conf, head);
         assert!(
@@ -184,6 +185,13 @@ fn the_nginx_config_lets_a_whole_family_through_to_its_import() {
     // Streamed: nginx writes nothing to disk for a visitor the application
     // turns away at the first bytes.
     assert!(import.contains("proxy_request_buffering off;"), "{import}");
+}
+
+#[test]
+fn the_mail_pages_stay_out_of_the_access_log() {
+    // A mailed link carries its token in the address (docs/adr/0048).
+    let conf = read("deploy/proxy/nginx-axgf-cms.conf");
+    assert!(location(&conf, "location ^~ /mail/ {").contains("access_log off;"));
 }
 
 #[test]

@@ -471,6 +471,11 @@ pub struct Site {
     /// Who may open each part of the site (docs/adr/0046).
     #[serde(default, skip_serializing_if = "Doors::is_default")]
     pub doors: Doors,
+    /// The mail relay, when the administration sets it (docs/adr/0048). Its
+    /// password is a secret of the same kind as a sign-in service's; the
+    /// configuration's relay, when set, wins over this one.
+    #[serde(default, skip_serializing_if = "crate::mail::Settings::is_default")]
+    pub mail: crate::mail::Settings,
 }
 
 impl Site {

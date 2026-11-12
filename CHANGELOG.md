@@ -4,6 +4,63 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Mail, as the operator asked on 11 November 2026 looking at
+ax-genealogy.com's sign-in page: the forgotten password, and a welcome when
+an account is made, in its language (docs/adr/0048). Member-typed addresses
+and notifications of activity and new notes come next, in an ADR of their
+own.
+
+### Added
+
+- **A mail relay**, under Connectivity → Mail or in the configuration
+  (`AXGF_CMS_SMTP_URL`, `AXGF_CMS_MAIL_FROM`, which win): Gmail with an app
+  password, a provider's relay, or one on the machine. STARTTLS or TLS,
+  never a password in the clear; no TLS for a relay on this machine only.
+  The password is never shown again, and goes only to the relay it was given
+  for: a new host or user name needs it typed again. A test button sends a
+  message now and says what the relay answered, or why it failed — the
+  credentials, the address, TLS, the service's sandbox.
+- **Forgot your password?** on the sign-in page, once a relay and the public
+  address are set. The answer is the same whether the account exists or not,
+  and comes before anything is looked up. The link works once, for an hour,
+  signs the member in, ends their other sessions, and the account is told
+  its password changed. Links need nothing stored: any change to the account
+  — a password, an address, a role, a status — ends them, for good. Their
+  pages keep the link to themselves: no cache, no Referer, no access log.
+- **A welcome by mail** to an account an administrator makes with an
+  address, in the language chosen on the form, with a link to choose its
+  password — seven days, one for an administrator, until the first sign-in;
+  no password is shown or mailed. An account a sign-in service opens is
+  welcomed at the address the service verified. The accounts page sends the
+  welcome again, or a reset link to an account that has signed in, and shows
+  each account's last message.
+- **The notice that a password changed**, by its owner through a link or by
+  an administrator.
+- **Messages laid out like the site**: the family's name, the recipient's
+  theme colours, the logo, a text part beside the HTML, in the recipient's
+  language and direction.
+- **Mail is watched**: a daily ceiling (300 by default), a pause when the
+  relay refuses the credentials or reaches its own limit, retries after one
+  and five minutes for what fails for now; the dashboard and the
+  Infrastructure page say when mail stopped. Limits per client, account and
+  address keep the forgotten password from being used to flood a mailbox; a
+  forged link posted counts in the sign-in jail.
+- **A sign-in returns to the page it interrupted**: a door, `/account` or a
+  mailed link send the reader to `/admin/login?next=…`, and the sign-in,
+  by password or through a service, comes back there.
+- The shipped nginx file counts `/mail/` with the sign-in and keeps it out of
+  the access log; the installer's new environment files carry the two mail
+  settings, commented.
+
+### Fixed
+
+- **An open redirect after the sign-in.** A `next` (or a preference's
+  `back`) holding a tab or a line break — `/<tab>/elsewhere.example` — was
+  taken for a path of the site, and a browser, which drops those characters,
+  went to another site. Any control character now refuses the value.
+
 ## [1.16.0] — 2026-11-11
 
 The sign-in jail and rate limiting the operator asked for on 10 November

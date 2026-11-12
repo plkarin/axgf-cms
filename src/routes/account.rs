@@ -36,7 +36,7 @@ pub async fn page(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     if !viewer.signed_in() {
-        return Redirect::to("/admin/login").into_response();
+        return Redirect::to(&render::sign_in_to("/account")).into_response();
     }
     let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let notice = match q.done.as_deref() {
@@ -206,7 +206,7 @@ pub async fn person(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     if !viewer.signed_in() {
-        return Redirect::to("/admin/login").into_response();
+        return Redirect::to(&render::sign_in_to("/account")).into_response();
     }
     let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let Some(id) = viewer.user.as_ref().map(|u| u.id.clone()) else {
@@ -310,7 +310,7 @@ pub async fn forget(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     if !viewer.signed_in() {
-        return Redirect::to("/admin/login").into_response();
+        return Redirect::to(&render::sign_in_to("/account")).into_response();
     }
     let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let Some(user) = viewer.user.as_ref() else {
@@ -398,7 +398,7 @@ pub async fn make_token(
 ) -> Response {
     let viewer = auth::viewer(&state, &headers);
     if !viewer.signed_in() {
-        return Redirect::to("/admin/login").into_response();
+        return Redirect::to(&render::sign_in_to("/account")).into_response();
     }
     let chrome = render::Chrome::resolve(&viewer, &headers, "/account").with_archive(&state);
     let refuse = |key: &str, status| {

@@ -123,7 +123,11 @@ async fn a_visitor_is_sent_to_sign_in_and_the_token_is_no_one() {
     let (app, _s) = app_with_bundle("acct-anon", &src);
     let resp = get(&app, "/account").await;
     assert!(resp.status().is_redirection());
-    assert_eq!(resp.headers()[header::LOCATION], "/admin/login");
+    // Back to the account's page once signed in (docs/adr/0048 §7).
+    assert_eq!(
+        resp.headers()[header::LOCATION],
+        "/admin/login?next=/account"
+    );
     let admin = admin_cookie(&app).await;
     let page = body_string(get_with_cookie(&app, "/account", &admin).await).await;
     assert!(page.contains("not an account"));

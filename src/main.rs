@@ -130,6 +130,7 @@ async fn main() -> Result<()> {
             ))
             .with_backup_dir(cfg.backup_dir.clone())
             .with_bind(cfg.bind)
+            .with_mail_env(cfg.smtp_url.as_deref(), cfg.mail_from.as_deref())
             // `generated` means a fresh token each boot, printed once and gone on
             // restart; the opposite is one the operator set, which lasts.
             .with_standing_admin_token(!generated),
@@ -272,6 +273,16 @@ async fn main() -> Result<()> {
     match axgf_cms::lockfile::WriteLock::acquire_for(&bundle, std::time::Duration::from_secs(30)) {
         Ok(lock) => drop(lock),
         Err(e) => tracing::warn!(error = %e, "stopped while another process was writing"),
+    }
+    // Mail handed over and not yet accepted by the relay is not kept across a
+    // restart (docs/adr/0048 §2): say how much, so that whoever waits on a
+    // link knows to ask again.
+    let waiting = state.mailer().waiting();
+    if waiting > 0 {
+        tracing::warn!(
+            waiting,
+            "stopped with {waiting} message(s) not yet accepted by the mail relay; they are not kept"
+        );
     }
     tracing::info!("stopped cleanly");
     Ok(())

@@ -198,18 +198,29 @@ fn read_card(dir: &Path) -> Option<Card> {
 
 /// Write a whole file readable by its owner only.
 pub(crate) fn write_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
-    let tmp = path.with_extension("tmp");
-    {
+    // A temporary name of this write's own, hidden, beside the file. A name
+    // made from the stem alone was shared: `family.sessions`,
+    // `family.mailstate` and `family.mailkey` all wrote `family.tmp`, and two
+    // writes at once renamed each other's bytes into place.
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    let tmp = path.with_file_name(format!(".{name}.{}.tmp", uuid::Uuid::new_v4().simple()));
+    let written = (|| {
         let mut f = fs::OpenOptions::new()
             .write(true)
-            .create(true)
-            .truncate(true)
+            .create_new(true)
             .mode(0o600)
             .open(&tmp)?;
         f.write_all(bytes)?;
         f.sync_all()?;
+        fs::rename(&tmp, path)
+    })();
+    if written.is_err() {
+        let _ = fs::remove_file(&tmp);
     }
-    fs::rename(&tmp, path)
+    written
 }
 
 /// Add to the end of a file readable by its owner only.

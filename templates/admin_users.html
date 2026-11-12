@@ -160,6 +160,14 @@
           <label class="inline"><input type="checkbox" name="afg"{% if u.afg %} checked{% endif %}> {{ t("accounts-afg-allowed") }}</label>
           <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("admin-save") }}</button>
         </form>
+        {#- After the row's form, so the first /admin/users/ link of the row
+            is still the account's own (docs/adr/0048). -#}
+        {% if u.mail %}<p class="small muted">{% if u.mail.ok %}{{ t("accounts-mail-ok", when=u.mail.at | localdatetime(lang)) }}{% else %}{{ t("accounts-mail-failed", when=u.mail.at | localdatetime(lang)) }} <code>{{ u.mail.detail }}</code>{% endif %}</p>{% endif %}
+        {% if welcome_ready and u.email and u.status == "active" %}
+        <form method="post" action="/admin/users/{{ u.id }}/welcome" class="inline-form">
+          <button class="btn ghost" type="submit" data-busy="{{ t('busy-working') }}">{{ t("accounts-welcome-again") }}</button>
+        </form>
+        {% endif %}
       </td>
     </tr>
   {% endfor %}
@@ -184,11 +192,23 @@
            autocomplete="new-password">
     <div class="hint">{{ t("accounts-password-hint", min=min_password) }}</div>
   </div>
-  <div class="field">
-    <label for="nu-email">{{ t("accounts-email") }}
-      <span class="small muted">{{ t("accounts-optional") }}</span></label>
-    <input type="email" id="nu-email" name="email">
-  </div>
+  {#- The address and the welcome's language fold together, so the form's
+      controls at rest stay what they were (docs/adr/0048 §6). -#}
+  <details class="field">
+    <summary>{{ t("accounts-welcome-summary") }}</summary>
+    <div class="field">
+      <label for="nu-email">{{ t("accounts-email") }}
+        <span class="small muted">{{ t("accounts-optional") }}</span></label>
+      <input type="email" id="nu-email" name="email">
+      <div class="hint">{% if welcome_ready %}{{ t("accounts-welcome-hint") }}{% else %}{{ t("accounts-welcome-off") }}{% endif %}</div>
+    </div>
+    <div class="field">
+      <label for="nu-language">{{ t("accounts-welcome-language") }}</label>
+      <select id="nu-language" name="language">
+        {% for l in locales %}<option value="{{ l.tag }}" lang="{{ l.tag }}" {{ "selected" if l.tag == lang }}>{{ l.native_name }}</option>{% endfor %}
+      </select>
+    </div>
+  </details>
   <div class="field">
     <label for="nu-role">{{ t("accounts-role") }}</label>
     <select id="nu-role" name="role">

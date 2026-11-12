@@ -47,6 +47,9 @@ const UNIVERSAL: &[&str] = &[
     "Ctrl",
     "AXGF",
     "JSON",
+    // The stream a program prints its errors on, named on the sign-in of an
+    // installation with no account yet: a name, the same in a Chinese shell.
+    "stderr",
     "UUID",
     "GEDCOM",
     "DNA",
@@ -249,6 +252,22 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     );
 
     let cookie = format!("{}; axgf_lang=zh-Hans", admin_cookie(&app).await);
+    // A mail relay and a public address (docs/adr/0048), so that the pages
+    // that change with them — the sign-in's way to a forgotten password, the
+    // accounts' welcome — are read as a site with mail shows them.
+    for (uri, body) in [
+        (
+            "/admin/connectivity/mail",
+            "host=relay.test&from_address=family%40family.example",
+        ),
+        (
+            "/admin/connectivity/address",
+            "public_url=https%3A%2F%2Ffamily.example",
+        ),
+    ] {
+        let resp = post_form_as(&app, &cookie, uri, body).await;
+        assert_eq!(resp.status(), StatusCode::OK, "{uri}");
+    }
     let pages = [
         "/".to_string(),
         format!("/?p={A}&n=5"),
@@ -295,6 +314,11 @@ async fn no_page_rendered_in_chinese_carries_an_english_word() {
     // administration has been read, which is read with no account.
     let mut visits: std::collections::VecDeque<(String, String)> =
         pages.iter().map(|p| (p.clone(), cookie.clone())).collect();
+    // And what a visitor reads: the sign-in, the forgotten password, and the
+    // page a mailed link opens, here with a link that is no longer good.
+    for page in ["/admin/login", "/mail/forgot", "/mail/set/not-a-token"] {
+        visits.push_back((page.to_string(), "axgf_lang=zh-Hans".to_string()));
+    }
     let mut member_made = false;
 
     let mut report = Vec::new();

@@ -123,6 +123,25 @@ pub struct Config {
     #[command(subcommand)]
     pub command: Option<Command>,
 
+    /// The mail relay (docs/adr/0048): `smtp://user:password@host:587` for
+    /// STARTTLS, `smtps://user:password@host:465` for TLS, the user name and
+    /// the password percent-encoded (`@` as `%40`, `%` as `%25`, `?` as
+    /// `%3F`), spaces in the password dropped. Set, it wins over the relay
+    /// set in the administration. Its value is never printed; give it in the service's
+    /// environment file rather than on a command line, which `ps` shows.
+    #[arg(
+        long,
+        value_name = "URL",
+        env = "AXGF_CMS_SMTP_URL",
+        hide_env_values = true
+    )]
+    pub smtp_url: Option<String>,
+
+    /// Who mail is sent as, with the relay above: `Name <address>`, or an
+    /// address. Defaults to the relay's user name when that is an address.
+    #[arg(long, value_name = "MAILBOX", env = "AXGF_CMS_MAIL_FROM")]
+    pub mail_from: Option<String>,
+
     /// Path to the .axgf bundle. Created empty if it does not exist.
     ///
     /// Global, so it reads the same before or after a subcommand:
@@ -312,6 +331,8 @@ mod tests {
     fn cfg(token: Option<&str>) -> Config {
         Config {
             command: None,
+            smtp_url: None,
+            mail_from: None,
             backup_dir: None,
             bundle: Some(PathBuf::from("/tmp/x.axgf")),
             bind: "127.0.0.1:8080".parse().unwrap(),

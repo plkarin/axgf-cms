@@ -443,6 +443,143 @@ keep if you write your own:
   page in a way nothing reports. HSTS is the exception: only the thing
   terminating TLS can promise that, so the proxy adds it.
 
+## Mail
+
+*(1.17.0, docs/adr/0048.)* What the site sends: the link to choose a new
+password ("Forgot your password?" on the sign-in page), the welcome of an
+account an administrator makes — a link to choose its password, or the
+sign-in services it uses — the welcome of an account a sign-in service
+opens, at the address the service verified, and the notice that a password
+changed. Nothing goes out without a relay **and** the public address
+(Connectivity): a link is built on the public address only, never on the
+address a request came to.
+
+### Which relay
+
+Use a mailbox made for the site, never a person's.
+
+| Relay | Settings |
+| --- | --- |
+| **Gmail**, a Google account of the site's own | `smtp.gmail.com`, 587 with STARTTLS (or 465 with TLS); user name: the address; password: an **app password** (Google account → Security → 2-Step Verification, which it needs, → App passwords), not the account's own. It reads the mailbox as well as sending. Gmail sends only as the account or an alias it has verified, and a few hundred messages a day at most. |
+| **A provider's relay** (OVH, Infomaniak, Brevo, Mailgun…) | Its host, 587 with STARTTLS or 465 with TLS, the credentials it gives, and a sender of a domain it may send for (SPF, DKIM), or messages land in spam. |
+| **A relay on this machine** (Postfix, OpenSMTPD) | `127.0.0.1` or `::1`, port 25, security "none" — the only case where no TLS is accepted — and no credentials. It queues across restarts, and needs no change to the sandbox. |
+
+### Opening the sandbox
+
+The installed unit refuses outgoing connections. A relay on another machine
+needs a drop-in, as the AFG and the sign-in services do:
+
+```sh
+sudo systemctl edit axgf-cms
+```
+
+```ini
+[Service]
+# The mail relay is on another machine.
+IPAddressAllow=any
+```
+
+```sh
+sudo systemctl restart axgf-cms
+```
+
+Without it, the test says the service may not connect out.
+
+### Setting it
+
+**Connectivity → Mail → The relay:** host, security, port, user name,
+password, sender and sender's name, a reply address if replies should go
+elsewhere (the site never reads mail), the language for an account that has
+none, and the day's ceiling (300 by default). Save, then **Send a test** to
+your own address. *Accepted* means the relay took the message, not that it
+arrived: look in the inbox, and in the spam folder.
+
+Or in `/etc/axgf-cms/env`, which wins: the page then shows the relay and its
+sender, its relay fields are for show, and the reply address, the language
+and the day's ceiling are still set there.
+
+```sh
+AXGF_CMS_SMTP_URL=smtp://family%40gmail.com:app-password@smtp.gmail.com:587
+AXGF_CMS_MAIL_FROM=The family <family@gmail.com>
+```
+
+`smtps://…:465` for TLS, `…?security=none` for a relay on this machine. The
+user name and the password are written with `%` for what a URL cannot hold:
+`@` as `%40`, `%` as `%25`, `?` as `%3F`, `/` as `%2F`, `:` as `%3A`; spaces
+in the password are dropped, as Gmail shows its app passwords in groups of
+four. Restart after a change. A value that does not read leaves mail off,
+says why in the section and on the Infrastructure page, and never stops the
+service.
+
+**Where the password lives.** Set in the page: in the accounts file
+(`family.acl`, mode 600) and so in every backup, beside the sign-in
+services' secrets; it is never shown again nor written to the journal, and
+it goes only to the relay it was given for: a new host, port, security or
+user name needs it typed again. Set in the env file: there only.
+
+### What the site keeps
+
+- `family.mailstate` (600, beside the bundle): the day's count, the last
+  success and the last failure with the relay's reply (addresses taken out),
+  each account's last message by its id, and a pause. Not in the backups;
+  without it the day's count starts again.
+- `family.mailkey` (600): the key the links are signed with. Not in the
+  backups: a restore elsewhere makes a new one, and the links mailed before
+  stop working — the member asks for another. Deleting it and restarting
+  the service ends every link at once; the running service keeps the key
+  it read.
+
+### When it fails
+
+Each message is one line in the journal, by kind and account, the address
+masked (`a…@example.org`); never a link, a subject or a body:
+
+```sh
+journalctl -u axgf-cms -g 'mail'
+```
+
+- **The credentials refused** (530, 534, 535): mail pauses until the relay
+  is saved again or a test gets through — with the relay in the env file,
+  correct it there, restart, and send a test. The dashboard says so, in
+  red, and so does the Infrastructure page.
+- **The relay's own daily limit** (Gmail's 550 5.4.5): paused until the next
+  UTC day, or until a test gets through or the relay is another one.
+- **For now** (a 4xx reply, a wait on the relay past 30 seconds, a refused
+  or cut connection, a name that did not resolve): tried again after a
+  minute, then five, then given up. A message still waiting when mail is
+  paused is not tried again.
+- **The address refused** (550 5.1.x), **TLS** (465 goes with TLS, 587 with
+  STARTTLS), **the sandbox** (`Operation not permitted`: the drop-in above):
+  not tried again. The accounts page shows each account's last message.
+- **The site's ceiling**: past it, nothing more goes until the next UTC day.
+  The dashboard and the Infrastructure page say so.
+
+A message asked for during a pause or past the ceiling is not kept for
+later, nor one still waiting when the service stops (the journal says how
+many): the member asks again, or the accounts page sends the welcome again.
+
+### The limits
+
+- per client: eight "Forgot your password?" in a quarter of an hour;
+- per account: three reset links an hour, six a day;
+- per address: one message with a link a quarter of an hour, five a day;
+- a forged link posted to its page counts as a failed sign-in in the jail;
+  nginx counts `/mail/` with the sign-in (README, "Rate limiting and jail").
+
+Past them the page answers the same, and nothing is sent.
+
+### For the members
+
+- **Forgot your password?** answers the same whether the account exists or
+  not. The link works once, for an hour; using it signs the member in,
+  closes their other sessions, and tells their address the password changed.
+- **An account without an address** cannot be helped by mail: set its
+  password on the accounts page, or give it an address and send the welcome
+  again.
+- **A welcome's link** works seven days — one for an administrator — and
+  until the first sign-in. **Send the welcome again** sends a new one, or a
+  reset link to an account that has signed in before.
+
 ## The AFG: where its computing runs
 
 The administration's AFG room, the Artificial family genealogist

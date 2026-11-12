@@ -691,6 +691,15 @@ async fn a_verified_address_links_the_account_an_administrator_made_and_nothing_
     let gran = user_named(&acl, "grandma").unwrap();
     assert_eq!(gran["identities"][0]["subject"], "g-1");
     assert_eq!(gran["role"], "contributor");
+    // A writer with nowhere asked for lands in the administration, as a
+    // password sign-in does (docs/adr/0048 §7), and the language of the
+    // sign-in is what her mail falls back to.
+    let html = body_string(resp).await;
+    assert!(
+        html.contains(r#"http-equiv="refresh" content="0;url=/admin""#),
+        "{html}"
+    );
+    assert_eq!(gran["seen_language"], "en");
     // The emergency session that set this up is not an account: grandma is
     // the only one, and still the only one.
     assert_eq!(
@@ -976,4 +985,94 @@ async fn the_connectivity_page_never_shows_a_providers_secret() {
     let html = body_string(get_with_cookie(&app, "/admin/login", "axgf_lang=en").await).await;
     assert!(html.contains("Continue with Family sign-in"));
     assert!(html.contains(r#"href="/register""#));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn an_account_a_service_opens_is_welcomed_at_the_address_it_verified() {
+    let fake = fake_provider().await;
+    let rec = axgf_cms::mail::Recorder::new();
+    let dir = scratch("entry-welcome");
+    let bundle = dir.join("family.axgf");
+    std::fs::copy(sample(), &bundle).unwrap();
+    let (app, _state) = build_app_with_mailer(&bundle, Arc::new(rec.clone())).unwrap();
+    let admin = admin_cookie(&app).await;
+    configure(&app, &admin, &fake, "open").await;
+    let r = post_form_as(
+        &app,
+        &admin,
+        "/admin/connectivity/mail",
+        &form(&[
+            ("host", "relay.test"),
+            ("username", "family@family.example"),
+            ("password", "relay-app-secret"),
+            ("from_address", "family@family.example"),
+        ]),
+    )
+    .await;
+    assert_eq!(r.status(), StatusCode::OK, "the relay is saved");
+
+    // Opened in French, through the service, with an address it verified.
+    let s = start(&app, "register", "").await;
+    let claims_1 = claims(
+        &fake,
+        &s.nonce,
+        "subject-1",
+        Some(("ada@family.example", true)),
+    );
+    fake.shared
+        .lock()
+        .unwrap()
+        .codes
+        .insert("c1".into(), (claims_1, s.challenge.clone()));
+    let resp = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(format!(
+                    "/auth/oidc/callback?code=c1&state={}",
+                    enc(&s.state)
+                ))
+                .header(header::COOKIE, format!("{}; axgf_lang=fr", s.flow_cookie))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+    let mut sent = Vec::new();
+    for _ in 0..500 {
+        sent = rec.sent();
+        if !sent.is_empty() {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    assert_eq!(sent.len(), 1, "a welcome");
+    let m = &sent[0];
+    assert_eq!(
+        (m.kind, m.to.as_str(), m.lang.as_str()),
+        ("welcome", "ada@family.example", "fr")
+    );
+    assert!(m.text.contains("Family sign-in"), "{}", m.text);
+    assert!(m.text.contains("https://family.example/admin/login"));
+    assert!(!m.text.contains("/mail/set/"), "no password to choose");
+
+    // An address the service did not verify is not kept, and nothing goes.
+    let s = start(&app, "register", "").await;
+    let resp = come_back(
+        &app,
+        &fake,
+        &s,
+        "c2",
+        claims(
+            &fake,
+            &s.nonce,
+            "subject-2",
+            Some(("bea@family.example", false)),
+        ),
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+    assert_eq!(rec.sent().len(), 1);
 }

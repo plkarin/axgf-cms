@@ -285,14 +285,9 @@ fn bad_choice(state: &Shared, headers: &HeaderMap) -> Response {
     )
 }
 
-/// The same-site check as [`render::Chrome::resolve`] applies, repeated here
+/// The same-site check as [`render::Chrome::resolve`] applies, named here
 /// because this is the path where the value actually reaches a `Location`
 /// header and an open redirect would be live.
 fn safe_back(raw: &str) -> String {
-    let candidate = raw.trim();
-    if candidate.starts_with('/') && !candidate.starts_with("//") && !candidate.contains('\\') {
-        candidate.to_string()
-    } else {
-        "/".to_string()
-    }
+    render::safe_back(raw)
 }

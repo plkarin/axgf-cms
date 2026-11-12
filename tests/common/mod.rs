@@ -160,6 +160,23 @@ pub fn build_app_as_installed(path: &Path) -> anyhow::Result<axum::Router> {
     Ok(axgf_cms::router(std::sync::Arc::new(state)))
 }
 
+/// Build the app as [`build_app`] does, with `transport` in place of the mail
+/// relay, and keep a handle on its state: the mailer's ledger, the accounts.
+pub fn build_app_with_mailer(
+    path: &Path,
+    transport: std::sync::Arc<dyn axgf_cms::mail::Transport>,
+) -> anyhow::Result<(axum::Router, std::sync::Arc<axgf_cms::AppState>)> {
+    let state = axgf_cms::AppState::load_or_create(path, TOKEN.to_string())?
+        .with_space_probe(std::sync::Arc::new(axgf_cms::space::Fixed::new(
+            50 << 30,
+            100 << 30,
+        )))
+        .with_mailer(transport);
+    state.site_mutate(|s| s.doors = axgf_cms::site::Doors::everyone())?;
+    let state = std::sync::Arc::new(state);
+    Ok((axgf_cms::router(state.clone()), state))
+}
+
 /// Build an app over a fresh empty bundle, returning the router and the path.
 ///
 /// The second value owns the directory: hold it for as long as the app is

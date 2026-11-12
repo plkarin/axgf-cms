@@ -160,4 +160,97 @@
 {% endfor %}
 </section>
 
+{#- The mail relay (docs/adr/0048). Its password is written and never shown;
+    the whole section folds, so the page's controls at rest stay as they were. -#}
+<section class="rec-section" id="mail">
+<h2>{{ t("mail-section") }}</h2>
+<p class="small muted">{{ t("mail-section-intro") }}</p>
+<dl class="facts">
+  <dt>{{ t("mail-state") }}</dt>
+  <dd>{% if mail.paused == "auth" %}<span class="lvl lvl-warn">{{ t("mail-paused-auth") }}</span>{% elif mail.paused == "quota" %}<span class="lvl lvl-warn">{{ t("mail-paused-quota") }}</span>{% elif mail.ready %}<span class="lvl lvl-ok">{{ t("mail-ready") }}</span>{% else %}<span class="lvl">{{ t("mail-off") }}</span>{% endif %}</dd>
+  <dt>{{ t("mail-links") }}</dt>
+  <dd>{% if mail.links %}<code>{{ public_base }}</code>{% else %}<a href="#public-address">{{ t("mail-links-needs-address") }}</a>{% endif %}</dd>
+  <dt>{{ t("mail-today") }}</dt>
+  <dd>{{ t("mail-today-count", count=mail.today, ceiling=mail.daily_limit) }} · {{ t("mail-day-counts", accepted=mail.accepted, refused=mail.refused) }}</dd>
+  {% if mail.last_ok %}<dt>{{ t("mail-last-ok") }}</dt><dd>{{ mail.last_ok.at | localdatetime(lang) }} · <code>{{ mail.last_ok.detail }}</code></dd>{% endif %}
+  {% if mail.last_failure %}<dt>{{ t("mail-last-failure") }}</dt><dd>{{ mail.last_failure.at | localdatetime(lang) }} · {{ t("mail-failure-" ~ mail.last_failure.failure) }} <code>{{ mail.last_failure.detail }}</code></dd>{% endif %}
+</dl>
+{% if mail.env %}<div class="notice"><p>{% if mail.env_refused %}{{ t(mail.env_refused) }}{% else %}{{ t("mail-set-by-env", host=mail.env_host, sender=mail.env_from) }}{% endif %}</p></div>{% endif %}
+{% if mail.from_without_url %}<div class="notice warn"><p>{{ t("mail-from-without-url") }}</p></div>{% endif %}
+{% if outbound_note %}<div class="notice warn"><p>{{ t("mail-outbound-note") }}</p></div>{% endif %}
+<details class="menu-disclosure export-disclosure service-card" id="mail-relay">
+  <summary>{{ ic.icon("send") }} {{ t("mail-relay") }}</summary>
+  {% if mail.admin_refused %}<div class="notice warn"><p>{{ t(mail.admin_refused) }}</p></div>{% endif %}
+  {% if mail.gmail_sender_warning %}<div class="notice warn"><p>{{ t("mail-gmail-sender") }}</p></div>{% endif %}
+  <form method="post" action="/admin/connectivity/mail" class="service-form" autocomplete="off">
+    <fieldset{% if mail.env %} disabled{% endif %}>
+    <div class="field">
+      <label for="mail-host">{{ t("mail-host") }}</label>
+      <input id="mail-host" name="host" type="text" spellcheck="false" class="mono" value="{{ mail.host }}">
+      <div class="hint">{{ t("mail-host-hint") }}</div>
+    </div>
+    <div class="field">
+      <label for="mail-security">{{ t("mail-security") }}</label>
+      <select id="mail-security" name="security">
+        {% for s in mail.securities %}<option value="{{ s }}" {{ "selected" if s == mail.security }}>{{ t("mail-security-" ~ s) }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="mail-port">{{ t("mail-port") }}</label>
+      <input id="mail-port" name="port" type="number" min="1" max="65535" value="{{ mail.port }}">
+      <div class="hint">{{ t("mail-port-hint") }}</div>
+    </div>
+    <div class="field">
+      <label for="mail-username">{{ t("mail-username") }}</label>
+      <input id="mail-username" name="username" type="text" spellcheck="false" autocomplete="off" value="{{ mail.username }}">
+    </div>
+    <div class="field">
+      <label for="mail-password">{{ t("mail-password") }}</label>
+      <input id="mail-password" name="password" type="password" autocomplete="new-password" spellcheck="false">
+      <div class="hint">{% if mail.password_set %}{{ t("mail-password-set") }}{% else %}{{ t("mail-password-unset") }}{% endif %} {{ t("mail-password-hint") }}</div>
+      {% if mail.password_set %}<label class="inline"><input type="checkbox" name="clear_password"> {{ t("mail-password-clear") }}</label>{% endif %}
+    </div>
+    <div class="field">
+      <label for="mail-from">{{ t("mail-from-address") }}</label>
+      <input id="mail-from" name="from_address" type="email" spellcheck="false" value="{{ mail.from_address }}">
+      <div class="hint">{{ t("mail-from-hint") }}</div>
+    </div>
+    <div class="field">
+      <label for="mail-from-name">{{ t("mail-from-name") }}</label>
+      <input id="mail-from-name" name="from_name" type="text" maxlength="80" value="{{ mail.from_name }}">
+    </div>
+    </fieldset>
+    {#- What the section adds to any relay, the configuration's included. -#}
+    <fieldset>
+    <div class="field">
+      <label for="mail-reply-to">{{ t("mail-reply-to") }}</label>
+      <input id="mail-reply-to" name="reply_to" type="email" spellcheck="false" value="{{ mail.reply_to }}">
+    </div>
+    <div class="field">
+      <label for="mail-language">{{ t("mail-language") }}</label>
+      <select id="mail-language" name="language">
+        <option value="" {{ "selected" if not mail.language }}>{{ t("mail-language-default") }}</option>
+        {% for l in locales %}<option value="{{ l.tag }}" lang="{{ l.tag }}" {{ "selected" if l.tag == mail.language }}>{{ l.native_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="mail-limit">{{ t("mail-limit") }}</label>
+      <input id="mail-limit" name="daily_limit" type="number" min="1" max="10000" value="{{ mail.daily_limit }}">
+      <div class="hint">{{ t("mail-limit-hint") }}</div>
+    </div>
+    <div class="cta-row">
+      <button class="btn" type="submit">{{ t("admin-save") }}</button>
+    </div>
+    </fieldset>
+  </form>
+  <form method="post" action="/admin/connectivity/mail/test" class="service-form">
+    <div class="field">
+      <label for="mail-test-to">{{ t("mail-test-to") }}</label>
+      <input id="mail-test-to" name="to" type="email" spellcheck="false" value="{{ mail.test_to }}">
+    </div>
+    <button class="btn ghost" type="submit" data-busy="{{ t('busy-working') }}">{{ ic.icon("pulse") }} {{ t("mail-test") }}</button>
+  </form>
+</details>
+</section>
+
 {% endblock %}

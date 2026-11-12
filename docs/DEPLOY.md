@@ -226,6 +226,13 @@ If you write your own instead, five things matter:
   import reads one whole, after backing up the family it replaces. The files
   above give a save five minutes and an import fifteen.
 
+The shipped nginx file also counts, per address, the posts to the sign-in,
+the registration, the services' sign-in and everything under `/mail/` — the
+forgotten password and the page its link opens (1.17.0, docs/adr/0048) —
+and keeps `/mail/` out of its access log, since a link's token is in the
+address. A file of your own should do the same (README, "Rate limiting and
+jail").
+
 And one thing not to do: **do not set `Content-Security-Policy`,
 `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options` or
 `Permissions-Policy` at the proxy.** The application sets all five on every

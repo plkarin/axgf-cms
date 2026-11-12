@@ -215,6 +215,9 @@ const TEMPLATES: &[(&str, &str)] = templates![
     "admin_setup.html",
     "admin_setup_result.html",
     "admin_login.html",
+    "mail.html",
+    "mail_forgot.html",
+    "mail_set.html",
     "admin_users.html",
     "admin_bulk.html",
     "admin_merge.html",
@@ -403,6 +406,10 @@ pub struct Chrome {
     pub viewer_name: String,
     /// One or two letters for the masthead's chip, from `viewer_name`.
     pub viewer_initials: String,
+    /// The signed-in account's address, for what is sent to it on request (the
+    /// mail section's test). Never drawn in the masthead.
+    #[serde(skip)]
+    pub viewer_email: Option<String>,
     /// Where the format is published, for the footer's acknowledgement.
     pub spec_url: &'static str,
     /// This build's version, shown in the footer on every page.
@@ -467,6 +474,7 @@ impl Chrome {
             version: env!("CARGO_PKG_VERSION"),
             author: AUTHOR,
             viewer_initials: initials(&viewer_name),
+            viewer_email: viewer.user.as_ref().and_then(|u| u.email.clone()),
             viewer_name,
             lang: locale.tag,
             dir: locale.dir.as_str(),
@@ -583,14 +591,39 @@ pub fn initials(name: &str) -> String {
 /// unchecked value is an open redirect: `?back=https://elsewhere.example` would
 /// turn the language selector into a way of bouncing a reader off the site.
 /// Only a same-site absolute path is accepted, and a protocol-relative `//host`
-/// is rejected along with everything else.
+/// is rejected along with everything else — including one a browser makes by
+/// itself: it drops tabs and line breaks from a `Location` before reading it,
+/// so `/<tab>/host` arrives as `//host`. A control character refuses the whole
+/// value, which also keeps it a valid header.
 pub fn safe_back(raw: &str) -> String {
     let candidate = raw.trim();
-    if candidate.starts_with('/') && !candidate.starts_with("//") && !candidate.contains('\\') {
+    if candidate.starts_with('/')
+        && !candidate.starts_with("//")
+        && !candidate.contains('\\')
+        && !candidate.chars().any(char::is_control)
+    {
         candidate.to_string()
     } else {
         "/".to_string()
     }
+}
+
+/// The sign-in, returning to `path` once signed in (docs/adr/0048 §7).
+pub fn sign_in_to(path: &str) -> String {
+    let path = safe_back(path);
+    if path == "/" {
+        return "/admin/login".to_string();
+    }
+    let mut out = String::from("/admin/login?next=");
+    for b in path.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b'~' | b'/' => {
+                out.push(b as char)
+            }
+            _ => out.push_str(&format!("%{b:02X}")),
+        }
+    }
+    out
 }
 
 /// Render a page with the shared chrome merged into its own context.

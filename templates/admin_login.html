@@ -25,6 +25,7 @@
 {% if services %}
 <form method="post" class="card sso-buttons" style="max-width:34rem">
   <input type="hidden" name="intent" value="signin">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
   {% for p in services %}
   <button class="btn sso-button" type="submit" formaction="/auth/{{ p.slug }}/start">{{ ic.icon("key") }} {{ t("sso-continue-with", name=p.label) }}</button>
   {% endfor %}
@@ -34,6 +35,7 @@
 
 {% if passwords or not services %}
 <form method="post" action="/admin/login" class="card" style="max-width:34rem">
+  {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
   <div class="field">
     <label for="username">{{ t("login-username") }}</label>
     <input type="text" id="username" name="username" autocomplete="username"
@@ -48,6 +50,7 @@
 </form>
 {% endif %}
 
+{% if forgot %}<p style="max-width:34rem"><a href="/mail/forgot">{{ t("login-forgot") }}</a></p>{% endif %}
 {% if register %}<p style="max-width:34rem"><a href="/register">{{ t("login-register") }}</a></p>{% endif %}
 
 <details class="card" style="max-width:34rem">

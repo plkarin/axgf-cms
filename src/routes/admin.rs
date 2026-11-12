@@ -78,6 +78,7 @@ pub(super) fn require(
                 nav => "admin",
                 error => chrome.t("login-sign-in-prompt"),
                 no_accounts => state.acl_read(|a| a.users.is_empty()),
+                forgot => forgot_offered(state),
             },
         ),
     )
@@ -167,21 +168,51 @@ pub(super) fn check_scope(
 // auth
 // ---------------------------------------------------------------------------
 
-/// `GET /admin/login`
-pub async fn login_form(State(state): State<Shared>, headers: HeaderMap) -> Response {
+#[derive(Deserialize, Default)]
+pub struct NextQuery {
+    #[serde(default)]
+    next: String,
+}
+
+/// `GET /admin/login` — with `next`, where the sign-in returns to.
+pub async fn login_form(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Query(q): Query<NextQuery>,
+) -> Response {
     let viewer = auth::viewer(&state, &headers);
     let chrome = render::Chrome::resolve(&viewer, &headers, "/admin/login").with_archive(&state);
+    if viewer.signed_in() && !q.next.trim().is_empty() {
+        let home = if viewer.may_write() { "/admin" } else { "/" };
+        let to = back_to(&q.next).unwrap_or_else(|| home.to_string());
+        return Redirect::to(&to).into_response();
+    }
     if viewer.may_write() {
         return Redirect::to("/admin").into_response();
     }
-    render::page_with(&chrome, "admin_login.html", login_context(&state, ""))
+    render::page_with(
+        &chrome,
+        "admin_login.html",
+        login_context(&state, "", &q.next),
+    )
+}
+
+/// The page a sign-in returns to: a path of this site other than its front
+/// page, which is where a reader lands anyway. Anything else — another site,
+/// a path a browser would read as one — is no page to return to.
+fn back_to(next: &str) -> Option<String> {
+    let back = render::safe_back(next);
+    (back != "/").then_some(back)
 }
 
 /// What the sign-in page shows besides an error: the services, whether
 /// passwords are taken at all, and whether a visitor may open an account.
-fn login_context(state: &Shared, error: &str) -> minijinja::Value {
+fn login_context(state: &Shared, error: &str, next: &str) -> minijinja::Value {
     let site = state.site();
     context! {
+        // Where a sign-in returns to: the page that sent the reader here
+        // (docs/adr/0048 §7), a path of this site or nothing.
+        next => back_to(next).unwrap_or_default(),
         // Not "admin": nobody is signed in here, so nothing is being edited,
         // and the edit band said otherwise to every visitor.
         nav => "entry",
@@ -192,7 +223,15 @@ fn login_context(state: &Shared, error: &str) -> minijinja::Value {
         services => super::entry::ready_providers(&site),
         passwords => site.sign_in.password != crate::site::PasswordPolicy::Nobody,
         register => site.registration.is_open_to_visitors(),
+        forgot => forgot_offered(state),
     }
+}
+
+/// Whether the sign-in page offers "Forgot your password?": a relay and a
+/// public address to send a link from, and passwords in use (docs/adr/0048).
+pub(super) fn forgot_offered(state: &Shared) -> bool {
+    state.site().sign_in.password != crate::site::PasswordPolicy::Nobody
+        && super::mail::can_send_links(state)
 }
 
 #[derive(Deserialize)]
@@ -204,6 +243,9 @@ pub struct LoginForm {
     /// The emergency shared token, on its own field.
     #[serde(default)]
     token: String,
+    /// Where to return after signing in: a path of this site.
+    #[serde(default)]
+    next: String,
 }
 
 /// `POST /admin/login`
@@ -252,7 +294,7 @@ pub async fn login(
             // Not at `warn`: a term is written once, when it starts, and an
             // address that keeps knocking would fill the journal otherwise.
             tracing::debug!(client = %addr, "refused a sign-in attempt from a jailed address");
-            return login_jailed(&state, &chrome, refusal);
+            return login_jailed(&state, &chrome, refusal, &f.next);
         }
     };
 
@@ -285,7 +327,7 @@ pub async fn login(
             client = %addr,
             "a wrong emergency admin token was offered from {addr}"
         );
-        return login_refused(&state, &chrome, &chrome.t("login-token-wrong"));
+        return login_refused(&state, &chrome, &chrome.t("login-token-wrong"), &f.next);
     }
 
     let username = f.username.trim().to_ascii_lowercase();
@@ -296,7 +338,7 @@ pub async fn login(
         // be the account's owner with the right password, shut out by others'
         // guesses — who must not jail their own address by trying again.
         charge.refund();
-        return login_refused(&state, &chrome, &chrome.t("login-throttled"));
+        return login_refused(&state, &chrome, &chrome.t("login-throttled"), &f.next);
     }
 
     let user = state.acl_read(|acl| acl.active(&username).cloned());
@@ -313,7 +355,7 @@ pub async fn login(
     let Some(user) = user.filter(|_| ok) else {
         charge.failed();
         tracing::info!(client = %addr, "a sign-in failed from {addr}");
-        return login_refused(&state, &chrome, &chrome.t("login-wrong"));
+        return login_refused(&state, &chrome, &chrome.t("login-wrong"), &f.next);
     };
 
     charge.succeeded();
@@ -324,13 +366,21 @@ pub async fn login(
     // plainly — whoever typed it knows the password already.
     if !state.site().sign_in.password.allows(user.role) {
         tracing::info!(username = %user.username, "a password sign-in refused by the sign-in policy");
-        return login_refused(&state, &chrome, &chrome.t("login-password-not-allowed"));
+        return login_refused(
+            &state,
+            &chrome,
+            &chrome.t("login-password-not-allowed"),
+            &f.next,
+        );
     }
 
     let id = user.id.clone();
+    let seen_language = chrome.lang.to_string();
     if let Err(e) = state.acl_mutate(|acl| {
         if let Some(u) = acl.users.iter_mut().find(|u| u.id == id) {
             u.last_login = Some(view::now_iso8601());
+            // What its mail falls back to (docs/adr/0048 §3).
+            u.seen_language = Some(seen_language.clone());
         }
     }) {
         // The sign-in itself succeeded; only the timestamp did not persist.
@@ -341,19 +391,29 @@ pub async fn login(
     let cookie = state.sessions().open(Some(user.id.clone()), false);
     state.events().record(crate::events::Kind::SignedIn);
     tracing::info!(username = %user.username, role = user.role.as_str(), "signed in");
+    // Back where the reader was going (docs/adr/0048 §7); else a writer to the
+    // administration and a reader to the river, which the administration
+    // would refuse them.
+    let to = back_to(&f.next).unwrap_or_else(|| {
+        if user.role.may_write() {
+            "/admin".to_string()
+        } else {
+            "/".to_string()
+        }
+    });
     (
         [(
             header::SET_COOKIE,
             crate::session::set_cookie(&cookie, secure),
         )],
-        Redirect::to("/admin"),
+        Redirect::to(&to),
     )
         .into_response()
 }
 
 /// A sign-in refused before anything was compared: a 429, with how long to
 /// wait in the reader's language and in `Retry-After`.
-fn login_jailed(state: &Shared, chrome: &render::Chrome, refusal: Refusal) -> Response {
+fn login_jailed(state: &Shared, chrome: &render::Chrome, refusal: Refusal, next: &str) -> Response {
     let message = match refusal {
         Refusal::Jailed(wait) => wait_message(chrome, wait),
         Refusal::TokenClosed(_) => chrome.t("login-token-closed"),
@@ -362,7 +422,11 @@ fn login_jailed(state: &Shared, chrome: &render::Chrome, refusal: Refusal) -> Re
     (
         StatusCode::TOO_MANY_REQUESTS,
         [retry_after(refusal.wait())],
-        render::page_with(chrome, "admin_login.html", login_context(state, &message)),
+        render::page_with(
+            chrome,
+            "admin_login.html",
+            login_context(state, &message, next),
+        ),
     )
         .into_response()
 }
@@ -390,11 +454,15 @@ pub(super) fn retry_after(wait: std::time::Duration) -> (header::HeaderName, Str
     (header::RETRY_AFTER, whole_seconds(wait).to_string())
 }
 
-fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str) -> Response {
+fn login_refused(state: &Shared, chrome: &render::Chrome, error: &str, next: &str) -> Response {
     state.events().record(crate::events::Kind::SignInFailed);
     (
         StatusCode::UNAUTHORIZED,
-        render::page_with(chrome, "admin_login.html", login_context(state, error)),
+        render::page_with(
+            chrome,
+            "admin_login.html",
+            login_context(state, error, next),
+        ),
     )
         .into_response()
 }
@@ -463,6 +531,13 @@ pub async fn dashboard(
     let console = viewer
         .is_admin()
         .then(|| super::console::overview(&state, &headers, &env, chrome.lang));
+    // Mail that stopped, said where an administrator looks first: a member
+    // who forgot a password is waiting on it (docs/adr/0048).
+    let mail_alert = viewer
+        .is_admin()
+        .then(|| crate::selfcheck::mail(&state))
+        .filter(|item| item.level != crate::findings::Level::Ok)
+        .map(|item| item.to_json(chrome.lang));
 
     render::page_with(
         &chrome,
@@ -498,6 +573,7 @@ pub async fn dashboard(
             completeness,
             console,
             health_problems,
+            mail_alert,
             // A standing emergency token bypasses every account; it exists for
             // the first login and for the day nobody can sign in, and it is
             // meant to be taken out again afterwards.
@@ -2988,11 +3064,14 @@ pub(super) fn render_users(
             })
             .unwrap_or_default()
     });
+    // Each account's last message, as the relay answered it (docs/adr/0048).
+    let mail_ledger = state.mailer().ledger();
     let users = state.acl_read(|acl| {
         acl.users
             .iter()
             .map(|u| {
                 json!({
+                    "mail": mail_ledger.accounts.get(&u.id),
                     "person": u.person_id.as_ref().and_then(|pid| names.get(pid).map(|n| json!({"id": pid, "name": n}))),
                     "id": u.id,
                     "username": u.username,
@@ -3066,6 +3145,7 @@ pub(super) fn render_users(
             services,
             password_policy => site.sign_in.password.as_str(),
             link_by_email => site.sign_in.link_by_email,
+            welcome_ready => super::mail::can_send_links(state),
         },
     )
 }
@@ -3085,6 +3165,9 @@ pub struct NewUserForm {
     /// May talk to the AFG: a checkbox, absent when not ticked.
     #[serde(default)]
     afg: Option<String>,
+    /// The language of the account's welcome and later mail (docs/adr/0048).
+    #[serde(default)]
+    language: String,
 }
 
 /// `POST /admin/users` — create an account.
@@ -3131,12 +3214,29 @@ pub async fn create_user(
     }
     let email = f.email.trim();
     if !email.is_empty() {
+        if !crate::mail::valid_address(email) {
+            return render_users(
+                &state,
+                &chrome,
+                &viewer,
+                Some(&chrome.t("accounts-email-invalid")),
+                None,
+            );
+        }
         user.email = Some(email.to_string());
     }
     user.family_scope = parse_scope(&f.family_scope);
     user.afg = f.afg.is_some();
+    // The language its mail is written in until its member picks one: the
+    // form's, else the administrator's.
+    user.mail_language = Some(
+        crate::i18n::Locale::find(&f.language)
+            .map_or(chrome.lang, |l| l.tag)
+            .to_string(),
+    );
 
     let username = user.username.clone();
+    let id = user.id.clone();
     if let Err(e) = state.acl_mutate(|acl| acl.users.push(user)) {
         return render_users(
             &state,
@@ -3147,6 +3247,25 @@ pub async fn create_user(
         );
     }
 
+    // With an address and a relay, the welcome carries the way in, and no
+    // password is shown here: none travels by mail either. A welcome the form
+    // led the administrator to expect and that did not go is said so.
+    let mut not_sent = None;
+    if !email.is_empty() && super::mail::can_send_links(&state) {
+        let key = match super::mail::send_welcome(&state, &id) {
+            super::mail::Welcome::Link => Some("accounts-created-welcome"),
+            super::mail::Welcome::Services => Some("accounts-created-welcome-services"),
+            super::mail::Welcome::NotSent => None,
+        };
+        if let Some(key) = key {
+            let notice = chrome.t_args(key, &[("username", username.clone().into())]);
+            return render_users(&state, &chrome, &viewer, None, Some(&notice));
+        }
+        not_sent = Some(chrome.t_args(
+            "accounts-welcome-not-sent",
+            &[("username", username.clone().into())],
+        ));
+    }
     let notice = if generated {
         chrome.t_args(
             "accounts-created-with-password",
@@ -3157,6 +3276,10 @@ pub async fn create_user(
         )
     } else {
         chrome.t_args("accounts-created", &[("username", username.clone().into())])
+    };
+    let notice = match not_sent {
+        Some(more) => format!("{notice} {more}"),
+        None => notice,
     };
     render_users(&state, &chrome, &viewer, None, Some(&notice))
 }
@@ -3237,11 +3360,32 @@ pub async fn update_user(
     };
 
     let email = f.email.trim().to_string();
+    if !email.is_empty() && !crate::mail::valid_address(&email) {
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some(&chrome.t("accounts-email-invalid")),
+            None,
+        );
+    }
+    let password_set = hash.is_some();
     let scope = parse_scope(&f.family_scope);
     let afg = f.afg.is_some();
     let id2 = id.clone();
     if let Err(e) = state.acl_mutate(move |acl| {
         if let Some(u) = acl.users.iter_mut().find(|u| u.id == id2) {
+            // A disabling, a new role or a new address ends the links mailed
+            // to the account for good, even once undone (docs/adr/0048 §4).
+            let new_email = (!email.is_empty()).then_some(email);
+            let address_changed = u.email.as_deref().map(str::to_lowercase)
+                != new_email.as_deref().map(str::to_lowercase);
+            if u.role != role
+                || (disabling && u.status == crate::acl::Status::Active)
+                || address_changed
+            {
+                u.link_epoch = u.link_epoch.wrapping_add(1);
+            }
             u.role = role;
             u.afg = afg;
             u.status = if disabling {
@@ -3249,7 +3393,7 @@ pub async fn update_user(
             } else {
                 crate::acl::Status::Active
             };
-            u.email = (!email.is_empty()).then_some(email);
+            u.email = new_email;
             u.family_scope = scope;
             if let Some(h) = hash {
                 u.password_hash = h;
@@ -3268,6 +3412,9 @@ pub async fn update_user(
     // Whatever changed, the cookie that was issued before it is now describing
     // rights the account no longer has.
     state.sessions().close_all_for(&id);
+    if password_set {
+        super::mail::tell_password_changed(&state, &id, true);
+    }
     render_users(
         &state,
         &chrome,
@@ -3278,6 +3425,39 @@ pub async fn update_user(
             &[("username", existing.username.clone().into())],
         )),
     )
+}
+
+/// `POST /admin/users/:id/welcome` — the welcome again, to an account that
+/// has never signed in; a reset link to one that has (docs/adr/0048 §6).
+pub async fn resend_welcome(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let (viewer, chrome) = guard_admin!(state, headers);
+    let Some(user) = state.acl_read(|acl| acl.by_id(&id).cloned()) else {
+        return render_users(
+            &state,
+            &chrome,
+            &viewer,
+            Some(&chrome.t("accounts-not-found")),
+            None,
+        );
+    };
+    let sent = if user.status != crate::acl::Status::Active {
+        false
+    } else if user.last_login.is_none() {
+        super::mail::send_welcome(&state, &id) != super::mail::Welcome::NotSent
+    } else {
+        super::mail::send_reset_to(&state, &id)
+    };
+    let key = match (sent, user.last_login.is_none()) {
+        (true, true) => "accounts-welcome-sent",
+        (true, false) => "accounts-reset-sent",
+        (false, _) => "accounts-welcome-not-sent",
+    };
+    let notice = chrome.t_args(key, &[("username", user.username.clone().into())]);
+    render_users(&state, &chrome, &viewer, None, Some(&notice))
 }
 
 /// Parse the scope textarea: one person id per line, blanks ignored.

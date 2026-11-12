@@ -119,4 +119,7 @@ a day in memory (`src/events.rs`) for the Infrastructure page's checks.
 - **Verifying ID token signatures.** Not needed for a token received
   directly from the token endpoint over TLS; it would add a JWKS cache and
   key rotation for no protection.
-- **Taking an address on the registration form.** Rejected, §2.
+- **Taking an address on the registration form.** Rejected, §2. Since
+  1.17.0 the site sends mail (docs/adr/0048) to the addresses this ADR
+  trusts — one an administrator typed or a service verified — and the
+  registration form still asks for none.

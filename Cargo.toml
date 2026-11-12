@@ -62,6 +62,10 @@ fluent = "0.17.0"
 unic-langid = "0.9.6"
 intl-memoizer = "0.5.3"
 ureq = { version = "3.4.0", default-features = false, features = ["rustls", "json", "gzip"] }
+# The mail relay (docs/adr/0048): SMTP only, over the rustls, ring and
+# webpki-roots already in the tree. Not the default features, which bring
+# native-tls and OpenSSL, that the static musl release cannot link.
+lettre = { version = "0.11.23", default-features = false, features = ["builder", "smtp-transport", "hostname", "rustls-tls"] }
 # The encrypted export (docs/adr/0011 §4): an OpenPGP message to the
 # recipient's public key, readable by `gpg --decrypt`. Pure Rust, so the
 # static musl release still links nothing, and streaming, so a 435 MB bundle

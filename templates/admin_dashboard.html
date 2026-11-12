@@ -77,6 +77,12 @@
 </div>
 {% endif %}
 
+{% if mail_alert %}
+<div class="notice {% if mail_alert.level == "fail" %}error{% else %}warn{% endif %}">
+  <p><strong>{{ mail_alert.title }}</strong> {{ mail_alert.finding }} <a href="{{ mail_alert.link }}">{{ mail_alert.fix }}</a></p>
+</div>
+{% endif %}
+
 {% if bundle_heavy %}
 <div class="notice warn">
   <p>{{ t("admin-bundle-heavy", size=bundle_size, warn=size_warn) }}</p>

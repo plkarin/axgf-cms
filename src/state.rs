@@ -109,6 +109,10 @@ pub struct AppState {
     /// Where `/health` reads free space from: the filesystem, unless a test
     /// says otherwise ([`crate::space::Probe`]).
     space: std::sync::Arc<dyn crate::space::Probe>,
+    /// The mail relay's client and its last word (docs/adr/0048).
+    mailer: crate::mail::Mailer,
+    /// The key mail links are signed with, read or made on first use.
+    mail_key: std::sync::OnceLock<crate::mail_tokens::Key>,
     /// True when the emergency admin token was supplied by the operator rather
     /// than generated at startup.
     ///
@@ -726,6 +730,9 @@ impl AppState {
                 map: None,
                 backup_dir: None,
                 space: std::sync::Arc::new(crate::space::Filesystem),
+                mailer: crate::mail::Mailer::default()
+                    .with_ledger_file(path.with_extension("mailstate")),
+                mail_key: std::sync::OnceLock::new(),
                 standing_admin_token: false,
                 bind: None,
                 flows: crate::sso::Flows::new(),
@@ -944,6 +951,31 @@ impl AppState {
     /// Where `/health` reads free space from.
     pub fn space_probe(&self) -> &dyn crate::space::Probe {
         self.space.as_ref()
+    }
+
+    /// Hand mail to `transport` instead of the relay. For tests, with a
+    /// [`crate::mail::Recorder`] that keeps what would have been sent.
+    pub fn with_mailer(mut self, transport: std::sync::Arc<dyn crate::mail::Transport>) -> Self {
+        self.mailer = std::mem::take(&mut self.mailer).with_transport(transport);
+        self
+    }
+
+    /// The relay the configuration sets (`AXGF_CMS_SMTP_URL`,
+    /// `AXGF_CMS_MAIL_FROM`), which wins over the administration's.
+    pub fn with_mail_env(mut self, url: Option<&str>, from: Option<&str>) -> Self {
+        self.mailer = std::mem::take(&mut self.mailer).with_env(url, from);
+        self
+    }
+
+    /// The mailer.
+    pub fn mailer(&self) -> &crate::mail::Mailer {
+        &self.mailer
+    }
+
+    /// The key mail links are signed with (`family.mailkey`).
+    pub fn mail_key(&self) -> &crate::mail_tokens::Key {
+        self.mail_key
+            .get_or_init(|| crate::mail_tokens::Key::beside(&self.bundle_path))
     }
 
     /// Record whether the emergency token is a standing one, before sharing.

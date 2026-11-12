@@ -120,7 +120,13 @@ async fn a_visitor_sees_the_familys_page_and_the_sign_in_and_nothing_else() {
     ] {
         let resp = get(&app, &page).await;
         assert_eq!(resp.status(), StatusCode::SEE_OTHER, "{page}");
-        assert_eq!(location(&resp), "/admin/login", "{page}");
+        // The sign-in, and back to the page once signed in (docs/adr/0048 §7).
+        assert_eq!(
+            location(&resp),
+            axgf_cms::render::sign_in_to(&page),
+            "{page}"
+        );
+        assert!(location(&resp).starts_with("/admin/login?next=/"), "{page}");
     }
     // What a script or a file asks for: refused, and nothing else.
     for data in [

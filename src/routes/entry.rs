@@ -226,6 +226,9 @@ pub async fn register(
     };
     user.created_via = Some("register".into());
     user.last_login = Some(crate::view::now_iso8601());
+    // The language its mail is written in, until its member picks one
+    // (docs/adr/0048 §3).
+    user.mail_language = Some(chrome.lang.to_string());
     let id = user.id.clone();
     let mut taken = false;
     if let Err(e) = state.acl_mutate(|acl| {
@@ -513,16 +516,34 @@ pub async fn callback(
         return r;
     }
     match create_from(&state, &claims) {
-        Ok(id) => signed_in(
-            &state,
-            &chrome,
-            &id,
-            &flow.next,
-            secure,
-            Some(Event::Registered),
-        ),
+        Ok(id) => {
+            welcome_from_service(&state, &id, chrome.lang);
+            signed_in(
+                &state,
+                &chrome,
+                &id,
+                &flow.next,
+                secure,
+                Some(Event::Registered),
+            )
+        }
         Err(()) => failed(StatusCode::INTERNAL_SERVER_ERROR, "sso-error-invalid"),
     }
+}
+
+/// An account a service just made: the visitor's language for its mail, and
+/// a welcome at the address the service verified (docs/adr/0048 §6). Neither
+/// may hold up the sign-in.
+fn welcome_from_service(state: &Shared, id: &str, lang: &'static str) {
+    let id2 = id.to_string();
+    if let Err(e) = state.acl_mutate(move |acl| {
+        if let Some(u) = acl.users.iter_mut().find(|u| u.id == id2) {
+            u.mail_language = Some(lang.to_string());
+        }
+    }) {
+        tracing::warn!(error = %e, "could not record the language of an account a service made");
+    }
+    super::mail::send_service_welcome(state, id);
 }
 
 fn identity_of(claims: &sso::Claims) -> Identity {
@@ -584,9 +605,15 @@ fn signed_in(
     also: Option<Event>,
 ) -> Response {
     let id2 = id.to_string();
+    let lang = chrome.lang.to_string();
+    let mut writes = false;
     if let Err(e) = state.acl_mutate(|acl| {
         if let Some(u) = acl.users.iter_mut().find(|u| u.id == id2) {
             u.last_login = Some(crate::view::now_iso8601());
+            // What its mail falls back to (docs/adr/0048 §3), as a password
+            // sign-in records it.
+            u.seen_language = Some(lang);
+            writes = u.role.may_write();
         }
     }) {
         tracing::warn!(error = %e, "could not record last_login");
@@ -596,8 +623,14 @@ fn signed_in(
     }
     state.events().record(Event::SignedIn);
     let cookie = state.sessions().open(Some(id.to_string()), false);
+    // Where it was going; else a writer to the administration and a reader to
+    // the river, as a password sign-in lands (docs/adr/0048 §7).
     let next = render::safe_back(next);
-    let next = if next == "/" { "/".to_string() } else { next };
+    let next = if next == "/" && writes {
+        "/admin".to_string()
+    } else {
+        next
+    };
     let mut r = continue_to(chrome, &next);
     let h = r.headers_mut();
     if let Ok(v) = HeaderValue::from_str(&crate::session::set_cookie(&cookie, secure)) {
@@ -736,6 +769,7 @@ pub async fn finish(
     let secure = crate::session::is_tls(&headers) || site.public_is_https();
     match create_from(&state, &p.claims) {
         Ok(id) => {
+            welcome_from_service(&state, &id, chrome.lang);
             let mut r = signed_in(
                 &state,
                 &chrome,

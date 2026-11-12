@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.17.0] — 2026-11-12
 
 Mail, as the operator asked on 11 November 2026 looking at
 ax-genealogy.com's sign-in page: the forgotten password, and a welcome when
@@ -5025,7 +5025,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.16.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.17.0...HEAD
+[1.17.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.17.0
 [1.16.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.16.0
 [1.15.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.15.0
 [1.14.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.14.0

@@ -748,13 +748,18 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.16.0**: **a jail for the sign-in**. An
-address that fails eight sign-ins in a quarter of an hour, or offers three
-wrong emergency tokens, is shut out of the sign-in, the emergency token and
-the registration for 15 minutes, then an hour, six hours, a day; each term is
-one line in the journal that fail2ban can ban on, and the shipped nginx file counts the sign-in attempts at the
-door. The nginx and Caddy files now let the import of a whole family
-through, and *Import* leaves the masthead once a family is there.
+The latest release is **v1.17.0**: **mail from the site**. Give it a
+relay under **Connectivity** — a Gmail account made for the site, a
+provider's, or one on the machine — and *Forgot your password?* sends a link
+to choose a new one; an account you make with an address is welcomed in its
+language, with a link to choose its password or the services it signs in
+with, and no password is shown or mailed; and an account is told whenever
+its password changes.
+
+v1.16.0 jailed the sign-in: an address that keeps failing is shut out of the
+sign-in, the emergency token and the registration, for longer each time,
+with one line in the journal that fail2ban can ban on; the nginx and Caddy
+files let the import of a whole family through.
 
 v1.15.0 closed the site until you open it: a visitor sees the family's page
 and *Sign in*, and nothing else, until an administrator opens each part
@@ -875,7 +880,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.16.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.17.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1234,7 +1239,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.16.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.16.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.17.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.17.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

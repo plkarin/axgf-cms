@@ -97,11 +97,82 @@ pub fn router(state: Shared) -> Router {
     let guarded = routes(state.clone())
         .layer(axum::middleware::from_fn_with_state(state.clone(), doors))
         .layer(axum::middleware::from_fn_with_state(
-            state,
+            state.clone(),
             same_site_writes,
         ))
-        .layer(axum::middleware::from_fn(cache_policy));
+        .layer(axum::middleware::from_fn(cache_policy))
+        .layer(axum::middleware::from_fn_with_state(state, search_engines));
     security_headers(guarded, &csp)
+}
+
+/// What a search engine may keep (docs/adr/0049). A page a reader reads —
+/// the river, the family's page, the tree, a record, Impact, a note — names
+/// its address on the public address as the canonical one, whatever query
+/// brought it there; every other page, and every error, says `noindex`.
+/// Without it a crawler revisiting the addresses of a site since closed
+/// found, behind each, the sign-in under a `next` of its own: as many copies
+/// of one page as there were pages, and none of them named the original.
+/// The canonical address is built on the public address only, never on the
+/// request's `Host`; without one, none is named.
+async fn search_engines(
+    axum::extract::State(state): axum::extract::State<Shared>,
+    req: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::http::Method;
+    let reads = matches!(*req.method(), Method::GET | Method::HEAD);
+    let path = req.uri().path().to_string();
+    // A note's frame, which its page fetches for itself, is a fragment.
+    let fragment = req
+        .uri()
+        .query()
+        .is_some_and(|q| q.split('&').any(|p| p.starts_with("frame=")));
+    let mut res = next.run(req).await;
+    let html = res
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|t| t.starts_with("text/html"));
+    if !(reads && html) {
+        return res;
+    }
+    // A page that named its canonical address itself keeps it.
+    let named = res
+        .headers()
+        .get_all(header::LINK)
+        .iter()
+        .any(|v| v.to_str().is_ok_and(|v| v.contains("rel=\"canonical\"")));
+    if res.status().is_success() && is_reading_page(&path) && !fragment {
+        if named {
+            return res;
+        }
+        if let Some(base) = state.site().public_base() {
+            if let Ok(link) = HeaderValue::from_str(&format!("<{base}{path}>; rel=\"canonical\"")) {
+                res.headers_mut().append(header::LINK, link);
+            }
+        }
+    } else {
+        res.headers_mut().insert(
+            header::HeaderName::from_static("x-robots-tag"),
+            HeaderValue::from_static("noindex"),
+        );
+    }
+    res
+}
+
+/// Whether `path` is a page a reader reads, which a search engine may keep:
+/// the river, the family's page, the tree, Impact, and one record, one
+/// person's Impact or one note. The sign-in, the registration, the pages of
+/// mail, the search, the administration and the tools are not.
+fn is_reading_page(path: &str) -> bool {
+    let one = |prefix: &str| {
+        path.strip_prefix(prefix)
+            .is_some_and(|rest| !rest.is_empty() && !rest.contains('/'))
+    };
+    matches!(path, "/" | "/about" | "/tree" | "/impact")
+        || one("/person/")
+        || one("/impact/")
+        || one("/notes/")
 }
 
 /// Refuse a form posted from another site (v0.5.0, docs/adr/0011 §2).

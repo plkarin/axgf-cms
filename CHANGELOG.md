@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+What search engines see, after Google Search Console told the operator on
+16 November 2026 that pages of ax-genealogy.com were left out as "Duplicate
+without user-selected canonical" (docs/adr/0049).
+
+### Fixed
+
+- **The sign-in no longer multiplies in search engines.** Since 1.17.0 every
+  closed page sends a visitor to `/admin/login?next=<page>`, so a crawler
+  revisiting a site that had been open found the same sign-in under as many
+  addresses as the site had pages. The sign-in, the registration, the pages
+  of mail, the search, the tools, the administration and every error page
+  now answer `X-Robots-Tag: noindex`; once the public address is set under
+  Connectivity, the pages a reader reads — the river, the family's page, the
+  tree, a record, Impact, a note — name their canonical address on it,
+  without the query that led there, in a `Link: …; rel="canonical"` header,
+  and a file opened through its viewer names its own address. Nothing is
+  built on the request's `Host`, and nothing is blocked in a `robots.txt`,
+  which would hide the `noindex` from the crawler.
+- **One page, one address.** With nobody in the archive yet, `/` shows the
+  family's page and names `/about` as its canonical address.
+- **A public address in letters beyond ASCII** (`rodzina-łukasiewicz.pl`)
+  goes out in the form links and headers take (punycode), its path
+  percent-encoded.
+
 ## [1.17.0] — 2026-11-12
 
 Mail, as the operator asked on 11 November 2026 looking at

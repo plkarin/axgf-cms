@@ -1342,8 +1342,22 @@ pub async fn document_view(
                 .into_response();
         }
     }
-    // Fallback: hand off to the byte-identical path.
-    document_raw(State(state), headers, Path(id)).await
+    // Fallback: hand off to the byte-identical path, and name it as the one
+    // address a search engine keeps of these bytes (docs/adr/0049).
+    let base = state.site().public_base();
+    let raw_id = id.clone();
+    let mut res = document_raw(State(state), headers, Path(id)).await;
+    let plain = raw_id
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+    if let (true, true, Some(base)) = (res.status().is_success(), plain, base) {
+        if let Ok(link) = axum::http::HeaderValue::from_str(&format!(
+            "<{base}/document/{raw_id}/raw>; rel=\"canonical\""
+        )) {
+            res.headers_mut().append(header::LINK, link);
+        }
+    }
+    res
 }
 
 /// `GET /document/:id/thumb` — a downscaled PNG, or 404 for a non-image.
@@ -2087,7 +2101,19 @@ pub async fn river(
     let chrome = render::Chrome::resolve(&viewer, &headers, &uri.to_string()).with_archive(&state);
     let started = std::time::Instant::now();
     let Some(v) = river_view(&state, &viewer, chrome.lang, &q, true) else {
-        return home(State(state), headers, Query(HomeQuery::default())).await;
+        // Nobody to draw yet: the family's page, which names its own address
+        // as the canonical one, so that one page served under two is kept
+        // once (docs/adr/0049).
+        let base = state.site().public_base();
+        let mut res = home(State(state), headers, Query(HomeQuery::default())).await;
+        if let Some(base) = base {
+            if let Ok(link) =
+                axum::http::HeaderValue::from_str(&format!("<{base}/about>; rel=\"canonical\""))
+            {
+                res.headers_mut().append(header::LINK, link);
+            }
+        }
+        return res;
     };
     tracing::debug!(
         centre = %v.centre,

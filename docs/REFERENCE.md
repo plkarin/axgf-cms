@@ -47,6 +47,15 @@ Public, read-only:
 | `GET/POST /mail/forgot` | "Forgot your password?" (docs/adr/0048 §5): `who`, a user name or an address. The same page whatever was typed, answered before anything is looked up; a link goes in the background to an active account with a password and an address, or the name of its sign-in services to one that has none. Eight asks per client in a quarter of an hour, three messages per account an hour, one message with a link per address a quarter of an hour. Without a relay and the public address, the page says an administrator sets passwords. `no-store`, outside every door |
 | `GET/POST /mail/set/:token` | The page a mailed link opens (docs/adr/0048 §4). The GET spends nothing. The POST, `password` and `again` (twelve characters at least), sets the password, ends the account's sessions, signs this browser in and answers `303` to `/admin` for a writer, `/` for a member; a reset also tells the account's address. `400` for a link spent, changed or expired, `422` for two passwords that differ or a short one. A token never made here, posted, counts as a failed sign-in in the jail. `no-store` |
 
+For search engines (docs/adr/0049): a page a reader reads — `/`, `/about`,
+`/tree`, `/impact`, `/person/:id`, `/impact/:id`, `/notes/:id` — answered
+whole as HTML carries `Link: <public address + path>; rel="canonical"`, the
+query left out, when the public address is set; `/document/:id/view`, when
+it serves the stored bytes, names `/document/:id/raw` the same way. Every
+other HTML page, every error page among them, carries
+`X-Robots-Tag: noindex`. With nobody in the archive, `/` shows the family's
+page and names `/about` as its canonical address.
+
 Admin (requires a signed-in account; `Accounts` and the operations marked
 *admin* require the `admin` role, everything else `contributor`):
 

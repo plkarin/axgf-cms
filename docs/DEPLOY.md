@@ -241,6 +241,14 @@ enforced as the intersection of the two, which breaks the page in a way
 nothing reports. HSTS is the exception — only the thing terminating TLS can
 promise that, so the proxy adds it.
 
+Nor `X-Robots-Tag`, nor a `robots.txt` that blocks the sign-in (1.17.1,
+docs/adr/0049): the application says itself which pages search engines may
+keep — `noindex` on the sign-in, the registration, the pages of mail, the
+administration and every error page, and, once the public address is set
+under Connectivity, a canonical address on it for the pages a reader reads
+— and a page a crawler may not read is a page whose `noindex` it never
+sees.
+
 
 ## Backups
 

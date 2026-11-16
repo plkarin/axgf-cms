@@ -512,7 +512,33 @@ pub fn normalise_base(raw: &str) -> Option<String> {
     {
         return None;
     }
-    Some(format!("{scheme}://{}{path}", host.to_ascii_lowercase()))
+    // A name in letters beyond ASCII — `rodzina-łukasiewicz.pl` — in the
+    // form every link, header and provider takes (punycode), and the path's
+    // own such letters percent-encoded: the address goes into `Location`,
+    // `Link` and mailed links, which carry ASCII only.
+    let host = if host.is_ascii() {
+        host.to_ascii_lowercase()
+    } else {
+        let (name, port) = match host.rsplit_once(':') {
+            Some((n, p)) if !p.is_empty() && p.bytes().all(|b| b.is_ascii_digit()) => {
+                (n, format!(":{p}"))
+            }
+            _ => (host, String::new()),
+        };
+        format!("{}{port}", idna::domain_to_ascii(name).ok()?)
+    };
+    let mut ascii_path = String::with_capacity(path.len());
+    for c in path.chars() {
+        if c.is_ascii() {
+            ascii_path.push(c);
+        } else {
+            let mut buf = [0u8; 4];
+            for b in c.encode_utf8(&mut buf).bytes() {
+                ascii_path.push_str(&format!("%{b:02X}"));
+            }
+        }
+    }
+    Some(format!("{scheme}://{host}{ascii_path}"))
 }
 
 /// A registration secret nobody has to invent: five groups of four from an
@@ -535,6 +561,25 @@ pub fn generate_secret() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_public_address_in_letters_beyond_ascii_goes_out_in_ascii() {
+        let base = normalise_base("https://Rodzina-Łukasiewicz.pl:8443/drzewo/").unwrap();
+        assert!(base.is_ascii(), "{base}");
+        assert!(
+            base.starts_with("https://xn--rodzina-ukasiewicz-"),
+            "{base}"
+        );
+        assert!(base.ends_with(".pl:8443/drzewo"), "{base}");
+        assert_eq!(
+            normalise_base("https://example.org/arbre-généalogique").as_deref(),
+            Some("https://example.org/arbre-g%C3%A9n%C3%A9alogique")
+        );
+        assert_eq!(
+            normalise_base("https://Family.Example").as_deref(),
+            Some("https://family.example")
+        );
+    }
 
     #[test]
     fn a_closed_door_is_the_default_and_an_empty_secret_opens_nothing() {

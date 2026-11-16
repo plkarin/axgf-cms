@@ -666,6 +666,15 @@ masthead offers each reader what is open to them, and the server refuses
 the rest. Why it works this way:
 [Who may open each part of the site](docs/adr/0046-who-may-open-each-part-of-the-site.md).
 
+*(New in 1.17.1.)* **What search engines keep.** Once the public address is
+set under **Connectivity**, the pages a reader reads — the river, the
+family's page, the tree, a record, Impact — name their address on it as the
+canonical one, whatever link led there; the sign-in, the registration, the
+pages of mail, the administration and every error page tell search engines
+not to keep them. What is closed to
+visitors no crawler ever sees. Why:
+[What search engines see](docs/adr/0049-what-search-engines-see.md).
+
 ### Forgot your password? Mail from the site
 
 *(New in 1.17.0.)* Give the site a mail relay under **Connectivity** — a

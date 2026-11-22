@@ -120,6 +120,19 @@
     <div class="hint">{% if program %}{{ t("afg-program-found") }} <span class="mono">{{ program }}</span>{% elif cfg.group == "agent" %}<span class="lvl lvl-warn">{{ t("afg-program-missing") }}</span>{% endif %} {{ t("afg-program-hint") }}</div>
   </div>
 
+  {#- The MCP servers of the account Claude Code runs as (docs/adr/0050):
+      for whose questions they come. Claude Code's alone, so drawn hidden
+      for any other way; afg.js shows it when Claude Code is chosen. -#}
+  <div class="field" data-afg-field="mcp"{% if cfg.kind != "claude-code" %} hidden{% endif %}>
+    <label for="afg-agent-mcp">{{ t("afg-agent-mcp") }}</label>
+    <select id="afg-agent-mcp" name="agent_mcp">
+      <option value="admins"{% if cfg.agent_mcp == "admins" %} selected{% endif %}>{{ t("afg-agent-mcp-admins") }}</option>
+      <option value="everyone"{% if cfg.agent_mcp == "everyone" %} selected{% endif %}>{{ t("afg-agent-mcp-everyone") }}</option>
+      <option value="off"{% if cfg.agent_mcp == "off" %} selected{% endif %}>{{ t("afg-agent-mcp-off") }}</option>
+    </select>
+    <div class="hint">{{ t("afg-agent-mcp-hint") }}</div>
+  </div>
+
   <div class="field">
     <label class="inline"><input type="checkbox" name="sensitive"{% if cfg.sensitive %} checked{% endif %}> {{ t("afg-sensitive") }}</label>
     <div class="hint">{{ t("afg-sensitive-hint") }}</div>

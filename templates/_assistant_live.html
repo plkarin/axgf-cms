@@ -1,8 +1,17 @@
 {% import "_icons.html" as ic %}
-{#- The answer the AFG is writing, as far as it has written it. -#}
+{#- The answer the AFG is writing, as far as it has written it, in the AFG's
+    block (docs/adr/0050), and the tool it called last when it calls the
+    account's. Without scripting, the page asks again every three seconds and
+    the answer is stopped from here (`stop`); with it, from the composer. The
+    page also keeps this fragment without text in a <template>, for the
+    script to show at once when a message goes. -#}
 <article class="as-msg as-msg-assistant as-live" data-live aria-busy="true">
-  <div class="as-mark as-mark-live" aria-hidden="true">{{ ic.icon("afg") }}</div>
-  <div class="as-answer">
+  <div class="as-answer as-block">
+    <header class="as-block-head">
+      <span class="as-mark as-mark-live" aria-hidden="true">{{ ic.icon("afg") }}</span>
+      <span class="as-block-name">{{ t("admin-nav-afg") }}</span>
+      <span class="as-block-meta">{{ t("assistant-writing") }} · {{ t("afg-run-seconds", s=seconds) }}</span>
+    </header>
     {%- if html %}
     <div class="note-text as-md">{{ html | safe }}<span class="as-caret" aria-hidden="true"></span></div>
     {%- else %}
@@ -11,6 +20,11 @@
     {%- if preparing %}
     <p class="as-ops-preparing small">{{ ic.icon("pen") }}<span>{{ t("afg-ops-preparing") }}</span></p>
     {%- endif %}
-    <div class="as-meta small muted">{{ t("assistant-writing") }} · {{ t("afg-run-seconds", s=seconds) }}</div>
+    {%- if tool %}
+    <p class="as-live-tool small">{{ ic.icon("connectivity") }}<span>{{ tool.before }}<code>{{ tool.name }}</code>{{ tool.after }}</span></p>
+    {%- endif %}
+    {%- if stop %}
+    <noscript><form class="as-live-stop" method="post" action="{{ stop }}"><button class="btn small" type="submit">{{ t("assistant-stop") }}</button></form></noscript>
+    {%- endif %}
   </div>
 </article>

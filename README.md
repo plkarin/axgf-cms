@@ -556,8 +556,13 @@ assistant**.
   conversations, which you read and forget fact by fact.
 - **Conversations** in each project, opened by a first question and taken
   up again at any time. The thread reads like a chat, the AFG's answer
-  appears as it is written, and a message carries documents, photographs,
-  sound or film (dropped, pasted or attached; no microphone).
+  appears as it is written, in a block of its own, and can be stopped. A
+  message carries documents, photographs, sound or film (dropped, pasted,
+  attached, or photographed with the phone), and words can be dictated to
+  the browser.
+- **Knowledge** *(new in 1.18.0)*: documents given to a project — notes,
+  transcriptions, PDF documents, pictures — that go with every question of
+  the project, whole or by the passages that answer it best.
 - **Avatars**: a picture of your own, or one of seventy-two made for the
   site with Canva, four for each of eighteen domains (genealogy, health,
   work, money, travel…).

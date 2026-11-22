@@ -143,6 +143,31 @@
         {% else %}<p class="small muted">{{ t("assistant-memory-none") }}</p>{% endif %}
       </details>
 
+      {%- if knowledge %}
+      <details class="as-panel" id="knowledge">
+        <summary>{{ ic.icon("source") }}<span>{{ t("assistant-knowledge") }}</span><span class="small muted">{{ knowledge.files | length | localnum(lang) }}</span></summary>
+        <p class="small muted">{{ t("assistant-knowledge-intro") }}</p>
+        {% if knowledge.files %}
+        <ul class="as-know-list" data-content>
+          {%- for k in knowledge.files %}
+          <li class="as-know-row">
+            <a class="as-know-file" href="{{ k.url }}">{% if k.kind == "text" %}{{ ic.icon("document") }}{% elif k.kind == "pdf" %}{{ ic.icon("source") }}{% elif k.kind == "image" %}{{ ic.icon("image") }}{% else %}{{ ic.icon("clip") }}{% endif %}<bdi>{{ k.name }}</bdi></a>
+            <span class="as-know-meta small muted">{{ k.size }} · {% if k.kind == "text" %}{{ t("assistant-knowledge-kind-text") }}{% elif k.kind == "pdf" %}{{ t("assistant-knowledge-kind-pdf") }}{% elif k.kind == "image" %}{{ t("assistant-knowledge-kind-image") }}{% else %}{{ t("assistant-knowledge-kind-other") }}{% endif %}{% if k.pages %} · {{ t("assistant-knowledge-pages", n=k.pages) }}{% endif %}</span>
+            <form method="post" action="{{ k.url }}/delete" class="inline-form"><button class="btn small ghost" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-knowledge-remove") }}</button></form>
+          </li>
+          {%- endfor %}
+        </ul>
+        <p class="small muted as-know-sum">{{ t("assistant-knowledge-size", size=knowledge.size) }} {% if knowledge.whole %}{{ t("assistant-knowledge-whole") }}{% else %}{{ t("assistant-knowledge-passages") }}{% endif %}</p>
+        {% else %}<p class="small muted">{{ t("assistant-knowledge-none") }}</p>{% endif %}
+        <form method="post" action="/account/assistant/{{ project.id }}/knowledge" enctype="multipart/form-data" class="as-form as-know-add" data-knowledge>
+          <label class="field as-know-drop">{{ ic.icon("download") }}<span class="field-label">{{ t("assistant-knowledge-choose") }}</span>
+            <input type="file" name="files" multiple required data-knowledge-files data-max-bytes="{{ knowledge.limits.file_bytes }}" data-too-large="{{ t('assistant-error-file-big') }}"></label>
+          <p class="hint">{{ t("assistant-knowledge-hint", mb=knowledge.limits.file_mb, files=knowledge.limits.files, total=knowledge.limits.total_mb) }}</p>
+          <button class="btn" type="submit" data-busy="{{ t('assistant-knowledge-adding') }}">{{ t("assistant-knowledge-add") }}</button>
+        </form>
+      </details>
+      {%- endif %}
+
       <details class="as-panel" id="settings">
         <summary>{{ ic.icon("overview") }}<span>{{ t("assistant-settings") }}</span></summary>
         <form method="post" action="/account/assistant/{{ project.id }}" class="as-form">
@@ -205,6 +230,8 @@
       {%- for html in thread %}{{ html | safe }}{% endfor -%}
       {%- if live %}{{ live | safe }}{% endif -%}
     </div>
+    <template data-live-template>{{ live_template | safe }}</template>
+    <button class="btn as-jump" type="button" data-jump hidden>{{ ic.icon("down") }}<span class="sr-only">{{ t("assistant-jump") }}</span></button>
     {%- if orphan %}
     <form class="as-orphan" method="post" action="/account/assistant/{{ project.id }}/c/{{ conversation.id }}/retry" data-retry>
       <span class="small muted">{{ t("assistant-unanswered") }}</span>
@@ -212,7 +239,7 @@
     </form>
     {%- endif %}
 
-    {% with action = "/account/assistant/" ~ project.id ~ "/c/" ~ conversation.id, label = t("assistant-reply"), first = false %}{% include "_assistant_composer.html" %}{% endwith %}
+    {% with action = "/account/assistant/" ~ project.id ~ "/c/" ~ conversation.id, label = t("assistant-reply"), first = false, stop = "/account/assistant/" ~ project.id ~ "/c/" ~ conversation.id ~ "/stop" %}{% include "_assistant_composer.html" %}{% endwith %}
 {% endif %}
   </div>
 </div>

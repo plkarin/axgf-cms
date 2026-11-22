@@ -5663,6 +5663,11 @@ afg-program-missing = غير موجود على هذا الجهاز.
 afg-program-hint = فارغ: يُبحث عنه حيث يضعه مثبّته. وإلا فالمسار الكامل للبرنامج.
 afg-sensitive = إرسال الفئات الحساسة أيضًا
 afg-sensitive-hint = دون تحديد، تبقى الصحة والقياسات الحيوية والوراثة والسجلات القضائية والسلوك خارج الإرسال، كما في تصدير مشترك.
+afg-agent-mcp = خوادم MCP للحساب الذي يعمل به الوكيل
+afg-agent-mcp-admins = لأسئلة المسؤولين (الافتراضي)
+afg-agent-mcp-everyone = لكل حساب يتاح له النسّابة الاصطناعي
+afg-agent-mcp-off = لا شيء: يعمل الوكيل دون أي أداة
+afg-agent-mcp-hint = يجلب Claude Code عندها خوادم MCP للحساب الذي سجّل به الدخول على هذا الجهاز: موصلات claude.ai الخاصة به (البريد والملفات والتقاويم و ax-genealogy لهذا الموقع…)، وخوادم إضافاته، وخوادمه الخاصة. تعمل بصلاحيات ذلك الحساب، لا بصلاحيات العضو، ودون أن تسأل: لا تفتحها إلا للحسابات التي تأتمنها عليها.
 afg-timeout = الوقت المسموح (بالثواني)
 afg-timeout-hint = المدة التي قد يستغرقها الجواب قبل التخلي عنه.
 afg-test = اختبار
@@ -5838,6 +5843,33 @@ assistant-forget-all = نسيان كل شيء…
 assistant-forget-all-confirm = نعم، انسَ كل ما يتذكره النسّابة الاصطناعي عن هذا المشروع
 assistant-forget-all-button = نسيان كل شيء
 assistant-memory-none = لا يتذكر النسّابة الاصطناعي شيئًا عن هذا المشروع بعد.
+assistant-knowledge = المعارف
+assistant-knowledge-intro = المستندات التي يستند إليها النسّابة الاصطناعي في كل محادثة من محادثات هذا المشروع: ملاحظات بحث، ونسخ نصية، ومستندات PDF، وصور. تذهب مع كل رسالة إلى حيث يحسب النسّابة الاصطناعي.
+assistant-knowledge-none = لا مستند بعد. أضف ما ينبغي أن يكون في متناول النسّابة الاصطناعي دائمًا.
+assistant-knowledge-choose = أفلت المستندات هنا، أو اخترها
+assistant-knowledge-add = إضافة إلى المعارف
+assistant-knowledge-adding = جارٍ الإضافة…
+assistant-knowledge-hint = نصوص ومستندات PDF وصور: { $mb } MB للملف كحد أقصى، و{ $files } ملفات و{ $total } MB إجمالًا.
+assistant-knowledge-remove = إزالة
+assistant-knowledge-added = أُضيف إلى معارف المشروع.
+assistant-knowledge-removed = أُزيل من معارف المشروع.
+assistant-knowledge-size = { $size } إجمالًا.
+assistant-knowledge-whole = يذهب كل شيء مع كل رسالة.
+assistant-knowledge-passages = أكثر من أن يذهب كاملًا: مع كل رسالة يتلقى النسّابة الاصطناعي المقاطع التي تجيب عنها على أفضل وجه، والمستندات التي تتسع.
+assistant-knowledge-pages = { $n ->
+        [zero] { $n } صفحة
+        [one] { $n } صفحة
+        [two] { $n } صفحة
+        [few] { $n } صفحات
+        [many] { $n } صفحة
+       *[other] { $n } صفحة
+    }
+assistant-knowledge-kind-text = نص
+assistant-knowledge-kind-pdf = مستند PDF
+assistant-knowledge-kind-image = صورة
+assistant-knowledge-kind-other = محفوظ، غير مقروء
+assistant-knowledge-full = ستمتلئ معارف المشروع أكثر من اللازم: أزل مستندًا أولًا، أو أضف أقل.
+assistant-knowledge-error-none = اختر ملفًا.
 assistant-settings = الإعدادات
 assistant-archive = إعطاء النسّابة الاصطناعي أرشيف العائلة في هذا المشروع
 assistant-archive-hint = عندها يذهب كل سجل في الأرشيف، الأحياء منهم أيضًا، مع كل رسالة إلى حيث يحسب النسّابة الاصطناعي. تبقى الفئات الحساسة خارجًا ما لم يقرر مسؤول غير ذلك.
@@ -5856,7 +5888,8 @@ assistant-reply = رسالتك
 assistant-sending = جارٍ الإرسال…
 assistant-attach = إرفاق
 assistant-send = إرسال
-assistant-composer-hint = ‏Enter يرسل، وShift+Enter يبدأ سطرًا جديدًا. المستندات والصور والصوت والفيديو: أفلتها أو الصقها أو أرفقها؛ عدد الملفات لا يتجاوز: { $n }، وحجم كل ملف حتى { $mb } MB.
+assistant-composer-keys = ‏Enter يرسل، وShift+Enter يبدأ سطرًا جديدًا.
+assistant-composer-hint = المستندات والصور والصوت والفيديو: أفلتها أو الصقها أو أرفقها؛ عدد الملفات لا يتجاوز: { $n }، وحجم كل ملف حتى { $mb } MB.
 assistant-avatar-choose = اختيار الصورة الرمزية
 assistant-avatar = الصورة الرمزية
 assistant-avatar-auto = مختارة له
@@ -5873,6 +5906,20 @@ assistant-error-answer = تعذّر على النسّابة الاصطناعي �
 assistant-retry = السؤال مجددًا
 assistant-unanswered = بقيت هذه الرسالة بلا جواب.
 assistant-writing = النسّابة الاصطناعي يكتب
+assistant-stop = إيقاف الجواب
+assistant-tool-running = يستخدم { $tool }
+assistant-camera = التقاط صورة
+assistant-dictate = إملاء
+assistant-dictate-note = إملاء — يكتب متصفحك صوتك نصًا، وقد يرسله إلى الشركة المصنّعة له لهذا الغرض
+assistant-dictating = جارٍ الاستماع… تحدّث، ثم اضغط الميكروفون مرة أخرى.
+assistant-dictate-refused = الميكروفون مرفوض: اسمح به لهذا الموقع في المتصفح.
+assistant-dictate-failed = توقف الإملاء.
+assistant-stopping = جارٍ الإيقاف…
+assistant-stopped = توقف الجواب.
+assistant-stopped-empty = توقف قبل كلماته الأولى.
+assistant-slow = الجواب يستغرق وقتًا: يمكنك إيقافه.
+assistant-jump = الانتقال إلى آخر رسالة
+assistant-tools-used = الأدوات المستخدمة:
 assistant-saved = تم الحفظ.
 assistant-project-deleted = حُذف المشروع.
 assistant-conversation-deleted = حُذفت المحادثة.

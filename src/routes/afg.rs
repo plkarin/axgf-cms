@@ -67,6 +67,7 @@ fn config_json(cfg: &Config) -> serde_json::Value {
         "effort": cfg.effort,
         "program": cfg.program,
         "sensitive": cfg.sensitive,
+        "agent_mcp": cfg.agent_mcp.slug(),
         "timeout": cfg.timeout().as_secs(),
         "endpoint": cfg.endpoint(),
         "base_url": cfg.base_url(),
@@ -290,6 +291,11 @@ pub struct AfgForm {
     sensitive: Option<String>,
     #[serde(default)]
     timeout: String,
+    /// For whose questions Claude Code brings its account's MCP servers
+    /// (docs/adr/0050). Absent, or not one of the choices, the stored one is
+    /// kept: a form that does not show the field never changes it.
+    #[serde(default)]
+    agent_mcp: Option<String>,
 }
 
 /// `POST /admin/afg` — where the computing comes from.
@@ -317,6 +323,9 @@ pub async fn save(
     proposed.program = f.program.trim().to_string();
     proposed.sensitive = f.sensitive.is_some();
     proposed.timeout_secs = f.timeout.trim().parse().unwrap_or(0);
+    if let Some(m) = f.agent_mcp.as_deref().and_then(crate::afg::AgentMcp::parse) {
+        proposed.agent_mcp = m;
+    }
     if let Some(key) = proposed.problem() {
         return render_room(
             &state,
@@ -337,13 +346,15 @@ pub async fn save(
             Said::error(chrome.t_args("afg-error-not-saved", &[("error", e.to_string().into())])),
         );
     }
-    // Who changed where the archive may be sent; never the key itself.
+    // Who changed where the archive may be sent, and whose questions the
+    // account's MCP servers come with; never the key itself.
     tracing::warn!(
         by = viewer.name(),
         kind = proposed.kind.slug(),
         model = %proposed.model,
         key_changed = proposed.api_key != stored.api_key,
         sensitive = proposed.sensitive,
+        agent_mcp = proposed.agent_mcp.slug(),
         "AFG source changed"
     );
     let saved = state.site().afg;

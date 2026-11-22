@@ -355,7 +355,18 @@ async fn the_afg_tab_is_for_the_accounts_it_is_open_to() {
         "the notes and the relatives vera may read"
     );
     assert!(tab.contains("Aucune conversation pour l’instant"));
-    assert!(!tab.contains("as-attach"), "words only");
+    assert!(
+        !tab.contains("as-attach") && !tab.contains("as-camera"),
+        "words only"
+    );
+    assert!(
+        tab.contains("data-composer-mic hidden"),
+        "words may be dictated"
+    );
+    assert!(
+        !tab.contains("id=\"knowledge\""),
+        "no knowledge on a person's page"
+    );
     assert!(tab.contains("/static/assistant.js"));
     // Looking makes nothing.
     assert!(!dir.with_extension("assistant").join("vera").exists());
@@ -469,9 +480,46 @@ async fn nobody_reads_another_accounts_conversations() {
         )
         .await;
         assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+        let resp = post_form_as(&app, other, &format!("/person/{JEAN}/afg/{cid}/stop"), "").await;
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND, "nor stops it");
     }
     let state = answered(&app, vera, &cid).await;
     assert_eq!(roles(&state), ["user", "assistant"], "still vera's, whole");
+    // Answered, there is nothing for vera to stop (docs/adr/0050): back to
+    // the conversation, or `{"stopping": false}` to the page's script.
+    let resp = post_form_as(&app, vera, &format!("/person/{JEAN}/afg/{cid}/stop"), "").await;
+    assert_eq!(resp.status(), StatusCode::SEE_OTHER);
+    let req = Request::builder()
+        .uri(format!("/person/{JEAN}/afg/{cid}/stop"))
+        .method("POST")
+        .header(header::COOKIE, vera.as_str())
+        .header(header::ACCEPT, "application/json")
+        .body(Body::empty())
+        .unwrap();
+    let resp = app.clone().oneshot(req).await.unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
+    let v: Value = serde_json::from_str(&body_string(resp).await).unwrap();
+    assert_eq!(v, json!({"stopping": false}));
+    assert_eq!(
+        roles(&answered(&app, vera, &cid).await),
+        ["user", "assistant"]
+    );
+    // The AFG tab's composer takes dictation: that page lets the microphone
+    // in, the record's other tabs do not.
+    let policy = |r: &axum::http::Response<Body>| {
+        r.headers()["permissions-policy"]
+            .to_str()
+            .unwrap()
+            .to_string()
+    };
+    let resp = get_with_cookie(&app, &format!("/person/{JEAN}?tab=afg&c={cid}"), vera).await;
+    assert!(
+        policy(&resp).contains("microphone=(self)"),
+        "{}",
+        policy(&resp)
+    );
+    let resp = get_with_cookie(&app, &format!("/person/{JEAN}"), vera).await;
+    assert!(policy(&resp).contains("microphone=()"), "{}", policy(&resp));
 }
 
 #[tokio::test]

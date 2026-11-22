@@ -61,6 +61,7 @@ pub mod jail;
 pub mod journal;
 pub mod kinship;
 pub mod kinship_text;
+pub mod knowledge;
 pub mod limits;
 pub mod living;
 pub mod lockfile;

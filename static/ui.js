@@ -263,12 +263,22 @@
       form.setAttribute("aria-busy", "true");
       by.setAttribute("aria-busy", "true");
       by.setAttribute("aria-disabled", "true");
-      by.setAttribute("data-idle", by.textContent);
-      by.textContent = by.getAttribute("data-busy");
-      // Beside the words, never in place of them: a loader that only the
-      // reference theme draws (app.css, docs/adr/0004 §4) and that assistive
-      // technology is spared — the words already say what is happening.
-      by.appendChild(loader(by.getAttribute("data-loader")));
+      // A button drawn as an icon keeps it: only its words, held by
+      // `[data-busy-words]`, change, and no loader comes beside them
+      // (the assistant's Send, docs/adr/0050).
+      var words = by.querySelector("[data-busy-words]");
+      if (words) {
+        by.setAttribute("data-idle", words.textContent);
+        words.textContent = by.getAttribute("data-busy");
+      } else {
+        by.setAttribute("data-idle", by.textContent);
+        by.textContent = by.getAttribute("data-busy");
+        // Beside the words, never in place of them: a loader that only the
+        // reference theme draws (app.css, docs/adr/0004 §4) and that
+        // assistive technology is spared — the words already say what is
+        // happening.
+        by.appendChild(loader(by.getAttribute("data-loader")));
+      }
       // A file to download does not unload the page: the server answers
       // with a cookie naming this token once the file starts, and the
       // button is idle again (render::mark_download).
@@ -278,7 +288,8 @@
   function idle(form) {
     form.removeAttribute("aria-busy");
     form.querySelectorAll("[data-idle]").forEach(function (b) {
-      b.textContent = b.getAttribute("data-idle");
+      var words = b.querySelector("[data-busy-words]");
+      (words || b).textContent = b.getAttribute("data-idle");
       b.removeAttribute("data-idle");
       b.removeAttribute("aria-busy");
       b.removeAttribute("aria-disabled");

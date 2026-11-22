@@ -427,6 +427,31 @@ pub async fn assistant_member(app: &axum::Router, admin: &str) -> (String, Vec<S
             .unwrap();
         out.into_inner()
     };
+    // One document in the project's knowledge (docs/adr/0050), so that its
+    // panel is walked with the rest of the page.
+    let k = "----axgfwalkknowledge";
+    let mut body = format!(
+        "--{k}\r\nContent-Disposition: form-data; name=\"files\"; filename=\"资料.txt\"\r\n\
+         Content-Type: text/plain\r\n\r\n1851 年人口普查。\r\n--{k}--\r\n"
+    )
+    .into_bytes();
+    let added = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(axum::http::Method::POST)
+                .uri(format!("{project}/knowledge"))
+                .header(header::COOKIE, &cookie)
+                .header(
+                    header::CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={k}"),
+                )
+                .body(Body::from(std::mem::take(&mut body)))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert!(added.status().is_redirection(), "the knowledge is added");
     let b = "----axgfwalkmember";
     let mut body = format!(
         "--{b}\r\nContent-Disposition: form-data; name=\"text\"\r\n\r\n你好\r\n\

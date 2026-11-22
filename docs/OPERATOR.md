@@ -661,7 +661,18 @@ What each agent may do while it reads the archive:
 - **Claude Code** has no tool and no MCP server, and keeps no session. A
   version that knows `--safe-mode` also reads none of the account's
   CLAUDE.md, skills, hooks or plugins. An older one, such as 2.1.131, still
-  runs the account's hooks and reads its CLAUDE.md.
+  runs the account's hooks and reads its CLAUDE.md. That is how it reads a
+  record. In conversation — the personal assistant, a person's page — it
+  brings the **MCP servers of the account it is signed in with** (its
+  claude.ai connectors, its plugins' servers and its own) for the
+  administrators' questions, by default (docs/adr/0050). They act with that
+  account's credentials and nobody confirms a call, so the AFG's room says
+  for whom: the administrators, every account the AFG is open to, or
+  nobody. Only its tool search is kept besides, and its hooks, CLAUDE.md
+  and automatic memory stay out. Since every `AXGF_*` variable is removed
+  from its environment, a stdio server of this site's own MCP
+  (`mcp/ax-genealogy/`) declared for that account must carry its own
+  `env` (`AXGF_URL`, `AXGF_TOKEN`) in its configuration.
 - **Codex** has no shell and no web search. It reads no `config.toml`, and
   so none of its MCP servers. It runs in a read-only sandbox and keeps
   nothing.
@@ -700,7 +711,10 @@ It is personal data about a living person. Four things to know:
 **Personal assistants.** Each account the AFG is open to has a personal
 assistant (docs/adr/0026): projects and conversations with the AFG. They
 are kept in `family.assistant/<username>/` in the data directory, mode 700,
-with the files the member sent (6 a message at most, 20 MB each). Like the
+with the files the member sent (6 a message at most, 20 MB each) and each
+project's knowledge (50 documents and 100 MB a project at most,
+docs/adr/0050), which goes with every question of the project: up to
+120,000 characters of text and 60 pages of PDF documents a message. Like the
 brains, they are personal, and backed up with the brains, apart from the
 family's archive, in `axgf-memory-<stamp>.zip` (see Backups above). Every
 message sends the conversation's recent history, its files and the

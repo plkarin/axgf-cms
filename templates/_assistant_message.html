@@ -1,7 +1,7 @@
 {% import "_icons.html" as ic %}
 {#- One message of a conversation (docs/adr/0026): the member's words and
-    files on one side, the AFG's answer drawn from its Markdown on the
-    other, or what kept it from answering. -#}
+    files on one side; on the other the AFG's answer drawn from its Markdown,
+    in the AFG's own block (docs/adr/0050), or what kept it from answering. -#}
 <article class="as-msg as-msg-{{ m.role }}" id="m-{{ m.id }}" data-msg="{{ m.id }}" data-role="{{ m.role }}">
 {%- if m.role == "user" %}
   <div class="as-bubble">
@@ -16,10 +16,22 @@
     {%- if m.text %}<div class="as-text">{{ m.text }}</div>{% endif %}
   </div>
 {%- elif m.role == "assistant" %}
-  <div class="as-mark" aria-hidden="true">{{ ic.icon("afg") }}</div>
-  <div class="as-answer">
+  <div class="as-answer as-block">
+    <header class="as-block-head">
+      <span class="as-mark" aria-hidden="true">{{ ic.icon("afg") }}</span>
+      <span class="as-block-name">{{ t("admin-nav-afg") }}</span>
+      <span class="as-block-meta">{% if m.model %}<bdi>{{ m.model }}</bdi>{% endif %}{% if m.seconds is not none %}{% if m.model %} · {% endif %}{{ t("afg-run-seconds", s=m.seconds) }}{% endif %}</span>
+    </header>
+    {%- if m.html %}
     <div class="note-text as-md">{{ m.html | safe }}</div>
-    <div class="as-meta small muted">{% if m.model %}{{ m.model }}{% endif %}{% if m.seconds is not none %}{% if m.model %} · {% endif %}{{ t("afg-run-seconds", s=m.seconds) }}{% endif %}</div>
+    {%- endif %}
+    {%- if m.stopped %}
+    <div class="as-stopped">{{ ic.icon("stop") }}<span>{% if m.html %}{{ t("assistant-stopped") }}{% else %}{{ t("assistant-stopped-empty") }}{% endif %}</span>
+      {%- if last %}<form method="post" action="{% if person %}/person/{{ person }}/afg/{{ cid }}/retry{% else %}/account/assistant/{{ pid }}/c/{{ cid }}/retry{% endif %}" data-retry><button class="btn small" type="submit">{{ t("assistant-retry") }}</button></form>{% endif %}</div>
+    {%- endif %}
+    {%- if m.tools %}
+    <p class="as-tools-used">{{ t("assistant-tools-used") }}{% for tool in m.tools %} <code>{{ tool }}</code>{% endfor %}</p>
+    {%- endif %}
     {%- if m.remembered %}
     <details class="as-kept small"><summary>{{ ic.icon("brain") }}<span>{{ t("assistant-kept", n=m.remembered | length) }}</span></summary><ul>{% for r in m.remembered %}<li>{{ r }}</li>{% endfor %}</ul></details>
     {%- endif %}
@@ -28,8 +40,11 @@
   <div class="as-mark as-mark-done" aria-hidden="true">{{ ic.icon("check") }}</div>
   <div class="as-answer as-done small"><div class="as-text">{{ m.text }}</div></div>
 {%- else %}
-  <div class="as-mark as-mark-error" aria-hidden="true">{{ ic.icon("alert") }}</div>
-  <div class="as-answer as-error">
+  <div class="as-answer as-block as-error">
+    <header class="as-block-head">
+      <span class="as-mark as-mark-error" aria-hidden="true">{{ ic.icon("alert") }}</span>
+      <span class="as-block-name">{{ t("admin-nav-afg") }}</span>
+    </header>
     <p><strong>{{ t("assistant-error-answer") }}</strong></p>
     <pre class="as-error-text">{{ m.text }}</pre>
     {%- if last %}

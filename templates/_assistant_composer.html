@@ -1,25 +1,31 @@
 {% import "_icons.html" as ic %}
-{#- Where a message is written: words, and files dropped, pasted or chosen
-    (docs/adr/0026). Without scripting it is an ordinary form that sends
-    them; with it, assistant.js sends them while the page stays. On a
-    person's page (docs/adr/0031), words only (`no_files`), and a `hint` of
-    its own under it. -#}
-<form class="as-composer" method="post" action="{{ action }}" enctype="multipart/form-data" data-composer{% if first %} data-first{% endif %} data-max-files="{{ limits.files }}" data-max-mb="{{ limits.file_mb }}" data-too-many="{{ t('assistant-error-too-many-files') }}" data-too-big="{{ t('assistant-error-file-big') }}" data-sending="{{ t('assistant-sending') }}">
+{#- Where a message is written (docs/adr/0026, docs/adr/0050): the words, the
+    files joined to them (attached, or a photograph taken on a phone), the
+    words dictated to the browser, and one compact button that sends them, or
+    stops the answer being written in its place. In a conversation, `stop` is
+    where the answer being written is stopped. The look is tuned through the
+    `--composer-*` properties of `.as-composer` (static/app.css). -#}
+<form class="as-composer" method="post" action="{{ action }}" enctype="multipart/form-data" data-composer{% if first %} data-first{% endif %}{% if stop %} data-stop="{{ stop }}"{% endif %} data-max-files="{{ limits.files }}" data-max-mb="{{ limits.file_mb }}" data-too-many="{{ t('assistant-error-too-many-files') }}" data-too-big="{{ t('assistant-error-file-big') }}" data-sending="{{ t('assistant-sending') }}" data-stopping="{{ t('assistant-stopping') }}" data-slow="{{ t('assistant-slow') }}" data-dictating="{{ t('assistant-dictating') }}" data-dictate-refused="{{ t('assistant-dictate-refused') }}" data-dictate-failed="{{ t('assistant-dictate-failed') }}">
   <label class="as-composer-label" for="as-text">{{ label }}</label>
   <div class="as-composer-box" data-composer-box>
     <ul class="as-chips" data-chips hidden></ul>
     <textarea id="as-text" name="text" rows="1" maxlength="{{ limits.text }}" data-composer-text{% if not ready %} disabled{% endif %}></textarea>
     <div class="as-composer-bar">
-      {%- if not no_files %}
-      <label class="as-attach">{{ ic.icon("clip") }}<span>{{ t("assistant-attach") }}</span><input class="as-file-input" type="file" name="files" multiple accept="image/*,application/pdf,audio/*,video/*,.txt,.md,.csv,.json,.ged,.html,.xml,.srt,.vtt" data-composer-files{% if not ready %} disabled{% endif %}></label>
-      {%- endif %}
+      <div class="as-tools">
+        {%- if not no_files %}
+        <label class="as-tool as-attach" title="{{ t('assistant-attach') }}">{{ ic.icon("clip") }}<span class="sr-only">{{ t("assistant-attach") }}</span><input class="as-file-input" type="file" name="files" multiple accept="image/*,application/pdf,audio/*,video/*,.txt,.md,.csv,.json,.ged,.html,.xml,.srt,.vtt" data-composer-files{% if not ready %} disabled{% endif %}></label>
+        <label class="as-tool as-camera" title="{{ t('assistant-camera') }}">{{ ic.icon("camera") }}<span class="sr-only">{{ t("assistant-camera") }}</span><input class="as-file-input" type="file" name="files" accept="image/*" capture="environment" data-composer-camera{% if not ready %} disabled{% endif %}></label>
+        {%- endif %}
+        <button class="as-tool as-mic" type="button" title="{{ t('assistant-dictate-note') }}" aria-pressed="false" data-composer-mic hidden{% if not ready %} disabled{% endif %}>{{ ic.icon("mic") }}<span class="sr-only">{{ t("assistant-dictate") }}</span></button>
+      </div>
       <span class="as-composer-note small muted" data-composer-note aria-live="polite"></span>
-      <button class="btn primary as-send" type="submit" data-busy="{{ t('assistant-sending') }}"{% if not ready %} disabled{% endif %}>{{ ic.icon("send") }}<span>{{ t("assistant-send") }}</span></button>
+      <button class="as-tool as-stop" type="button" title="{{ t('assistant-stop') }}" data-composer-stop hidden>{{ ic.icon("stop") }}<span class="sr-only">{{ t("assistant-stop") }}</span></button>
+      <button class="btn primary as-send" type="submit" title="{{ t('assistant-send') }}" data-busy="{{ t('assistant-sending') }}"{% if not ready %} disabled{% endif %}>{{ ic.icon("send") }}<span class="sr-only" data-busy-words>{{ t("assistant-send") }}</span></button>
     </div>
   </div>
   {%- if hint %}
   <p class="as-composer-hint small muted">{{ hint }}</p>
   {%- elif not no_files %}
-  <p class="as-composer-hint small muted">{{ t("assistant-composer-hint", n=limits.files, mb=limits.file_mb) }}</p>
+  <p class="as-composer-hint small muted"><span class="as-hint-keys">{{ t("assistant-composer-keys") }} </span>{{ t("assistant-composer-hint", n=limits.files, mb=limits.file_mb) }}</p>
   {%- endif %}
 </form>

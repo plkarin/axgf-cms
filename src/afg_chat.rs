@@ -14,13 +14,19 @@
 //!
 //! Claude Code writes its answer as it comes too
 //! (`--output-format stream-json --include-partial-messages`, when the
-//! version installed knows them); Codex and OpenCode give theirs whole, at
+//! version installed knows them), with the MCP servers of its account when
+//! they come with the question (docs/adr/0050): the tools it calls are kept
+//! as it calls them, for the page. Codex and OpenCode give theirs whole, at
 //! the end.
 //!
 //! Each file goes the way its protocol reads it: pictures to every service
 //! and to Claude Code and Codex, PDF documents to Claude, Gemini and OpenAI,
 //! sound and film to Gemini only. What a way of computing cannot read is
 //! named to it instead, so that it says so rather than guesses.
+//!
+//! The member may stop an answer (docs/adr/0050, [`Run::cancel`]): a service
+//! stops being read at its next piece and is no longer waited for; an agent
+//! is ended with everything it started, and its working directory removed.
 
 use std::io::{BufRead, BufReader};
 use std::path::Path;
@@ -28,11 +34,75 @@ use std::sync::{Arc, Mutex};
 
 use base64::Engine;
 use serde_json::{json, Value};
+use tokio_util::sync::CancellationToken;
 
 use crate::afg::{self, Answer, Config, Failure, Kind, Protocol};
 
 /// What the AFG has written so far of the answer it is writing.
 pub type Partial = Arc<Mutex<String>>;
+
+/// The tools an answer has called so far, in order, as people read them
+/// ([`tool_label`]).
+pub type Tools = Arc<Mutex<Vec<String>>>;
+
+/// What an answer is written with besides its prompt (docs/adr/0050):
+/// whether Claude Code brings the MCP servers of its account, the member's
+/// stop, and where the tools it calls are kept.
+#[derive(Debug, Clone, Default)]
+pub struct Run {
+    pub mcp: bool,
+    pub cancel: CancellationToken,
+    pub tools: Tools,
+}
+
+/// What a stopped answer's failure says.
+const STOPPED: &str = "stopped";
+
+/// The most tools a run keeps for its page; past it, its earliest go.
+const TOOLS_SEEN: usize = 256;
+
+/// A tool as people read it (docs/adr/0050). An MCP server's tool, which
+/// Claude Code names `mcp__<server>__<tool>`, becomes "<server> · <tool>",
+/// a claude.ai connector or a plugin's server under the name it is known by:
+/// `mcp__claude_ai_Google_Drive__search_files` is "Google Drive ·
+/// search_files", `mcp__plugin_bio-research_chembl__x` "chembl · x". The
+/// search that finds a server's tools is Claude Code's own way of working,
+/// not a tool the answer used: `None`.
+pub fn tool_label(name: &str) -> Option<String> {
+    if name == "ToolSearch" {
+        return None;
+    }
+    let Some(rest) = name.strip_prefix("mcp__") else {
+        return Some(name.to_string());
+    };
+    let Some((server, tool)) = rest.split_once("__") else {
+        return Some(rest.to_string());
+    };
+    let server = if let Some(connector) = server.strip_prefix("claude_ai_") {
+        connector.replace('_', " ")
+    } else if let Some(plugin) = server.strip_prefix("plugin_") {
+        // `plugin_<plugin>_<server>`: the server, by its own name.
+        plugin
+            .split_once('_')
+            .map_or(plugin, |(_, s)| s)
+            .replace('_', " ")
+    } else {
+        server.to_string()
+    };
+    Some(format!("{server} · {tool}"))
+}
+
+/// A tool called, kept for the page.
+fn note_tool(tools: &Tools, name: &str) {
+    let Some(label) = tool_label(name) else {
+        return;
+    };
+    let mut kept = tools.lock().unwrap_or_else(|e| e.into_inner());
+    if kept.len() >= TOOLS_SEEN {
+        kept.remove(0);
+    }
+    kept.push(label);
+}
 
 fn push(partial: &Partial, s: &str) {
     partial
@@ -330,11 +400,13 @@ struct Reading {
     error: Option<String>,
     finish: Option<String>,
     done: bool,
+    /// The member's stop: once it is pressed, nothing more is added.
+    cancel: CancellationToken,
 }
 
 impl Reading {
     fn add(&mut self, s: &str, partial: &Partial) {
-        if s.is_empty() || self.text.len() > ANSWER_MAX {
+        if s.is_empty() || self.text.len() > ANSWER_MAX || self.cancel.is_cancelled() {
             return;
         }
         self.text.push_str(s);
@@ -518,15 +590,23 @@ fn read_sse(reader: impl BufRead, mut on: impl FnMut(&str, &str) -> bool) -> std
     Ok(())
 }
 
-/// Read a streamed answer from a service's response body.
+/// Read a streamed answer from a service's response body, until it ends or
+/// the member stops it: then at its next piece, and the connection is let go.
 fn read_stream(
     protocol: Protocol,
     body: impl BufRead,
     partial: &Partial,
+    cancel: &CancellationToken,
 ) -> std::io::Result<Reading> {
-    let mut r = Reading::default();
+    let mut r = Reading {
+        cancel: cancel.clone(),
+        ..Reading::default()
+    };
     if protocol == Protocol::Ollama {
         for line in body.lines() {
+            if cancel.is_cancelled() {
+                break;
+            }
             let line = line?;
             if line.trim().is_empty() {
                 continue;
@@ -542,7 +622,7 @@ fn read_stream(
         return Ok(r);
     }
     read_sse(body, |_event, data| {
-        if data.trim() == "[DONE]" {
+        if cancel.is_cancelled() || data.trim() == "[DONE]" {
             return false;
         }
         let Ok(v) = serde_json::from_str::<Value>(data) else {
@@ -559,7 +639,12 @@ fn read_stream(
     Ok(r)
 }
 
-fn chat_http(cfg: &Config, p: &ChatPrompt, partial: &Partial) -> Result<Answer, Failure> {
+fn chat_http(
+    cfg: &Config,
+    p: &ChatPrompt,
+    partial: &Partial,
+    cancel: &CancellationToken,
+) -> Result<Answer, Failure> {
     let agent = afg::http_agent(cfg.timeout());
     let model = match cfg.model.trim() {
         "" if cfg.kind == Kind::Ollama => afg::ollama_model(&agent, &cfg.base_url())?,
@@ -581,7 +666,7 @@ fn chat_http(cfg: &Config, p: &ChatPrompt, partial: &Partial) -> Result<Answer, 
         return Err(Failure::new(afg::http_error(status, &body)));
     }
     let body = BufReader::new(resp.body_mut().as_reader());
-    read_stream(cfg.kind.protocol(), body, partial)
+    read_stream(cfg.kind.protocol(), body, partial, cancel)
         .map_err(|e| Failure::new(format!("{}: {e}", call.url)))?
         .answer(&model)
 }
@@ -658,8 +743,16 @@ pub struct ChatCall {
 const OPENCODE_CONVERSATION: &str = "conversation.txt";
 
 /// `help` is what the agent's own help printed, for the options only some
-/// versions know (`afg::knows`).
-pub fn chat_cli_call(cfg: &Config, p: &ChatPrompt, work: &Path, help: &str) -> Option<ChatCall> {
+/// versions know (`afg::knows`). `mcp`: whether Claude Code brings the MCP
+/// servers of its account (docs/adr/0050); Codex and OpenCode keep theirs
+/// out whatever it says.
+pub fn chat_cli_call(
+    cfg: &Config,
+    p: &ChatPrompt,
+    work: &Path,
+    help: &str,
+    mcp: bool,
+) -> Option<ChatCall> {
     let model = cfg.model.trim();
     let effort = cfg.effort.trim();
     let s = |x: &str| x.to_string();
@@ -679,12 +772,11 @@ pub fn chat_cli_call(cfg: &Config, p: &ChatPrompt, work: &Path, help: &str) -> O
             if partial {
                 args.push(s("--include-partial-messages"));
             }
-            args.extend([s("--tools"), s("")]);
-            for option in afg::CLAUDE_KEEP_OUT {
-                if afg::knows(help, option[0]) {
-                    args.extend(option.iter().map(|o| s(o)));
-                }
-            }
+            // No tool at all, or the account's MCP servers, and whatever of
+            // the account's own setup this version knows how to keep out.
+            let (options, env) = afg::claude_options(help, mcp);
+            args.extend(options);
+            call.env.extend(env);
             args.extend([s("--system-prompt"), p.system.clone()]);
             if !model.is_empty() {
                 args.extend([s("--model"), s(model)]);
@@ -830,54 +922,181 @@ pub fn chat_cli_call(cfg: &Config, p: &ChatPrompt, work: &Path, help: &str) -> O
     Some(call)
 }
 
-/// Claude Code's stream, a line at a time: what it has written so far.
+/// Claude Code's stream, a line at a time: what it has written so far, and
+/// the tools it calls. With the account's MCP servers (docs/adr/0050) an
+/// answer may take several turns, a tool's result between two of them: the
+/// page shows the turn being written, and the answer is the last turn, as
+/// Claude Code's own `result` says it. What a sub-agent writes is its own
+/// working, not the answer, and is left out.
 #[derive(Debug, Default)]
 struct ClaudeStream {
-    /// Whether pieces of the answer came as they were written.
-    pieces: bool,
-    /// The text of its finished messages.
-    said: String,
+    /// Whether the answer comes a piece at a time
+    /// (`--include-partial-messages`): its finished messages then repeat
+    /// what was shown, and are not read.
+    streaming: bool,
+    /// The turns begun.
+    turns: usize,
+    /// The message being read, when messages come whole.
+    message: Option<String>,
+    /// What each turn said, the one being written last.
+    said: Vec<String>,
+    /// The model it says it runs, in its first event.
+    model: Option<String>,
+    /// Whether its MCP servers were named in the log.
+    named: bool,
     /// The `result` line, its last word.
     result: Option<String>,
 }
 
 impl ClaudeStream {
-    fn line(&mut self, line: &str, partial: &Partial) {
+    fn line(&mut self, line: &str, partial: &Partial, tools: &Tools) {
         let Ok(v) = serde_json::from_str::<Value>(line) else {
             return;
         };
+        if v.get("parent_tool_use_id").is_some_and(|p| !p.is_null()) {
+            return;
+        }
         match v.get("type").and_then(Value::as_str).unwrap_or_default() {
+            "system" if str_at(&v, "/subtype") == Some("init") => self.init(&v),
             "stream_event" => {
+                self.streaming = true;
                 let e = &v["event"];
-                if str_at(e, "/type") == Some("content_block_delta")
-                    && str_at(e, "/delta/type") == Some("text_delta")
-                {
-                    if let Some(s) = str_at(e, "/delta/text") {
-                        self.pieces = true;
-                        push(partial, s);
+                match str_at(e, "/type") {
+                    Some("message_start") => self.turn(partial),
+                    Some("content_block_start")
+                        if str_at(e, "/content_block/type") == Some("tool_use") =>
+                    {
+                        if let Some(name) = str_at(e, "/content_block/name") {
+                            note_tool(tools, name);
+                        }
                     }
+                    Some("content_block_delta")
+                        if str_at(e, "/delta/type") == Some("text_delta") =>
+                    {
+                        if let Some(s) = str_at(e, "/delta/text") {
+                            self.write(s, partial);
+                        }
+                    }
+                    _ => {}
                 }
             }
-            "assistant" if !self.pieces => {
-                let text: String = v
-                    .pointer("/message/content")
-                    .and_then(Value::as_array)
-                    .into_iter()
-                    .flatten()
-                    .filter(|b| b.get("type").and_then(Value::as_str) == Some("text"))
-                    .filter_map(|b| b.get("text").and_then(Value::as_str))
-                    .collect();
-                if !text.is_empty() {
-                    if !self.said.is_empty() {
-                        self.said.push_str("\n\n");
+            "assistant" if !self.streaming => {
+                // Whole messages, a block or more at a time: a message of
+                // its own is a turn of its own.
+                let id = str_at(&v, "/message/id");
+                if self.turns == 0 || (id.is_some() && id != self.message.as_deref()) {
+                    self.turn(partial);
+                    self.message = id.map(str::to_string);
+                }
+                let blocks = v.pointer("/message/content").and_then(Value::as_array);
+                for block in blocks.into_iter().flatten() {
+                    match block.get("type").and_then(Value::as_str) {
+                        Some("text") => {
+                            let Some(text) = block.get("text").and_then(Value::as_str) else {
+                                continue;
+                            };
+                            if self.said.last().is_some_and(|t| !t.is_empty()) {
+                                self.write("\n\n", partial);
+                            }
+                            self.write(text, partial);
+                        }
+                        Some("tool_use") => {
+                            if let Some(name) = block.get("name").and_then(Value::as_str) {
+                                note_tool(tools, name);
+                            }
+                        }
+                        _ => {}
                     }
-                    self.said.push_str(&text);
-                    set(partial, &self.said);
                 }
             }
             "result" => self.result = Some(line.to_string()),
             _ => {}
         }
+    }
+
+    /// Its first event: the model it runs, and its MCP servers, which the
+    /// log names once with what became of each (connected, failed, waiting
+    /// for a sign-in), never what they hold.
+    fn init(&mut self, v: &Value) {
+        if let Some(m) = str_at(v, "/model").filter(|m| !m.trim().is_empty()) {
+            self.model = Some(m.to_string());
+        }
+        let servers: Vec<String> = v
+            .get("mcp_servers")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|s| {
+                let name = s.get("name").and_then(Value::as_str)?;
+                let status = s.get("status").and_then(Value::as_str).unwrap_or("unknown");
+                Some(format!("{name} ({status})"))
+            })
+            .collect();
+        if !servers.is_empty() && !self.named {
+            self.named = true;
+            tracing::info!(
+                count = servers.len(),
+                servers = %servers.join(", "),
+                "AFG: Claude Code's MCP servers"
+            );
+        }
+    }
+
+    /// A turn begins: after the first, the page shows it alone.
+    fn turn(&mut self, partial: &Partial) {
+        if self.turns > 0 {
+            set(partial, "");
+        }
+        self.turns += 1;
+        self.said.push(String::new());
+    }
+
+    fn write(&mut self, s: &str, partial: &Partial) {
+        if self.said.is_empty() {
+            self.turns = 1;
+            self.said.push(String::new());
+        }
+        let Some(turn) = self.said.last_mut() else {
+            return;
+        };
+        if turn.len() > ANSWER_MAX {
+            return;
+        }
+        turn.push_str(s);
+        push(partial, s);
+    }
+
+    /// The answer: Claude Code's `result`, which is its last turn; when that
+    /// says nothing, every turn's words, a blank line between two. The model
+    /// is the one its first event named, Claude Code's result naming none.
+    fn answer(&self, stdout: &str) -> Result<Answer, String> {
+        let line = self.result.as_deref().unwrap_or(stdout.trim());
+        let words: Vec<&str> = self
+            .said
+            .iter()
+            .map(|t| t.trim())
+            .filter(|t| !t.is_empty())
+            .collect();
+        let parsed = match serde_json::from_str::<Value>(line.trim()) {
+            Ok(mut v)
+                if v.is_object()
+                    && !words.is_empty()
+                    && v.get("is_error").and_then(Value::as_bool) != Some(true)
+                    && v.get("result")
+                        .and_then(Value::as_str)
+                        .is_none_or(|r| r.trim().is_empty()) =>
+            {
+                v["result"] = json!(words.join("\n\n"));
+                afg::parse_cli(Protocol::ClaudeCode, &v.to_string(), None)
+            }
+            _ => afg::parse_cli(Protocol::ClaudeCode, line, None),
+        };
+        parsed.map(|mut a| {
+            if a.model.is_none() {
+                a.model = self.model.clone();
+            }
+            a
+        })
     }
 }
 
@@ -890,6 +1109,7 @@ async fn chat_cli(
     p: &ChatPrompt,
     base: &Path,
     partial: &Partial,
+    run: &Run,
 ) -> Result<Answer, Failure> {
     use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt};
     let protocol = cfg.kind.protocol();
@@ -934,8 +1154,12 @@ async fn chat_cli(
             Protocol::Codex => afg::help_of(&program, &["exec", "--help"], &work).await,
             _ => String::new(),
         };
-        let call =
-            chat_cli_call(cfg, p, &work, &help).ok_or_else(|| Failure::new("not an agent"))?;
+        let call = chat_cli_call(cfg, p, &work, &help, run.mcp)
+            .ok_or_else(|| Failure::new("not an agent"))?;
+        // Stopped while its help was read: not started at all.
+        if run.cancel.is_cancelled() {
+            return Err(Failure::new(STOPPED));
+        }
         for (name, content) in &call.files {
             std::fs::write(work.join(name), content)
                 .map_err(|e| Failure::new(format!("{name}: {e}")))?;
@@ -997,7 +1221,7 @@ async fn chat_cli(
                     let line = String::from_utf8_lossy(&buf);
                     let line = line.trim_end_matches(['\n', '\r']);
                     if protocol == Protocol::ClaudeCode {
-                        claude.line(line, partial);
+                        claude.line(line, partial, &run.tools);
                     }
                     if all.len() < ANSWER_MAX {
                         all.push_str(line);
@@ -1008,20 +1232,27 @@ async fn chat_cli(
             let status = child.wait().await;
             (status, all, claude)
         };
-        let waited = tokio::time::timeout(cfg.timeout(), reading).await;
+        // Read to its end, unless the time allowed runs out or the member
+        // stops it (docs/adr/0050): then it is ended, with what it started.
+        let waited = tokio::select! {
+            read = tokio::time::timeout(cfg.timeout(), reading) => read.ok(),
+            _ = run.cancel.cancelled() => None,
+        };
         if let Some(w) = writer {
             w.abort();
         }
-        let (status, stdout, claude) = match waited {
-            Err(_) => {
-                errors.abort();
-                return Err(Failure::new(format!(
+        let Some((status, stdout, claude)) = waited else {
+            errors.abort();
+            afg::end_agent(&mut child).await;
+            return Err(Failure::new(if run.cancel.is_cancelled() {
+                STOPPED.to_string()
+            } else {
+                format!(
                     "{}: no answer after {} s",
                     cfg.kind.program(),
                     cfg.timeout().as_secs()
-                )));
-            }
-            Ok(r) => r,
+                )
+            }));
         };
         let stderr = errors.await.unwrap_or_default();
         let status = status.map_err(|e| Failure::new(format!("{}: {e}", program.display())))?;
@@ -1031,11 +1262,7 @@ async fn chat_cli(
             .and_then(|f| std::fs::read_to_string(work.join(f)).ok())
             .filter(|t| !t.trim().is_empty());
         let parsed = match protocol {
-            Protocol::ClaudeCode => afg::parse_cli(
-                protocol,
-                claude.result.as_deref().unwrap_or(stdout.trim()),
-                None,
-            ),
+            Protocol::ClaudeCode => claude.answer(&stdout),
             _ => afg::parse_cli(protocol, &stdout, answer_file),
         };
         if let Ok(a) = &parsed {
@@ -1067,22 +1294,32 @@ async fn chat_cli(
 }
 
 /// Ask the AFG for a conversation's next answer, its pieces added to
-/// `partial` as they come.
+/// `partial` as they come, the tools it calls to `run.tools`. Stopped
+/// (`run.cancel`), it fails at once with `stopped`.
 pub async fn chat(
     cfg: Config,
     p: ChatPrompt,
     base: std::path::PathBuf,
     partial: Partial,
+    run: Run,
 ) -> Result<Answer, Failure> {
+    if run.cancel.is_cancelled() {
+        return Err(Failure::new(STOPPED));
+    }
     match cfg.kind.protocol() {
         Protocol::None => Err(Failure::new("the AFG is off")),
         Protocol::Ollama | Protocol::OpenAi | Protocol::Anthropic | Protocol::Gemini => {
-            tokio::task::spawn_blocking(move || chat_http(&cfg, &p, &partial))
-                .await
-                .map_err(|e| Failure::new(e.to_string()))?
+            let cancel = run.cancel.clone();
+            let job = tokio::task::spawn_blocking(move || chat_http(&cfg, &p, &partial, &cancel));
+            // A service silent for a while does not hold the stop up: the
+            // reading thread ends at its next piece, or at its time allowed.
+            tokio::select! {
+                done = job => done.map_err(|e| Failure::new(e.to_string()))?,
+                _ = run.cancel.cancelled() => Err(Failure::new(STOPPED)),
+            }
         }
         Protocol::ClaudeCode | Protocol::Codex | Protocol::OpenCode => {
-            chat_cli(&cfg, &p, &base, &partial).await
+            chat_cli(&cfg, &p, &base, &partial, &run).await
         }
     }
 }
@@ -1143,6 +1380,11 @@ mod tests {
 
     fn text(p: &Partial) -> String {
         p.lock().unwrap().clone()
+    }
+
+    /// A stop nobody presses.
+    fn go() -> CancellationToken {
+        CancellationToken::new()
     }
 
     #[test]
@@ -1216,7 +1458,7 @@ mod tests {
         let ollama = "{\"model\":\"q\",\"message\":{\"content\":\"Bon\"},\"done\":false}\n\
                       {\"model\":\"q\",\"message\":{\"content\":\"jour\"},\"done\":false}\n\
                       {\"model\":\"q\",\"message\":{\"content\":\"\"},\"done\":true,\"prompt_eval_count\":12,\"eval_count\":3}\n";
-        let r = read_stream(Protocol::Ollama, ollama.as_bytes(), &p).unwrap();
+        let r = read_stream(Protocol::Ollama, ollama.as_bytes(), &p, &go()).unwrap();
         assert_eq!(
             (r.text.as_str(), r.input, r.output),
             ("Bonjour", Some(12), Some(3))
@@ -1229,7 +1471,7 @@ mod tests {
                       data: {\"choices\":[{\"delta\":{\"content\":\" deux\"},\"finish_reason\":\"stop\"}]}\n\n\
                       data: {\"choices\":[],\"usage\":{\"prompt_tokens\":5,\"completion_tokens\":2}}\n\n\
                       data: [DONE]\n\n";
-        let r = read_stream(Protocol::OpenAi, openai.as_bytes(), &p).unwrap();
+        let r = read_stream(Protocol::OpenAi, openai.as_bytes(), &p, &go()).unwrap();
         assert_eq!((r.text.as_str(), r.output), ("Un deux", Some(2)));
         assert_eq!(r.answer("x").unwrap().model.as_deref(), Some("gpt"));
 
@@ -1240,7 +1482,7 @@ mod tests {
                          event: content_block_delta\ndata: {\"type\":\"content_block_delta\",\"delta\":{\"type\":\"text_delta\",\"text\":\"Trois\"}}\n\n\
                          event: message_delta\ndata: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":4}}\n\n\
                          event: message_stop\ndata: {\"type\":\"message_stop\"}\n\n";
-        let r = read_stream(Protocol::Anthropic, anthropic.as_bytes(), &p).unwrap();
+        let r = read_stream(Protocol::Anthropic, anthropic.as_bytes(), &p, &go()).unwrap();
         assert_eq!(
             (r.text.as_str(), r.input, r.output),
             ("Trois", Some(10), Some(4)),
@@ -1250,27 +1492,98 @@ mod tests {
         let p = partial();
         let gemini = "data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"pensée\",\"thought\":true},{\"text\":\"Qua\"}]}}]}\r\n\r\n\
                       data: {\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"tre\"}]},\"finishReason\":\"STOP\"}],\"usageMetadata\":{\"promptTokenCount\":9,\"candidatesTokenCount\":2},\"modelVersion\":\"gemini-4-argon\"}\r\n\r\n";
-        let r = read_stream(Protocol::Gemini, gemini.as_bytes(), &p).unwrap();
+        let r = read_stream(Protocol::Gemini, gemini.as_bytes(), &p, &go()).unwrap();
         assert_eq!((r.text.as_str(), r.input), ("Quatre", Some(9)));
         assert_eq!(text(&p), "Quatre");
 
         // A refusal mid-stream is said in the service's words.
         let p = partial();
         let err = "event: error\ndata: {\"type\":\"error\",\"error\":{\"type\":\"overloaded_error\",\"message\":\"Overloaded\"}}\n\n";
-        let r = read_stream(Protocol::Anthropic, err.as_bytes(), &p).unwrap();
+        let r = read_stream(Protocol::Anthropic, err.as_bytes(), &p, &go()).unwrap();
         assert_eq!(r.answer("x").unwrap_err().message, "Overloaded");
         let r = read_stream(
             Protocol::Ollama,
             "{\"error\":\"model not found\"}\n".as_bytes(),
             &partial(),
+            &go(),
         )
         .unwrap();
         assert_eq!(r.answer("x").unwrap_err().message, "model not found");
     }
 
+    #[test]
+    fn a_stopped_answer_is_read_no_further() {
+        let stop = CancellationToken::new();
+        stop.cancel();
+        let p = partial();
+        let ollama = "{\"model\":\"q\",\"message\":{\"content\":\"Bon\"},\"done\":false}\n\
+                      {\"model\":\"q\",\"message\":{\"content\":\"jour\"},\"done\":true}\n";
+        let r = read_stream(Protocol::Ollama, ollama.as_bytes(), &p, &stop).unwrap();
+        assert_eq!((r.text.as_str(), text(&p).as_str()), ("", ""));
+        let sse = "data: {\"choices\":[{\"delta\":{\"content\":\"Un\"}}]}\n\n";
+        let r = read_stream(Protocol::OpenAi, sse.as_bytes(), &p, &stop).unwrap();
+        assert!(r.text.is_empty() && text(&p).is_empty());
+        // Pressed while it reads: what came before stays, nothing after.
+        let mut r = Reading {
+            cancel: go(),
+            ..Reading::default()
+        };
+        r.add("Avant", &p);
+        r.cancel.cancel();
+        r.add(" après", &p);
+        assert_eq!((r.text.as_str(), text(&p).as_str()), ("Avant", "Avant"));
+    }
+
     const CLAUDE_HELP: &str = "  --include-partial-messages  Include\n  --input-format <format>\n  \
         --no-session-persistence\n  --output-format <format>\n  --safe-mode\n  --system-prompt <prompt>\n  \
         --tools <tools...>\n  --verbose";
+
+    /// The options of Claude Code 2.1.300 that decide its tools and its
+    /// account's setup, as its help names them.
+    const CLAUDE_HELP_MCP: &str = "  --disable-slash-commands  Disable all skills\n  \
+        --include-partial-messages  Include\n  --no-session-persistence\n  \
+        --output-format <format>\n  --permission-mode <mode>\n  --permission-prompts <target>\n  \
+        --safe-mode\n  --settings <file-or-json>\n  --strict-mcp-config\n  \
+        --system-prompt <prompt>\n  --tools <tools...>\n  --verbose";
+
+    #[test]
+    fn claude_code_brings_its_accounts_mcp_servers_only_when_asked() {
+        let p = prompt();
+        let work = Path::new("/w");
+        let c = cfg(Kind::ClaudeCode);
+        let without = chat_cli_call(&c, &p, work, CLAUDE_HELP_MCP, false).unwrap();
+        let a = without.args.join(" ");
+        assert!(a.starts_with("-p --output-format stream-json --verbose --include-partial-messages --tools  --no-session-persistence --safe-mode --strict-mcp-config --disable-slash-commands --permission-prompts none --system-prompt SYS"), "{a}");
+        assert!(without.env.is_empty());
+        let with = chat_cli_call(&c, &p, work, CLAUDE_HELP_MCP, true).unwrap();
+        let a = with.args.join(" ");
+        assert!(a.starts_with("-p --output-format stream-json --verbose --include-partial-messages --tools ToolSearch --no-session-persistence --disable-slash-commands --permission-prompts none --permission-mode bypassPermissions --settings {\"disableAllHooks\":true} --system-prompt SYS"), "{a}");
+        for gone in ["--safe-mode", "--strict-mcp-config"] {
+            assert!(!with.args.iter().any(|a| a == gone), "{gone}");
+        }
+        assert!(with
+            .env
+            .iter()
+            .any(|(k, v)| k == "CLAUDE_CODE_DISABLE_CLAUDE_MDS" && v == "1"));
+        assert!(with
+            .env
+            .iter()
+            .any(|(k, v)| k == "CLAUDE_CODE_DISABLE_AUTO_MEMORY" && v == "1"));
+        // Codex and OpenCode keep their isolation whatever is asked.
+        let codex = |mcp| {
+            chat_cli_call(
+                &cfg(Kind::Codex),
+                &p,
+                work,
+                "  --ignore-user-config\n  --ephemeral",
+                mcp,
+            )
+            .unwrap()
+            .args
+        };
+        assert_eq!(codex(true), codex(false));
+        assert!(codex(true).iter().any(|a| a == "--ignore-user-config"));
+    }
 
     #[test]
     fn each_agent_is_given_the_conversation_and_what_it_can_read_of_its_files() {
@@ -1278,7 +1591,7 @@ mod tests {
         let work = Path::new("/w");
         let mut c = cfg(Kind::ClaudeCode);
         c.model = "claude-opus-5-5".into();
-        let call = chat_cli_call(&c, &p, work, CLAUDE_HELP).unwrap();
+        let call = chat_cli_call(&c, &p, work, CLAUDE_HELP, false).unwrap();
         let a = call.args.join(" ");
         assert!(
             a.starts_with(
@@ -1316,7 +1629,7 @@ mod tests {
             speaker: Speaker::User,
             parts: vec![Part::Text("Et toi ?".into())],
         });
-        let call = chat_cli_call(&c, &words_only, work, "  --verbose").unwrap();
+        let call = chat_cli_call(&c, &words_only, work, "  --verbose", false).unwrap();
         assert!(!call
             .args
             .iter()
@@ -1325,7 +1638,14 @@ mod tests {
             .unwrap()
             .ends_with("Et toi ?\n"));
 
-        let call = chat_cli_call(&cfg(Kind::Codex), &p, work, "  --image <FILE>  Attach").unwrap();
+        let call = chat_cli_call(
+            &cfg(Kind::Codex),
+            &p,
+            work,
+            "  --image <FILE>  Attach",
+            true,
+        )
+        .unwrap();
         assert!(call
             .args
             .windows(2)
@@ -1337,7 +1657,7 @@ mod tests {
 
         let mut with_archive = prompt();
         with_archive.context = "THE ARCHIVE".into();
-        let call = chat_cli_call(&cfg(Kind::Opencode), &with_archive, work, "").unwrap();
+        let call = chat_cli_call(&cfg(Kind::Opencode), &with_archive, work, "", true).unwrap();
         assert_eq!(call.args[0], "run");
         assert!(
             !call.args[1].contains("THE ARCHIVE"),
@@ -1353,6 +1673,7 @@ mod tests {
     #[test]
     fn claude_codes_stream_is_read_a_piece_at_a_time() {
         let p = partial();
+        let tools = Tools::default();
         let mut s = ClaudeStream::default();
         for line in [
             r#"{"type":"system","subtype":"init"}"#,
@@ -1361,18 +1682,159 @@ mod tests {
             r#"{"type":"assistant","message":{"content":[{"type":"text","text":"Les Zając."}]}}"#,
             r#"{"type":"result","subtype":"success","is_error":false,"result":"Les Zając.","total_cost_usd":0.01}"#,
         ] {
-            s.line(line, &p);
+            s.line(line, &p, &tools);
         }
         assert_eq!(text(&p), "Les Zając.", "the pieces, not twice");
-        let a = afg::parse_cli(Protocol::ClaudeCode, s.result.as_deref().unwrap(), None).unwrap();
+        let a = s.answer("").unwrap();
         assert_eq!((a.text.as_str(), a.cost_usd), ("Les Zając.", Some(0.01)));
+        assert!(tools.lock().unwrap().is_empty(), "no tool called");
         // Without its pieces, each finished message is shown whole.
         let p = partial();
         let mut s = ClaudeStream::default();
         s.line(
             r#"{"type":"assistant","message":{"content":[{"type":"text","text":"Un."}]}}"#,
             &p,
+            &tools,
         );
         assert_eq!(text(&p), "Un.");
+    }
+
+    /// An answer in two turns, as Claude Code streams it with the account's
+    /// MCP servers: a few words and a tool's call, the tool's result, then
+    /// the answer; a sub-agent's words between them.
+    const TWO_TURNS: &[&str] = &[
+        r#"{"type":"system","subtype":"init","model":"claude-haiku-5-5","tools":["ToolSearch","mcp__ax-genealogy__get_person"],"mcp_servers":[{"name":"claude.ai ax-genealogy","status":"connected"},{"name":"claude.ai Gmail","status":"needs-auth"}]}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"message_start","message":{"model":"claude-haiku-5-5"}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Je regarde sa fiche."}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_start","index":1,"content_block":{"type":"tool_use","id":"toolu_0","name":"ToolSearch","input":{}}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_start","index":2,"content_block":{"type":"tool_use","id":"toolu_1","name":"mcp__claude_ai_ax-genealogy__get_person","input":{}}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_delta","index":2,"delta":{"type":"input_json_delta","partial_json":"{\"person\":\"p1\"}"}}}"#,
+        r#"{"type":"assistant","parent_tool_use_id":null,"message":{"id":"msg_1","content":[{"type":"text","text":"Je regarde sa fiche."}]}}"#,
+        r#"{"type":"user","parent_tool_use_id":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_1","content":"{\"name\":\"Jean\"}"}]}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":"toolu_9","event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"(un sous-agent)"}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"message_start","message":{"model":"claude-haiku-5-5"}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Jean est né "}}}"#,
+        r#"{"type":"stream_event","parent_tool_use_id":null,"event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"en 1890."}}}"#,
+    ];
+
+    #[test]
+    fn claude_codes_turns_and_tools_are_read_as_they_come() {
+        let p = partial();
+        let tools = Tools::default();
+        let mut s = ClaudeStream::default();
+        for line in &TWO_TURNS[..8] {
+            s.line(line, &p, &tools);
+        }
+        assert_eq!(text(&p), "Je regarde sa fiche.", "the first turn");
+        assert_eq!(*tools.lock().unwrap(), ["ax-genealogy · get_person"]);
+        for line in &TWO_TURNS[8..] {
+            s.line(line, &p, &tools);
+        }
+        assert_eq!(
+            text(&p),
+            "Jean est né en 1890.",
+            "the page shows the turn being written, never a sub-agent's words"
+        );
+        s.line(
+            r#"{"type":"result","subtype":"success","is_error":false,"result":"Jean est né en 1890.","total_cost_usd":0.007,"usage":{"input_tokens":6,"cache_read_input_tokens":100,"output_tokens":20}}"#,
+            &p,
+            &tools,
+        );
+        let a = s.answer("").unwrap();
+        assert_eq!(
+            a.text, "Jean est né en 1890.",
+            "the last turn, as its result says"
+        );
+        assert_eq!(
+            a.model.as_deref(),
+            Some("claude-haiku-5-5"),
+            "the model of its first event"
+        );
+        assert_eq!(a.input_tokens, Some(106));
+
+        // A result that says nothing: every turn's words.
+        let mut s = ClaudeStream::default();
+        for line in TWO_TURNS {
+            s.line(line, &partial(), &Tools::default());
+        }
+        s.line(
+            r#"{"type":"result","subtype":"success","is_error":false,"result":""}"#,
+            &partial(),
+            &Tools::default(),
+        );
+        assert_eq!(
+            s.answer("").unwrap().text,
+            "Je regarde sa fiche.\n\nJean est né en 1890."
+        );
+        // An error is still its own words.
+        let mut s = ClaudeStream::default();
+        s.line(
+            r#"{"type":"result","subtype":"error_max_turns","is_error":true,"result":""}"#,
+            &partial(),
+            &Tools::default(),
+        );
+        assert_eq!(s.answer("").unwrap_err(), "error_max_turns");
+    }
+
+    #[test]
+    fn claude_codes_whole_messages_are_turns_of_their_own() {
+        // Without its pieces, Claude Code prints each block of a message as
+        // it is finished, under the message's id.
+        let p = partial();
+        let tools = Tools::default();
+        let mut s = ClaudeStream::default();
+        for line in [
+            r#"{"type":"system","subtype":"init","model":"claude-opus-5-5","mcp_servers":[]}"#,
+            r#"{"type":"assistant","message":{"id":"msg_1","content":[{"type":"thinking","thinking":""}]}}"#,
+            r#"{"type":"assistant","message":{"id":"msg_1","content":[{"type":"text","text":"Un instant."}]}}"#,
+            r#"{"type":"assistant","message":{"id":"msg_1","content":[{"type":"tool_use","name":"mcp__claude_ai_Google_Drive__search_files","input":{}}]}}"#,
+        ] {
+            s.line(line, &p, &tools);
+        }
+        assert_eq!(text(&p), "Un instant.");
+        for line in [
+            r#"{"type":"user","message":{"content":[{"type":"tool_result","content":"[]"}]}}"#,
+            r#"{"type":"assistant","message":{"id":"msg_2","content":[{"type":"text","text":"Rien dans vos fichiers."}]}}"#,
+            r#"{"type":"assistant","message":{"id":"msg_2","content":[{"type":"text","text":"Voulez-vous chercher ailleurs ?"}]}}"#,
+            r#"{"type":"assistant","parent_tool_use_id":"toolu_5","message":{"id":"msg_9","content":[{"type":"text","text":"(un sous-agent)"}]}}"#,
+        ] {
+            s.line(line, &p, &tools);
+        }
+        assert_eq!(
+            text(&p),
+            "Rien dans vos fichiers.\n\nVoulez-vous chercher ailleurs ?"
+        );
+        assert_eq!(*tools.lock().unwrap(), ["Google Drive · search_files"]);
+        assert_eq!(s.model.as_deref(), Some("claude-opus-5-5"));
+    }
+
+    #[test]
+    fn a_tool_is_named_as_people_read_it() {
+        for (name, label) in [
+            (
+                "mcp__claude_ai_Google_Drive__search_files",
+                "Google Drive · search_files",
+            ),
+            ("mcp__plugin_bio-research_chembl__x", "chembl · x"),
+            ("mcp__ax-genealogy__get_person", "ax-genealogy · get_person"),
+            (
+                "mcp__claude_ai_ax-genealogy__apply_operations",
+                "ax-genealogy · apply_operations",
+            ),
+            (
+                "mcp__plugin_engineering_google_calendar__list_events",
+                "google calendar · list_events",
+            ),
+        ] {
+            assert_eq!(tool_label(name).as_deref(), Some(label), "{name}");
+        }
+        assert_eq!(tool_label("ToolSearch"), None, "its own working");
+        let tools = Tools::default();
+        for _ in 0..TOOLS_SEEN + 3 {
+            note_tool(&tools, "mcp__ax-genealogy__search_people");
+        }
+        note_tool(&tools, "ToolSearch");
+        assert_eq!(tools.lock().unwrap().len(), TOOLS_SEEN, "the last few kept");
     }
 }

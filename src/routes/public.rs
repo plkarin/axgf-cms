@@ -910,6 +910,9 @@ pub async fn person(
             let afg_chat = on_chat.then(|| {
                 super::person_chat::tab(&state, &viewer, &chrome, &id, open, q.done.as_deref())
             });
+            // The AFG tab offers the composer, which takes dictation
+            // (docs/adr/0050): that page alone lets the microphone in.
+            let dictation = afg_chat.is_some();
             // Every relative, and the way to one if asked: walked only when
             // the tab is open (docs/adr/0020).
             let kinship = (tab == crate::person::RecordTab::Kinship).then(|| {
@@ -936,7 +939,7 @@ pub async fn person(
                 })
                 .collect();
 
-            render::page_with(
+            let page = render::page_with(
                 &chrome,
                 "person.html",
                 context! {
@@ -993,7 +996,12 @@ pub async fn person(
                         .map(|l| json!({"tag": l.tag, "name": l.native_name}))
                         .collect::<Vec<_>>(),
                 },
-            )
+            );
+            if dictation {
+                super::assistant::dictation(page)
+            } else {
+                page
+            }
         }
         Reading::Restricted => restricted_page(&chrome, viewer.signed_in()),
         Reading::Absent => merged_or_absent(&state, &chrome, &viewer, &id),

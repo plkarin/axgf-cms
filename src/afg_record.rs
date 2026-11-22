@@ -728,13 +728,20 @@ fn empty(v: &Value) -> bool {
 
 /// Ask the AFG's computing once, with no brain and no memory: its words, and
 /// the model that wrote them when it says.
+///
+/// A reading and a summary need no tool, so Claude Code is run here without
+/// the MCP servers of its account, whatever the AFG room chose for the
+/// conversations (docs/adr/0050): they would cost their start and tens of
+/// thousands of tokens a call for nothing, and what is read (a document a
+/// contributor uploaded, the notes members wrote) could steer them.
 pub async fn ask(
     cfg: &Config,
     prompt: ChatPrompt,
     base: PathBuf,
 ) -> Result<(String, Option<String>), Failure> {
     let partial = Arc::new(Mutex::new(String::new()));
-    let answer = crate::afg_chat::chat(cfg.clone(), prompt, base, partial).await?;
+    let run = crate::afg_chat::Run::default();
+    let answer = crate::afg_chat::chat(cfg.clone(), prompt, base, partial, run).await?;
     let text = answer.text.trim();
     if text.is_empty() {
         return Err(Failure::new("the AFG gave an empty answer"));

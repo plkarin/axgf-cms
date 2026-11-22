@@ -10,8 +10,9 @@
 //!
 //! An answer is written in the background ([`start_answer`]); the
 //! conversation's page asks for what has been written so far
-//! (`…/state`) and shows it as it comes. Without scripting, the page asks
-//! again every three seconds until the answer is there.
+//! (`…/state`) and shows it as it comes, and the member may stop it
+//! (`…/stop`, docs/adr/0050). Without scripting, the page asks again every
+//! three seconds until the answer is there.
 
 use axum::extract::{Form, Multipart, Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
@@ -173,6 +174,50 @@ fn conversation_json(pid: &str, c: &Conversation) -> Value {
         "created_at": c.created_at,
         "updated_at": c.updated_at,
         "messages": c.messages,
+    })
+}
+
+/// A project's knowledge as its page shows it (docs/adr/0050): each
+/// document with the word for what the AFG makes of it, what they weigh
+/// together, whether all of it goes with each message, and what a project
+/// may hold.
+fn knowledge_json(state: &Shared, m: &Member, pid: &str) -> Value {
+    let files = m.space.knowledge(pid);
+    let lang = m.chrome.lang;
+    let rows: Vec<Value> = files
+        .iter()
+        .map(|k| {
+            // What the AFG reads it as, or that it is kept without being
+            // read: a sound, a film, a PDF document a message cannot take.
+            let kind = match k.file.kind {
+                _ if !crate::knowledge::is_read(k) => "other",
+                FileKind::Text => "text",
+                FileKind::Pdf => "pdf",
+                FileKind::Image => "image",
+                FileKind::Audio | FileKind::Video | FileKind::Other => "other",
+            };
+            json!({
+                "id": k.file.id,
+                "name": k.file.name,
+                "kind": kind,
+                "size": crate::documents::human_size_in(k.file.size, lang),
+                "pages": k.pages,
+                "added": k.added_at,
+                "url": format!("{BASE}/{pid}/knowledge/{}", k.file.id),
+            })
+        })
+        .collect();
+    let total: u64 = files.iter().map(|k| k.file.size).sum();
+    json!({
+        "files": rows,
+        "size": crate::documents::human_size_in(total, lang),
+        "whole": crate::knowledge::all_whole(&files),
+        "limits": {
+            "file_mb": state.limits().assistant_file_mb,
+            "file_bytes": state.limits().assistant_file_bytes(),
+            "files": assistant::KNOWLEDGE_FILES,
+            "total_mb": assistant::KNOWLEDGE_BYTES / (1024 * 1024),
+        },
     })
 }
 
@@ -423,6 +468,8 @@ pub(crate) fn message_fragment(
                 "model": msg.model,
                 "seconds": msg.seconds,
                 "remembered": msg.remembered,
+                "stopped": msg.stopped,
+                "tools": msg.tools,
             }),
             pid,
             cid,
@@ -433,14 +480,39 @@ pub(crate) fn message_fragment(
     .unwrap_or_default()
 }
 
-/// The answer being written, as the thread draws it.
-fn live_html(m: &Member, partial: &str, seconds: u64) -> String {
-    live_fragment(&m.chrome, partial, seconds)
+/// The answer being written in a conversation, as the thread draws it.
+fn live_html(m: &Member, pid: &str, cid: &str, live: &assistant::Live) -> String {
+    let partial = live.partial.lock().map(|s| s.clone()).unwrap_or_default();
+    let tools = live.tools.lock().map(|t| t.clone()).unwrap_or_default();
+    live_fragment(
+        &m.chrome,
+        &partial,
+        live.since.elapsed().as_secs(),
+        &tools,
+        Some(&format!("{BASE}/{pid}/c/{cid}/stop")),
+    )
+}
+
+/// A sentence with a name in it, cut around the name, so that the page sets
+/// the name apart (`<code>`) wherever the language puts it: `before`,
+/// `name`, `after`.
+fn around(chrome: &render::Chrome, key: &str, arg: &str, name: &str) -> Value {
+    const MARK: &str = "\u{e000}";
+    let said = chrome.t_args(key, &[(arg, MARK.into())]);
+    let (before, after) = said.split_once(MARK).unwrap_or((said.as_str(), ""));
+    json!({"before": before, "name": name, "after": after})
 }
 
 /// The answer being written, as a thread draws it, here or on a person's
-/// page.
-pub(crate) fn live_fragment(chrome: &render::Chrome, partial: &str, seconds: u64) -> String {
+/// page: what it has written, the tool it called last (docs/adr/0050), and,
+/// for a page read without scripting, where to stop it.
+pub(crate) fn live_fragment(
+    chrome: &render::Chrome,
+    partial: &str,
+    seconds: u64,
+    tools: &[String],
+    stop: Option<&str>,
+) -> String {
     let shown = shown_partial(partial);
     let html = if shown.trim().is_empty() {
         String::new()
@@ -448,10 +520,13 @@ pub(crate) fn live_fragment(chrome: &render::Chrome, partial: &str, seconds: u64
         crate::notes::to_html(shown, &|_| None)
     };
     let preparing = preparing(partial);
+    let tool = tools
+        .last()
+        .map(|t| around(chrome, "assistant-tool-running", "tool", t));
     render::fragment_with(
         chrome,
         "_assistant_live.html",
-        context! { html, seconds, preparing },
+        context! { html, seconds, preparing, tool, stop },
     )
     .unwrap_or_default()
 }
@@ -512,10 +587,7 @@ fn render_view(
             let live = state
                 .assistant_answering()
                 .get(&m.user.id, &p.id, &c.id)
-                .map(|l| {
-                    let partial = l.partial.lock().map(|s| s.clone()).unwrap_or_default();
-                    live_html(m, &partial, l.since.elapsed().as_secs())
-                });
+                .map(|l| live_html(m, &p.id, &c.id, &l));
             // A message nobody is answering: the process stopped while the
             // AFG wrote. It may be asked again.
             orphan = live.is_none() && messages.last().is_some_and(|msg| msg.role == Role::User);
@@ -530,6 +602,11 @@ fn render_view(
             .ok()
             .map(|a| json!({"count": a.count, "tokens": a.tokens}))
     });
+    // The project's knowledge, on the project's own page (docs/adr/0050).
+    // The project a person's page keeps its conversations in has none.
+    let knowledge = project
+        .filter(|p| view == "project" && p.person.is_none())
+        .map(|p| knowledge_json(state, m, &p.id));
     let mut r = render::page_with(
         &m.chrome,
         "assistant.html",
@@ -541,6 +618,10 @@ fn render_view(
             project => project.map(project_json),
             conversations,
             facts,
+            knowledge,
+            // The answer being written, without a word yet: what the script
+            // shows the moment a message goes (docs/adr/0050).
+            live_template => conversation.map(|_| live_fragment(&m.chrome, "", 0, &[], None)),
             conversation => project.zip(conversation).map(|(p, c)| conversation_json(&p.id, c)),
             thread,
             live,
@@ -563,6 +644,18 @@ fn render_view(
         },
     );
     *r.status_mut() = status;
+    dictation(r)
+}
+
+/// A page whose composer may take dictation (docs/adr/0050): the browser's
+/// speech recognition needs the microphone, which every other page of the
+/// site refuses (`routes::PERMISSIONS`). The camera stays refused: a photo is
+/// taken through the system's own camera, not in the page.
+pub(crate) fn dictation(mut r: Response) -> Response {
+    r.headers_mut().insert(
+        header::HeaderName::from_static("permissions-policy"),
+        header::HeaderValue::from_static(crate::routes::PERMISSIONS_DICTATION),
+    );
     r
 }
 
@@ -580,6 +673,8 @@ fn said_of(chrome: &render::Chrome, done: Option<&str>) -> Said {
         Some("forgotten") => "assistant-memory-forgotten",
         Some("forgotten-all") => "assistant-memory-forgotten-all",
         Some("avatar") => "assistant-avatar-saved",
+        Some("knowledge-added") => "assistant-knowledge-added",
+        Some("knowledge-removed") => "assistant-knowledge-removed",
         _ => return Said::default(),
     };
     Said {
@@ -687,10 +782,7 @@ pub async fn state_of(
         .collect();
     let live = state.assistant_answering().get(&m.user.id, &pid, &cid);
     let (answering, live_html) = match &live {
-        Some(l) => {
-            let partial = l.partial.lock().map(|s| s.clone()).unwrap_or_default();
-            (true, live_html(&m, &partial, l.since.elapsed().as_secs()))
-        }
+        Some(l) => (true, live_html(&m, &pid, &cid, l)),
         None => (false, String::new()),
     };
     json_reply(
@@ -910,6 +1002,9 @@ pub async fn delete_project(
             StatusCode::UNPROCESSABLE_ENTITY,
         );
     }
+    // An answer still being written in it is stopped first: its agent ends,
+    // and nothing is left writing into a project that is gone.
+    state.assistant_answering().stop_project(&m.user.id, &pid);
     match m.space.delete_project(&pid) {
         Ok(_) => {
             tracing::info!(account = %m.user.username, "assistant: a project deleted");
@@ -1107,6 +1202,10 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
     } else {
         Commands::Read
     };
+    // The MCP servers of the account Claude Code runs as come with an
+    // administrator's question, or with everyone's when the room says so
+    // (docs/adr/0050).
+    let mcp = cfg.mcp_for(m.user.role.is_admin());
     let prompt = assistant::chat_prompt(
         &m.space,
         &asker,
@@ -1114,14 +1213,39 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         &messages,
         archive.as_ref(),
         commands,
+        mcp,
     );
     tracing::info!(
         account = %m.user.username,
         kind = cfg.kind.slug(),
         turns = prompt.turns.len(),
         archive = archive.is_some(),
+        mcp,
         "assistant: a message sent to the AFG"
     );
+    // The project's knowledge goes with every question (docs/adr/0050). It
+    // is read, cut and weighed on the way, not while the page waits, against
+    // the member's last words: this message and the one before it, so that
+    // a question that only says "and her sister?" still finds its passages.
+    // The project a person's page keeps its conversations in has none.
+    let prepare = project.person.is_none().then(|| {
+        let space = m.space.clone();
+        let pid = project.id.clone();
+        let query = messages
+            .iter()
+            .rev()
+            .filter(|msg| msg.role == Role::User)
+            .take(2)
+            .map(|msg| msg.text.as_str())
+            .collect::<Vec<_>>()
+            .join("\n");
+        Prepare {
+            work: Box::new(move |prompt: &mut crate::afg_chat::ChatPrompt| {
+                crate::knowledge::join(&space, &pid, &query, prompt)
+            }),
+            instead: None,
+        }
+    });
     run_answer(
         state,
         m.space.clone(),
@@ -1129,26 +1253,41 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
         project.id.clone(),
         cid.to_string(),
         prompt,
-        None,
+        prepare,
         live,
         true,
+        mcp,
     );
     true
 }
 
+/// What a `Prepare` does to a question, and the question it may give back to
+/// ask instead.
+pub(crate) type Work =
+    Box<dyn FnOnce(&mut crate::afg_chat::ChatPrompt) -> Option<crate::afg_chat::ChatPrompt> + Send>;
+
 /// Work done on a prompt before it is sent, off the page's way, and what to
 /// send instead when a service refuses what the work added: a person's
 /// photographs read and sized, and the question without them, for a model
-/// that takes no picture (docs/adr/0033).
+/// that takes no picture (docs/adr/0033); a project's knowledge read and
+/// joined, and the question with its texts but without its PDF documents
+/// and pictures (docs/adr/0050).
 pub(crate) struct Prepare {
-    pub work: Box<dyn FnOnce(&mut crate::afg_chat::ChatPrompt) + Send>,
-    pub instead: crate::afg_chat::ChatPrompt,
+    /// Reads and joins. It gives back what to ask instead when only the work
+    /// can make it: the knowledge's texts are read there, and stay in it.
+    pub work: Work,
+    /// What to ask instead, when it could be made before the work, without
+    /// reading anything. Also what is asked when the work breaks.
+    pub instead: Option<crate::afg_chat::ChatPrompt>,
 }
 
 /// Write a conversation's next answer in the background, into `live` as it
 /// comes, then into the conversation: here, and on a person's page
 /// (docs/adr/0031). `remember`: whether a `<memory>` block goes into the
 /// project's second brain; on a person's page, nothing is asked to be kept.
+/// `mcp`: whether Claude Code brings the MCP servers of its account
+/// (docs/adr/0050). Stopped by the member (`live.cancel`), what was written
+/// is kept as a stopped answer: one message, as for any other end.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn run_answer(
     state: &Shared,
@@ -1160,89 +1299,141 @@ pub(crate) fn run_answer(
     prepare: Option<Prepare>,
     live: std::sync::Arc<assistant::Live>,
     remember: bool,
+    mcp: bool,
 ) {
     let cfg = state.site().afg;
     let runner = state.clone();
     let base = state.data_dir().to_path_buf();
     let kind = cfg.kind.slug();
     let model = cfg.model.trim().to_string();
+    let run = crate::afg_chat::Run {
+        mcp,
+        cancel: live.cancel.clone(),
+        tools: live.tools.clone(),
+    };
     tokio::spawn(async move {
         let outcome = if cfg.kind == crate::afg::Kind::Off || cfg.problem().is_some() {
             Err(crate::afg::Failure::new(
                 "the AFG's computing is not set up",
             ))
         } else {
-            let (prompt, instead) = match prepare {
+            let prepared = match prepare {
                 Some(Prepare { work, instead }) => {
-                    let prepared = tokio::task::spawn_blocking(move || {
+                    tokio::task::spawn_blocking(move || {
                         let mut prompt = prompt;
-                        work(&mut prompt);
-                        prompt
+                        // Work that breaks does not take the question with
+                        // it: the question is still there to be asked.
+                        let made = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                            work(&mut prompt)
+                        }));
+                        (prompt, made)
                     })
+                    .await
+                    .map(|(prompt, made)| match made {
+                        Ok(made) => (prompt, made.or(instead)),
+                        // Work that failed sends the question as it would be
+                        // sent without it, or as far as the work had got.
+                        Err(_) => {
+                            tracing::error!("AFG: the work on a question broke");
+                            (instead.unwrap_or(prompt), None)
+                        }
+                    })
+                    .map_err(|_| crate::afg::Failure::new("the question could not be prepared"))
+                }
+                None => Ok((prompt, None)),
+            };
+            match prepared {
+                Ok((prompt, instead)) => {
+                    let first = crate::afg_chat::chat(
+                        cfg.clone(),
+                        prompt,
+                        base.clone(),
+                        live.partial.clone(),
+                        run.clone(),
+                    )
                     .await;
-                    // Work that failed sends the question as it would be
-                    // sent without it.
-                    match prepared {
-                        Ok(prompt) => (prompt, Some(instead)),
-                        Err(_) => (instead, None),
+                    match (first, instead) {
+                        // A service that refuses the request (HTTP 4xx), as
+                        // one whose model takes no picture does, is asked
+                        // once more without what the work added; not once
+                        // the member stopped it.
+                        (Err(f), Some(instead))
+                            if f.message.starts_with("HTTP 4") && !live.cancel.is_cancelled() =>
+                        {
+                            tracing::warn!(error = %f.message, "AFG: refused with the files, asked again without them");
+                            live.partial
+                                .lock()
+                                .unwrap_or_else(|e| e.into_inner())
+                                .clear();
+                            crate::afg_chat::chat(cfg, instead, base, live.partial.clone(), run)
+                                .await
+                        }
+                        (outcome, _) => outcome,
                     }
                 }
-                None => (prompt, None),
-            };
-            let first =
-                crate::afg_chat::chat(cfg.clone(), prompt, base.clone(), live.partial.clone())
-                    .await;
-            match (first, instead) {
-                // A service that refuses the request (HTTP 4xx), as one whose
-                // model takes no picture does, is asked once more without
-                // what the work added.
-                (Err(f), Some(instead)) if f.message.starts_with("HTTP 4") => {
-                    tracing::warn!(error = %f.message, "AFG: refused with the files, asked again without them");
-                    live.partial
-                        .lock()
-                        .unwrap_or_else(|e| e.into_inner())
-                        .clear();
-                    crate::afg_chat::chat(cfg, instead, base, live.partial.clone()).await
-                }
-                (outcome, _) => outcome,
+                Err(f) => Err(f),
             }
         };
         let seconds = live.since.elapsed().as_secs();
-        let msg = match outcome {
-            Ok(answer) => {
-                let (shown, facts) = crate::brain::take_memory(&answer.text);
-                let kept = if remember {
-                    let space2 = space.clone();
-                    let pid2 = pid.clone();
-                    tokio::task::spawn_blocking(move || space2.remember(&pid2, &facts))
-                        .await
-                        .ok()
-                        .and_then(Result::ok)
-                        .unwrap_or_default()
-                } else {
-                    Vec::new()
-                };
-                let mut msg = Message::new(Role::Assistant, shown, Vec::new());
-                msg.kind = kind.to_string();
-                msg.model = answer.model.unwrap_or(model);
-                msg.remembered = kept;
-                msg.input_tokens = answer.input_tokens;
-                msg.output_tokens = answer.output_tokens;
-                msg.cost_usd = answer.cost_usd;
-                msg.seconds = Some(seconds);
-                msg
-            }
-            Err(f) => {
-                tracing::warn!(error = %f.message, "assistant: the AFG did not answer");
-                let mut text = f.message;
-                if let Some(d) = f.detail {
-                    text.push_str("\n\n");
-                    text.push_str(&d);
+        let tools =
+            assistant::tools_used(&live.tools.lock().map(|t| t.clone()).unwrap_or_default());
+        // A stop that came once the answer was whole changes nothing: only a
+        // run the stop cut short is kept as stopped.
+        let msg = if live.cancel.is_cancelled() && outcome.is_err() {
+            // Stopped (docs/adr/0050): what the page showed is kept, as it
+            // showed it (no memory block, no half-written operations), and
+            // nothing goes into the project's memory.
+            let partial = live.partial.lock().map(|s| s.clone()).unwrap_or_default();
+            let mut msg = Message::new(
+                Role::Assistant,
+                shown_partial(&partial).trim_end().to_string(),
+                Vec::new(),
+            );
+            msg.stopped = true;
+            msg.kind = kind.to_string();
+            msg.model = model;
+            msg.seconds = Some(seconds);
+            msg.tools = tools;
+            tracing::info!(seconds, "assistant: an answer stopped by its member");
+            msg
+        } else {
+            match outcome {
+                Ok(answer) => {
+                    let (shown, facts) = crate::brain::take_memory(&answer.text);
+                    let kept = if remember {
+                        let space2 = space.clone();
+                        let pid2 = pid.clone();
+                        tokio::task::spawn_blocking(move || space2.remember(&pid2, &facts))
+                            .await
+                            .ok()
+                            .and_then(Result::ok)
+                            .unwrap_or_default()
+                    } else {
+                        Vec::new()
+                    };
+                    let mut msg = Message::new(Role::Assistant, shown, Vec::new());
+                    msg.kind = kind.to_string();
+                    msg.model = answer.model.unwrap_or(model);
+                    msg.remembered = kept;
+                    msg.input_tokens = answer.input_tokens;
+                    msg.output_tokens = answer.output_tokens;
+                    msg.cost_usd = answer.cost_usd;
+                    msg.seconds = Some(seconds);
+                    msg.tools = tools;
+                    msg
                 }
-                let mut msg = Message::new(Role::Error, text, Vec::new());
-                msg.kind = kind.to_string();
-                msg.seconds = Some(seconds);
-                msg
+                Err(f) => {
+                    tracing::warn!(error = %f.message, "assistant: the AFG did not answer");
+                    let mut text = f.message;
+                    if let Some(d) = f.detail {
+                        text.push_str("\n\n");
+                        text.push_str(&d);
+                    }
+                    let mut msg = Message::new(Role::Error, text, Vec::new());
+                    msg.kind = kind.to_string();
+                    msg.seconds = Some(seconds);
+                    msg
+                }
             }
         };
         let space3 = space.clone();
@@ -1483,16 +1674,43 @@ pub async fn retry(
     let (Some(p), Some(_)) = (m.space.project(&pid), m.space.conversation(&pid, &cid)) else {
         return not_found(&m);
     };
-    // Only a message left without an answer, or whose answer failed, is
-    // asked again.
+    // Only a message left without an answer, whose answer failed, or whose
+    // answer the member stopped, is asked again.
     let waiting = m
         .space
         .messages(&pid, &cid)
         .last()
-        .is_some_and(|msg| matches!(msg.role, Role::User | Role::Error));
+        .is_some_and(|msg| matches!(msg.role, Role::User | Role::Error) || msg.stopped);
     let answering = waiting && start_answer(&state, &m, &p, &cid);
     if wants_json(&headers) {
         return json_reply(StatusCode::OK, json!({"answering": answering}));
+    }
+    Redirect::to(&format!("{BASE}/{pid}/c/{cid}")).into_response()
+}
+
+/// `POST /account/assistant/:project/c/:conversation/stop` — stop the
+/// answer being written (docs/adr/0050). What it wrote so far is kept,
+/// marked as stopped, and the conversation takes the next message. Nothing
+/// being written is no error: pressed twice, or once the answer came, it
+/// changes nothing. `{"stopping": bool}` to a script.
+pub async fn stop(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((pid, cid)): Path<(String, String)>,
+) -> Response {
+    let m = match door(&state, &headers, &format!("{BASE}/{pid}/c/{cid}")) {
+        Ok(m) => m,
+        Err(r) => return r,
+    };
+    if m.space.project(&pid).is_none() || m.space.conversation(&pid, &cid).is_none() {
+        return not_found(&m);
+    }
+    let stopping = state.assistant_answering().stop(&m.user.id, &pid, &cid);
+    if stopping {
+        tracing::info!(account = %m.user.username, "assistant: an answer asked to stop");
+    }
+    if wants_json(&headers) {
+        return json_reply(StatusCode::OK, json!({"stopping": stopping}));
     }
     Redirect::to(&format!("{BASE}/{pid}/c/{cid}")).into_response()
 }
@@ -1758,8 +1976,7 @@ pub async fn delete_conversation(
 // ---------------------------------------------------------------------------
 
 /// `GET /account/assistant/:project/f/:file` — a file sent with a message,
-/// to the account that sent it. Pictures are shown, everything else is
-/// downloaded.
+/// to the account that sent it.
 pub async fn file(
     State(state): State<Shared>,
     headers: HeaderMap,
@@ -1769,9 +1986,19 @@ pub async fn file(
         Ok(m) => m,
         Err(r) => return r,
     };
-    let Some((f, bytes)) = m.space.file(&pid, &fid) else {
-        return not_found(&m);
-    };
+    match m.space.file(&pid, &fid) {
+        Some((f, bytes)) => served(&f, bytes),
+        None => not_found(&m),
+    }
+}
+
+/// A file an account gave, to that account: one sent with a message, or a
+/// document of a project's knowledge. Pictures are shown, everything else is
+/// downloaded. Its own Content-Security-Policy, stricter than the site's on
+/// every directive, is the one the browser gets (`routes::security_headers`
+/// keeps it): a file someone sent runs nothing, loads nothing but itself, and
+/// is never framed.
+fn served(f: &assistant::FileRef, bytes: Vec<u8>) -> Response {
     let disposition = if f.kind == FileKind::Image {
         "inline".to_string()
     } else {
@@ -1797,15 +2024,230 @@ pub async fn file(
                 header::HeaderName::from_static("x-content-type-options"),
                 "nosniff".to_string(),
             ),
-            (
-                header::CONTENT_SECURITY_POLICY,
-                "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
-                    .to_string(),
-            ),
+            (header::CONTENT_SECURITY_POLICY, FILE_POLICY.to_string()),
         ],
         bytes,
     )
         .into_response()
+}
+
+/// The Content-Security-Policy a sent file is served with (docs/adr/0026
+/// §5): nothing runs and nothing loads but the picture itself, no form goes
+/// anywhere, and no page frames it. Each directive is the site's own or
+/// stricter, so the site's layer leaves it in place.
+const FILE_POLICY: &str = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; \
+                           frame-ancestors 'none'; form-action 'none'; base-uri 'none'; sandbox";
+
+// ---------------------------------------------------------------------------
+// the project's knowledge (docs/adr/0050)
+// ---------------------------------------------------------------------------
+
+/// The project a knowledge route is about: one of the account's own. The
+/// project a person's page keeps its conversations in has no knowledge.
+fn knowledge_project(m: &Member, pid: &str) -> Option<Project> {
+    m.space.project(pid).filter(|p| p.person.is_none())
+}
+
+/// The project's page again, saying why its knowledge was left as it was.
+fn knowledge_refused(
+    state: &Shared,
+    m: &Member,
+    project: &Project,
+    key: &str,
+    status: StatusCode,
+) -> Response {
+    let said = Said {
+        notice: None,
+        error: Some(m.chrome.t(key)),
+    };
+    render_view(state, m, "project", Some(project), None, said, status)
+}
+
+/// What a knowledge form sent: its files, in the order they were chosen, or
+/// why it was refused, as a catalogue key. Read piece by piece, so that no
+/// more is ever held than may be kept: a file up to `file_max` bytes, and
+/// together what the project has room for (`files_room`, `bytes_room`).
+/// Past a limit what was held is let go and the rest of the form is read
+/// and dropped: a browser shows the answer once its upload has been taken
+/// to the end, and the request itself is weighed before it comes here.
+async fn read_knowledge(
+    mut multipart: Multipart,
+    file_max: usize,
+    files_room: usize,
+    bytes_room: u64,
+) -> Result<Vec<(String, Vec<u8>)>, &'static str> {
+    let mut files: Vec<(String, Vec<u8>)> = Vec::new();
+    let mut total = 0u64;
+    let mut refused: Option<&'static str> = None;
+    loop {
+        let mut field = match multipart.next_field().await {
+            Ok(Some(f)) => f,
+            Ok(None) => break,
+            // The form weighed more than a request may.
+            Err(_) => return Err(refused.unwrap_or("assistant-error-file-big")),
+        };
+        if field.name() != Some("files") {
+            continue;
+        }
+        let name = field.file_name().unwrap_or("file").to_string();
+        let mut bytes: Vec<u8> = Vec::new();
+        loop {
+            let chunk = match field.chunk().await {
+                Ok(Some(chunk)) => chunk,
+                Ok(None) => break,
+                Err(_) => return Err(refused.unwrap_or("assistant-error-file-big")),
+            };
+            if refused.is_some() || chunk.is_empty() {
+                continue;
+            }
+            total += chunk.len() as u64;
+            if files.len() >= files_room || total > bytes_room {
+                refused = Some("assistant-knowledge-full");
+            } else if bytes.len() + chunk.len() > file_max {
+                refused = Some("assistant-error-file-big");
+            } else {
+                bytes.extend_from_slice(&chunk);
+            }
+            if refused.is_some() {
+                files = Vec::new();
+                bytes = Vec::new();
+            }
+        }
+        // A file input left empty sends a part that holds nothing.
+        if refused.is_none() && !bytes.is_empty() {
+            files.push((name, bytes));
+        }
+    }
+    match refused {
+        Some(key) => Err(key),
+        None if files.is_empty() => Err("assistant-knowledge-error-none"),
+        None => Ok(files),
+    }
+}
+
+/// `POST /account/assistant/:project/knowledge` — documents added to the
+/// project's knowledge (docs/adr/0050): everything that was chosen, or
+/// nothing.
+pub async fn add_knowledge(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(pid): Path<String>,
+    multipart: Multipart,
+) -> Response {
+    let m = match door(&state, &headers, &format!("{BASE}/{pid}")) {
+        Ok(m) => m,
+        Err(r) => return r,
+    };
+    let Some(p) = knowledge_project(&m, &pid) else {
+        return not_found(&m);
+    };
+    // The room the project has left bounds what is read of the form. What
+    // decides is counted again where the files are written, under the lock.
+    let held = m.space.knowledge(&pid);
+    let weight: u64 = held.iter().map(|k| k.file.size).sum();
+    let sent = read_knowledge(
+        multipart,
+        state.limits().assistant_file_bytes(),
+        assistant::KNOWLEDGE_FILES.saturating_sub(held.len()),
+        assistant::KNOWLEDGE_BYTES.saturating_sub(weight),
+    )
+    .await;
+    let files = match sent {
+        Ok(files) => files,
+        Err(key) => {
+            return knowledge_refused(&state, &m, &p, key, StatusCode::UNPROCESSABLE_ENTITY)
+        }
+    };
+    // Sniffing, counting a PDF document's pages and writing are a disk's and
+    // a processor's work: off the requests' way.
+    let space = m.space.clone();
+    let pid2 = pid.clone();
+    let kept = tokio::task::spawn_blocking(move || space.add_knowledge(&pid2, &files)).await;
+    match kept {
+        Ok(Ok(Some(_))) => {
+            Redirect::to(&format!("{BASE}/{pid}?done=knowledge-added#knowledge")).into_response()
+        }
+        Ok(Ok(None)) => knowledge_refused(
+            &state,
+            &m,
+            &p,
+            "assistant-knowledge-full",
+            StatusCode::UNPROCESSABLE_ENTITY,
+        ),
+        Ok(Err(e)) => {
+            tracing::error!(error = %e, "assistant: the knowledge could not be written");
+            knowledge_refused(
+                &state,
+                &m,
+                &p,
+                "assistant-error-not-saved",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "assistant: the knowledge could not be written");
+            knowledge_refused(
+                &state,
+                &m,
+                &p,
+                "assistant-error-not-saved",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
+}
+
+/// `GET /account/assistant/:project/knowledge/:file` — a document of the
+/// project's knowledge, to the account that gave it: served as a file sent
+/// with a message is.
+pub async fn knowledge_file(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((pid, fid)): Path<(String, String)>,
+) -> Response {
+    let m = match door(&state, &headers, &format!("{BASE}/{pid}")) {
+        Ok(m) => m,
+        Err(r) => return r,
+    };
+    if knowledge_project(&m, &pid).is_none() {
+        return not_found(&m);
+    }
+    match m.space.knowledge_file(&pid, &fid) {
+        Some((k, bytes)) => served(&k.file, bytes),
+        None => not_found(&m),
+    }
+}
+
+/// `POST /account/assistant/:project/knowledge/:file/delete` — a document
+/// taken out of the project's knowledge.
+pub async fn remove_knowledge(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((pid, fid)): Path<(String, String)>,
+) -> Response {
+    let m = match door(&state, &headers, &format!("{BASE}/{pid}")) {
+        Ok(m) => m,
+        Err(r) => return r,
+    };
+    let Some(p) = knowledge_project(&m, &pid) else {
+        return not_found(&m);
+    };
+    match m.space.remove_knowledge(&pid, &fid) {
+        Ok(true) => {
+            Redirect::to(&format!("{BASE}/{pid}?done=knowledge-removed#knowledge")).into_response()
+        }
+        Ok(false) => not_found(&m),
+        Err(e) => {
+            tracing::error!(error = %e, "assistant: the knowledge could not be written");
+            knowledge_refused(
+                &state,
+                &m,
+                &p,
+                "assistant-error-not-saved",
+                StatusCode::INTERNAL_SERVER_ERROR,
+            )
+        }
+    }
 }
 
 fn own_picture(bytes: Vec<u8>) -> Response {
@@ -1972,6 +2414,39 @@ mod tests {
         assert_eq!(shown_partial("Un.\n\n<memory>\n- x"), "Un.\n\n");
         assert_eq!(shown_partial("Deux <MEMORY>"), "Deux ");
         assert_eq!(shown_partial("Trois"), "Trois");
+    }
+
+    #[test]
+    fn the_answer_being_written_names_its_last_tool_and_how_to_stop_it() {
+        let reader = crate::access::Viewer::anonymous();
+        let chrome = render::Chrome::resolve(&reader, &HeaderMap::new(), "/");
+        let tools = ["chembl · x".to_string(), "ax-genealogy · get_person".into()];
+        let html = live_fragment(&chrome, "Je cherche.", 3, &tools, Some("/s"));
+        assert!(
+            html.contains("using <code>ax-genealogy · get_person</code>"),
+            "{html}"
+        );
+        assert!(!html.contains("chembl"), "the last one called only");
+        assert!(
+            html.contains(
+                r#"<noscript><form class="as-live-stop" method="post" action="&#x2f;s">"#
+            ),
+            "{html}"
+        );
+        // Where another language puts the name, it is set apart there.
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::COOKIE,
+            format!("{}=ja", crate::i18n::COOKIE_NAME).parse().unwrap(),
+        );
+        let ja = render::Chrome::resolve(&reader, &headers, "/");
+        let html = live_fragment(&ja, "", 0, &tools[1..], None);
+        assert!(
+            html.contains("<code>ax-genealogy · get_person</code> を使用中"),
+            "{html}"
+        );
+        assert!(!html.contains("noscript"), "no stop where none is given");
+        assert!(!live_fragment(&chrome, "", 0, &[], None).contains("as-live-tool"));
     }
 
     #[test]

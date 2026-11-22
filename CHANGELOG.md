@@ -30,6 +30,63 @@ without user-selected canonical" (docs/adr/0049).
   goes out in the form links and headers take (punycode), its path
   percent-encoded.
 
+### My personal assistant, reworked (docs/adr/0050)
+
+The operator's request of 22 November 2026: a composer that is pleasant to
+use and easy to tune, a photograph from the phone, dictation, a way to stop
+an answer, the AFG's answers in a block of their own, the account's MCP
+servers for the AFG, and a project's knowledge.
+
+### Added
+
+- **A project's knowledge.** Under the memory, a panel takes documents —
+  texts, PDF documents, pictures — that go with every question of the
+  project, as a Claude project's knowledge does: the texts whole while they
+  stay under 120,000 characters, past it the passages that answer the
+  question best (BM25 over passages of about 1,500 characters); the PDF
+  documents whole within 60 pages and 12 MB; six pictures. 50 files and
+  100 MB a project. Drop documents on the panel or choose them; each can be
+  opened again or removed. They are told to the AFG as reference material,
+  never as orders.
+- **A photograph from the phone**, straight from the composer's camera
+  button (hidden on a computer).
+- **Dictation**: the microphone button writes out what is said at the
+  caret, through the browser's own recognition, where the browser has it.
+  The assistant's pages and a person's page with its AFG conversation, and
+  only they, now allow the microphone.
+- **Stop the answer.** While the AFG writes, a stop button stands in Send's
+  place; after thirty seconds the composer says the answer can be stopped.
+  What was written is kept as a stopped answer, which can be asked again.
+  Claude Code is ended with everything it started.
+- **The account's MCP servers for Claude Code.** With the assistant's and a
+  person's page's questions, Claude Code brings the MCP servers of the
+  account it is signed in with: by default for the administrators'
+  questions only, since they act with that account's credentials and
+  nobody confirms a call; the AFG's room opens them to everyone or to
+  nobody. The tools it used are named under its answer.
+
+### Changed
+
+- **The composer.** One box that shows the focus, without the double yellow
+  halo; quiet icon tools; one compact Send that keeps its icon while it
+  sends. Tuned through the `--composer-*` properties of `.as-composer`.
+  The keyboard hint is a message of its own, hidden on a touch screen.
+- **The AFG's answers are a block of their own**, with its name, the model
+  and the time at the head; a wide table scrolls inside it.
+- **The conversation grows down the page.** The composer no longer stays
+  fixed over the last answer; a button brings the reader back to the latest
+  message; the column of projects stays in view under the masthead.
+
+### Fixed
+
+- Choosing files in the composer again adds to the ones chosen, instead of
+  replacing them; pasting a picture with text keeps the text.
+- Asking again after a failed answer says why when nothing is asked, and
+  falls back to the form when the network fails.
+- The finished answer takes the place of the one being written without
+  coming in a second time.
+- Send no longer shows a second arrow in Arabic and Hebrew.
+
 ## [1.17.0] — 2026-11-12
 
 Mail, as the operator asked on 11 November 2026 looking at

@@ -39,6 +39,8 @@
     {%- for html in afg_chat.thread %}{{ html | safe }}{% endfor -%}
     {%- if afg_chat.live %}{{ afg_chat.live | safe }}{% endif -%}
   </div>
+  <template data-live-template>{{ afg_chat.live_template | safe }}</template>
+  <button class="btn as-jump" type="button" data-jump hidden>{{ ic.icon("down") }}<span class="sr-only">{{ t("assistant-jump") }}</span></button>
   {%- if afg_chat.orphan %}
   <form class="as-orphan" method="post" action="/person/{{ p.id }}/afg/{{ afg_chat.conversation.id }}/retry" data-retry>
     <span class="small muted">{{ t("assistant-unanswered") }}</span>
@@ -46,7 +48,7 @@
   </form>
   {%- endif %}
 
-  {% with action = "/person/" ~ p.id ~ "/afg/" ~ afg_chat.conversation.id, label = t("assistant-reply"), first = false, no_files = true, hint = "", ready = afg_chat.ready, limits = afg_chat.limits %}{% include "_assistant_composer.html" %}{% endwith %}
+  {% with action = "/person/" ~ p.id ~ "/afg/" ~ afg_chat.conversation.id, label = t("assistant-reply"), first = false, no_files = true, hint = "", ready = afg_chat.ready, limits = afg_chat.limits, stop = "/person/" ~ p.id ~ "/afg/" ~ afg_chat.conversation.id ~ "/stop" %}{% include "_assistant_composer.html" %}{% endwith %}
 
 {% else %}
   <header class="pa-head">

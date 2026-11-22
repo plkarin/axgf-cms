@@ -41,7 +41,9 @@ use crate::state::AppState;
 /// Shared handler state.
 pub type Shared = Arc<AppState>;
 
-/// The Content-Security-Policy every response carries.
+/// The Content-Security-Policy every response carries, unless its route
+/// sets its own; one that does sets a stricter one (a file sent to the
+/// personal assistant is served sandboxed, docs/adr/0026 §5).
 ///
 /// Read directive by directive, because each one is a decision:
 ///
@@ -56,8 +58,11 @@ pub type Shared = Arc<AppState>;
 ///   into a `style` attribute, and the worst an injected style can do here is
 ///   make a page ugly. Buying `style-src 'self'` would cost a rewrite of the
 ///   tree canvas and the radar charts for no meaningful gain.
-/// * `img-src 'self' data:` — avatars and the silhouette are data URIs. A
-///   configured basemap adds its tile host and nothing else.
+/// * `img-src 'self' data: blob:` — avatars and the silhouette are data URIs,
+///   and a picture about to be sent to the personal assistant is previewed
+///   from the reader's own file, a `blob:` address that never leaves the
+///   browser (docs/adr/0050). A configured basemap adds its tile host and
+///   nothing else.
 /// * `frame-ancestors 'none'` — this application is never framed, which is
 ///   what stops a clickjacked admin form. `X-Frame-Options: DENY` says the
 ///   same to browsers too old to read CSP.
@@ -74,7 +79,7 @@ fn content_security_policy(state: &AppState) -> String {
         .map(|o| format!(" {o}"))
         .unwrap_or_default();
     format!(
-        "default-src 'self';          script-src 'self';          style-src 'self' 'unsafe-inline';          img-src 'self' data:{tiles};          font-src 'self';          connect-src 'self'{tiles};          form-action 'self';          frame-ancestors 'none';          base-uri 'none';          object-src 'none'"
+        "default-src 'self';          script-src 'self';          style-src 'self' 'unsafe-inline';          img-src 'self' data: blob:{tiles};          font-src 'self';          connect-src 'self'{tiles};          form-action 'self';          frame-ancestors 'none';          base-uri 'none';          object-src 'none'"
     )
 }
 
@@ -427,13 +432,27 @@ fn versioned(query: Option<&str>) -> bool {
     })
 }
 
+/// What a page may use of the reader's device: nothing, unless it says
+/// otherwise ([`PERMISSIONS_DICTATION`]).
+pub(crate) const PERMISSIONS: &str = "geolocation=(), camera=(), microphone=(), payment=(), usb=()";
+
+/// The same, with the microphone for the page itself: the personal
+/// assistant's pages, whose composer takes dictation (docs/adr/0050). A
+/// photograph is taken through the system's own camera, which the camera
+/// directive does not govern, so it stays refused.
+pub(crate) const PERMISSIONS_DICTATION: &str =
+    "geolocation=(), camera=(), microphone=(self), payment=(), usb=()";
+
 /// The security headers, and why each one is here.
 fn security_headers(router: Router, csp: &str) -> Router {
     let fixed = |name: header::HeaderName, value: &'static str| {
         SetResponseHeaderLayer::overriding(name, HeaderValue::from_static(value))
     };
     router
-        .layer(SetResponseHeaderLayer::overriding(
+        // Unless the route said its own, which it does only to say more: a
+        // file sent to the personal assistant is served sandboxed, stricter
+        // on every directive (`assistant::file`).
+        .layer(SetResponseHeaderLayer::if_not_present(
             header::CONTENT_SECURITY_POLICY,
             HeaderValue::from_str(csp)
                 .unwrap_or_else(|_| HeaderValue::from_static("default-src 'self'")),
@@ -455,11 +474,15 @@ fn security_headers(router: Router, csp: &str) -> Router {
             header::REFERRER_POLICY,
             HeaderValue::from_static("same-origin"),
         ))
-        // Nothing here uses a camera, a microphone or a location, and saying
-        // so costs one header.
-        .layer(fixed(
+        // Nothing here uses a camera or a location, and saying so costs one
+        // header. The microphone only the AFG's composer uses, for
+        // dictation: the personal assistant's pages and a person's page
+        // showing its conversation with the AFG say their own, the
+        // microphone let in for the page itself (`PERMISSIONS_DICTATION`,
+        // docs/adr/0050), and no other page sets one.
+        .layer(SetResponseHeaderLayer::if_not_present(
             header::HeaderName::from_static("permissions-policy"),
-            "geolocation=(), camera=(), microphone=(), payment=(), usb=()",
+            HeaderValue::from_static(PERMISSIONS),
         ))
         // Text responses are mostly HTML built from one large stylesheet and
         // repetitive markup, and gzip takes roughly nine tenths off both.
@@ -560,6 +583,7 @@ fn routes(state: Shared) -> Router {
         .route("/person/:id/afg/:cid", post(person_chat::send))
         .route("/person/:id/afg/:cid/state", get(person_chat::state_of))
         .route("/person/:id/afg/:cid/retry", post(person_chat::retry))
+        .route("/person/:id/afg/:cid/stop", post(person_chat::stop))
         .route("/person/:id/afg/:cid/edit", post(person_chat::rename))
         .route("/person/:id/afg/:cid/delete", post(person_chat::delete))
         .route("/document/:id/raw", get(public::document_raw))
@@ -643,6 +667,20 @@ fn routes(state: Shared) -> Router {
                 )),
         )
         .route("/account/assistant/:pid/f/:fid", get(assistant::file))
+        // The project's knowledge (docs/adr/0050): documents that go with
+        // every conversation of the project, as heavy a body as a message.
+        .route(
+            "/account/assistant/:pid/knowledge",
+            weighs!(state, Weight::Assistant, post(assistant::add_knowledge)),
+        )
+        .route(
+            "/account/assistant/:pid/knowledge/:fid",
+            get(assistant::knowledge_file),
+        )
+        .route(
+            "/account/assistant/:pid/knowledge/:fid/delete",
+            post(assistant::remove_knowledge),
+        )
         .route(
             "/account/assistant/:pid/c",
             weighs!(
@@ -667,6 +705,9 @@ fn routes(state: Shared) -> Router {
             "/account/assistant/:pid/c/:cid/retry",
             post(assistant::retry),
         )
+        // The member's stop, for an answer that takes too long
+        // (docs/adr/0050).
+        .route("/account/assistant/:pid/c/:cid/stop", post(assistant::stop))
         // What the AFG proposed to change, applied or set aside
         // (docs/adr/0045).
         .route(

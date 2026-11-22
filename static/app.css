@@ -5714,10 +5714,13 @@ input::placeholder, textarea::placeholder { color: var(--text-tertiary); opacity
 
 /* Focus: the ring every theme draws (2px at 2px), and under it a soft glow
    of the same gold, so the control with the keyboard reads from across a
-   room. A glow, never in place of the ring. */
+   room. A glow, never in place of the ring. A control whose frame already
+   shows the focus sets `--focus-glow: none` on itself, and its ring colour
+   to transparent: the assistant's composer, whose box lights up instead
+   (docs/adr/0050). Never set on :root. */
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible,
 :is([data-theme="canopee"], [data-theme="fusion"], [data-theme="galaxy"], [data-theme="summit"], [data-theme="clarity"], [data-theme="genealogy"]) :is(input, select, textarea):focus {
-  box-shadow: 0 0 0 6px rgb(var(--glow-rgb) / 0.2);
+  box-shadow: var(--focus-glow, 0 0 0 6px rgb(var(--glow-rgb) / 0.2));
 }
 
 /* Fields: a softened well, and the accent on the one with the keyboard. */
@@ -7826,8 +7829,10 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 .as-main { min-width: 0; }
 .as-side {
+  /* It follows the page as it scrolls, under the masthead, which is sticky
+     too (docs/adr/0050). */
   position: sticky;
-  top: 1rem;
+  inset-block-start: var(--stick-top);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -7835,7 +7840,7 @@ a.kpi:hover { border-color: var(--border-strong); }
   border: 1px solid var(--border-hairline);
   border-radius: var(--radius-lg);
   background: var(--surface-raised);
-  max-height: calc(100vh - 2rem);
+  max-height: calc(100vh - var(--stick-top) - 1rem);
   overflow: auto;
 }
 .as-brand {
@@ -8093,6 +8098,9 @@ a.kpi:hover { border-color: var(--border-strong); }
 }
 .as-msg.as-enter { opacity: 0; transform: translateY(10px); }
 .as-msg-user { justify-content: flex-end; }
+/* An answer, or what kept it from coming, is the AFG's block, the width of
+   the column (docs/adr/0050). */
+.as-msg-assistant, .as-msg-error { display: block; }
 .as-bubble {
   max-width: min(42rem, 85%);
   padding: 0.65rem 0.95rem;
@@ -8120,7 +8128,6 @@ a.kpi:hover { border-color: var(--border-strong); }
 .as-md { line-height: 1.65; overflow-wrap: anywhere; }
 .as-md pre { overflow-x: auto; }
 .as-md > :first-child { margin-top: 0; }
-.as-meta { margin-top: 0.35rem; }
 .as-kept { margin-top: 0.35rem; }
 .as-kept > summary { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-secondary); cursor: pointer; }
 .as-kept ul { margin: 0.35rem 0 0; padding-inline-start: 1.25rem; }
@@ -8156,9 +8163,115 @@ a.kpi:hover { border-color: var(--border-strong); }
 .as-ops-json > summary { cursor: pointer; color: var(--text-secondary); }
 .as-ops-json pre { max-height: 16rem; margin: 0.35rem 0 0; overflow: auto; font-family: var(--mono); }
 .as-ops-preparing { display: flex; align-items: center; gap: 0.35rem; margin: 0.35rem 0 0; color: var(--text-secondary); }
+/* The tool the AFG called last, while it writes (docs/adr/0050), and the
+   way to stop it on a page read without scripting. */
+.as-live-tool { display: flex; align-items: center; gap: 0.35rem; margin: 0.35rem 0 0; color: var(--text-secondary); }
+.as-live-stop { margin: 0.5rem 0 0; }
 .as-mark-done { color: var(--conf-certain); }
 .as-done { padding-inline-start: 0.85rem; border-inline-start: 3px solid var(--border-strong); color: var(--text-secondary); }
 .as-orphan { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; margin: -0.5rem 0 1rem; }
+
+/* The AFG's block (docs/adr/0050): its answer framed as the AFG's, its name
+   and what wrote it at the head, a line of the accent along its top where
+   the reading starts. The line is a background layer, not a pseudo-element:
+   it follows the corners without `overflow: hidden`, which would cut a wide
+   table. */
+.as-block {
+  --block-edge: color-mix(in srgb, var(--accent) 22%, var(--border-hairline));
+  --block-line: var(--accent);
+  --block-to: 90deg;
+  max-width: none;
+  padding: 0.8rem 1.15rem 1rem;
+  border: 1px solid var(--block-edge);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--block-to), var(--block-line), transparent 70%) top / 100% 2px no-repeat,
+    var(--surface-raised);
+  box-shadow: 0 16px 34px -26px rgb(var(--shadow-rgb) / 0.8);
+}
+[dir="rtl"] .as-block { --block-to: 270deg; }
+.as-block-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 0 0.7rem;
+  padding-block-end: 0.6rem;
+  border-block-end: 1px solid var(--border-hairline);
+}
+.as-block-head .as-mark {
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border-hairline));
+  background: var(--accent-soft);
+}
+.as-block-head .as-mark .ico { inline-size: 1rem; block-size: 1rem; }
+.as-block-name { color: var(--text-primary); font-size: var(--type-small); font-weight: var(--weight-semi); letter-spacing: 0.08em; }
+.as-block-meta { margin-inline-start: auto; color: var(--text-tertiary); font-size: var(--type-small); }
+.as-block > .as-md > :first-child { margin-block-start: 0; }
+.as-block > .as-md > :last-child { margin-block-end: 0; }
+/* A table wider than the block scrolls inside it, on a phone above all. */
+.as-md table { display: block; max-width: 100%; overflow-x: auto; }
+.as-block.as-error {
+  --block-edge: color-mix(in srgb, var(--danger) 45%, var(--border-hairline));
+  --block-line: var(--danger);
+  padding-inline-start: 1.15rem;
+  border-inline-start: 1px solid var(--block-edge);
+}
+.as-block.as-error .as-mark {
+  border-color: color-mix(in srgb, var(--danger) 40%, var(--border-hairline));
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+.as-stopped {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.8rem 0 0;
+  padding-block-start: 0.6rem;
+  border-block-start: 1px dashed var(--border-hairline);
+  color: var(--text-secondary);
+  font-size: var(--type-small);
+}
+.as-stopped .ico { inline-size: 1rem; block-size: 1rem; fill: currentColor; stroke: none; opacity: 0.7; }
+.as-stopped form { margin-inline-start: auto; }
+.as-tools-used { margin: 0.7rem 0 0; color: var(--text-tertiary); font-size: var(--type-small); }
+/* What the AFG proposes to change sits inside its block, recessed. */
+.as-block .as-ops { background: var(--surface-page); box-shadow: none; }
+
+/* The project's knowledge (docs/adr/0050): its documents, one a line, and
+   where more are dropped or chosen. */
+.as-know-list { display: grid; gap: 0.35rem; margin: 0.6rem 0; padding: 0; list-style: none; }
+.as-know-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.75rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+.as-know-file { display: inline-flex; align-items: center; gap: 0.45rem; min-width: 0; color: var(--text-primary); text-decoration: none; }
+.as-know-file:hover { color: var(--accent); }
+.as-know-file .ico { color: var(--accent); }
+.as-know-file bdi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-know-meta { flex: 1; }
+.as-know-row .inline-form { margin-inline-start: auto; }
+.as-know-sum { margin: 0 0 0.75rem; }
+.as-know-add { margin-bottom: 1rem; }
+.as-know-drop {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: border-color var(--tempo) var(--ease), background-color var(--tempo) var(--ease);
+}
+.as-know-drop > .ico { inline-size: 1.6rem; block-size: 1.6rem; color: var(--accent); }
+.as-know-drop.as-drop { border-color: var(--accent); background: var(--accent-soft); }
 /* The wordmark as the way back to the family's page, when the sections' row
    is not drawn (docs/adr/0046): it reads as the wordmark, not as a link. */
 .brand-link { display: inline-flex; align-items: center; gap: inherit; color: inherit; text-decoration: none; }
@@ -8230,44 +8343,59 @@ a.kpi:hover { border-color: var(--border-strong); }
   animation: as-blink 1s steps(2, start) infinite;
 }
 
-/* The composer: at hand at the foot of a conversation. */
-.as-composer { margin-top: 1rem; }
-.as-shell[data-screen="conversation"] .as-composer {
-  position: sticky;
-  bottom: 0.75rem;
-  z-index: 5;
+/* The composer (docs/adr/0050): after the conversation, which grows down
+   the page; nothing is laid over its last words. One box, which shows the
+   focus for the words inside it; the tools inside it as quiet icons; one
+   compact button that sends, or stops the answer in its place. Tuned here,
+   per theme if need be, through its own properties. */
+.as-composer {
+  --composer-bg: var(--surface-raised);
+  --composer-border: var(--border-strong);
+  --composer-border-focus: color-mix(in srgb, var(--focus-ring) 60%, var(--border-strong));
+  --composer-ring: color-mix(in srgb, var(--focus-ring) 18%, transparent);
+  --composer-ring-width: 3px;
+  --composer-radius: 1.4rem;
+  --composer-shadow: 0 14px 34px -20px rgb(var(--shadow-rgb) / 0.75);
+  margin-top: 1.25rem;
 }
-.as-shell[data-screen="conversation"] .as-composer::before {
-  content: "";
-  position: absolute;
-  inset: -1.5rem -0.5rem -0.75rem;
-  z-index: -1;
-  background: linear-gradient(to bottom, transparent, var(--surface-page) 45%);
+/* Galaxy's focus colour is a cyan beside a violet accent: around the
+   composer, whose Send button is the accent, the ring takes the accent. */
+[data-theme="galaxy"] .as-composer {
+  --composer-border-focus: color-mix(in srgb, var(--accent) 70%, var(--border-strong));
+  --composer-ring: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 .as-composer-label {
   display: block;
-  margin: 0 0 0.35rem 0.3rem;
-  color: var(--text-secondary);
-  font-size: var(--type-label);
+  margin: 0 0 0.35rem;
+  padding-inline-start: 0.95rem;
+  color: var(--text-tertiary);
+  font-size: var(--type-small);
 }
 .as-composer-box {
-  padding: 0.45rem 0.45rem 0.4rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 1.4rem;
-  background: var(--surface-raised);
-  box-shadow: 0 14px 34px -20px rgb(var(--shadow-rgb) / 0.75);
-  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease), background 160ms var(--ease);
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--composer-border);
+  border-radius: var(--composer-radius);
+  background: var(--composer-bg);
+  box-shadow: var(--composer-shadow);
+  transition: border-color var(--tempo) var(--ease), box-shadow var(--tempo) var(--ease), background var(--tempo) var(--ease);
 }
-.as-composer-box:focus-within { border-color: var(--accent); }
+.as-composer-box:focus-within {
+  border-color: var(--composer-border-focus);
+  box-shadow: 0 0 0 var(--composer-ring-width) var(--composer-ring), var(--composer-shadow);
+}
 .as-composer-box.as-drop { border-style: dashed; border-color: var(--accent); background: var(--accent-soft); }
-/* The words go straight into the box: no well of their own inside it. The
-   focus ring stays, as on every field. */
+/* The words go straight into the box: no well of their own inside it, and
+   no ring of their own either, the box showing the focus. The outline is
+   still declared, only its colour made transparent, so that a forced-colours
+   mode, which sets its own colours, still draws it. */
 .as-composer .as-composer-box textarea {
+  --focus-ring: transparent;
+  --focus-glow: none;
   display: block;
   width: 100%;
   min-height: 2.7rem;
   max-height: 40vh;
-  padding: 0.5rem 0.6rem;
+  padding: 0.6rem 0.75rem 0.35rem;
   border: 0;
   border-radius: 1rem;
   background: transparent;
@@ -8276,28 +8404,87 @@ a.kpi:hover { border-color: var(--border-strong); }
   line-height: 1.5;
   resize: none;
 }
-.as-composer-bar { display: flex; align-items: center; gap: 0.5rem; padding: 0.15rem 0.15rem 0; }
-.as-attach {
+.as-composer-bar { display: flex; align-items: center; gap: 0.4rem; padding: 0.1rem 0.05rem 0; }
+.as-tools { display: flex; align-items: center; gap: 0.1rem; }
+.as-tool {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.7rem;
-  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 36px;
+  block-size: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--btn-radius);
+  background: transparent;
   color: var(--text-secondary);
-  font-size: var(--type-small);
+  cursor: pointer;
+  /* Clip, not hidden: hidden would make the tool a box that scrolls, and
+     the keyboard's focus on the chooser inside would scroll it. */
+  overflow: clip;
+  transition: background-color var(--tempo) var(--ease), color var(--tempo) var(--ease);
+}
+.as-tool:hover { background: var(--surface-hover); color: var(--text-primary); }
+.as-tool:disabled { color: var(--text-tertiary); cursor: not-allowed; }
+.as-tool[hidden] { display: none; }
+.as-tool .ico { inline-size: 1.3rem; block-size: 1.3rem; }
+/* A chooser cannot be seen: the ring goes on its tool, from the keyboard
+   only, as on any button. */
+.as-tool:has(.as-file-input:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+/* The chooser fills its tool. `label > input` gives every field a margin
+   above it, which would push it out of the tool. */
+.as-tool .as-file-input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
   cursor: pointer;
 }
-.as-attach:hover { background: var(--surface-hover); color: var(--text-primary); }
-.as-attach:focus-within { box-shadow: 0 0 0 2px var(--focus-ring); }
-.as-file-input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
-.as-composer-note { flex: 1; min-width: 0; }
-.as-send { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 999px; }
+/* A computer has no camera to hand: there `capture` opens the files, which
+   the clip already does. */
+@media (hover: hover) and (pointer: fine) { .as-camera { display: none; } }
+.as-mic[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+  animation: as-listen 1.6s ease-out infinite;
+}
+.as-composer-note { flex: 1; min-width: 0; padding-inline: 0.35rem; text-align: end; }
+.as-composer .as-send {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 36px;
+  block-size: 36px;
+  min-block-size: 36px;
+  padding: 0;
+  border-radius: var(--btn-radius);
+}
+.as-composer .as-send .ico { inline-size: 1.25rem; block-size: 1.25rem; stroke-width: 2; }
+.as-composer .as-send[hidden] { display: none; }
 /* Its own arrow points up, the way a message goes: not the themes' arrow
-   after a primary button as well. */
-.as-composer .as-send.btn.primary::after { content: none; }
+   after a primary button as well, nor their arrow for a page read from
+   right to left, whose rule weighs more. */
+.as-composer .as-send.btn.primary::after,
+[dir="rtl"] .as-composer .as-send.btn.primary::after { content: none; }
 .as-busy .as-send { opacity: 0.55; }
-.as-composer-hint { margin: 0.35rem 0.3rem 0; }
+/* Stop takes Send's place while the AFG writes: a strong neutral, not the
+   accent, which stays Send's. */
+.as-tool.as-stop { background: var(--text-primary); color: var(--surface-page); }
+.as-tool.as-stop:hover { background: color-mix(in srgb, var(--text-primary) 86%, var(--surface-page)); color: var(--surface-page); }
+.as-stop .ico { inline-size: 1.05rem; block-size: 1.05rem; fill: currentColor; }
+.as-stop.as-stop-urge { animation: as-urge 1.8s ease-out infinite; }
+.as-composer-hint { margin: 0.5rem 0 0; padding-inline: 0.95rem; color: var(--text-tertiary); font-size: var(--type-small); }
+@media (pointer: coarse) {
+  .as-tool, .as-composer .as-send { inline-size: 44px; block-size: 44px; min-block-size: 44px; }
+  /* A touch screen has no Enter to press. */
+  .as-hint-keys { display: none; }
+}
 .as-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.35rem; padding: 0 0.25rem; }
 .as-chip {
   display: inline-flex;
@@ -8327,7 +8514,7 @@ a.kpi:hover { border-color: var(--border-strong); }
 .as-chip-x:hover { color: var(--danger); }
 .as-jump {
   position: fixed;
-  bottom: 8rem;
+  inset-block-end: 1.25rem;
   inset-inline-end: 1.25rem;
   z-index: 30;
   width: 2.6rem;
@@ -8370,6 +8557,14 @@ a.kpi:hover { border-color: var(--border-strong); }
 @keyframes as-blink { to { visibility: hidden; } }
 @keyframes as-pop { from { opacity: 0; transform: scale(0.9); } }
 @keyframes as-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes as-listen {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 45%, transparent); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+@keyframes as-urge {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--text-primary) 50%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
 @keyframes as-turn { to { transform: rotate(360deg); } }
 
 @media (max-width: 860px) {
@@ -8392,7 +8587,7 @@ a.kpi:hover { border-color: var(--border-strong); }
   .as-file-img img { max-width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .as-typing i, .as-caret, .as-empty-art img, .as-shut-art, .as-mark-live .ico, .as-chip { animation: none; }
+  .as-typing i, .as-caret, .as-empty-art img, .as-shut-art, .as-mark-live .ico, .as-chip, .as-mic[aria-pressed="true"], .as-stop.as-stop-urge { animation: none; }
   .as-msg, .as-card a, .as-pick img { transition: none; }
 }
 
@@ -8403,18 +8598,6 @@ a.kpi:hover { border-color: var(--border-strong); }
 .pa-head h2 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; }
 .pa-head .lede { margin: 0 0 0.4rem; }
 .pa-thread { min-height: 0; }
-.pa-thread ~ .as-composer {
-  position: sticky;
-  bottom: 0.75rem;
-  z-index: 5;
-}
-.pa-thread ~ .as-composer::before {
-  content: "";
-  position: absolute;
-  inset: -1.5rem -0.5rem -0.75rem;
-  z-index: -1;
-  background: linear-gradient(to bottom, transparent, var(--surface-page) 45%);
-}
 .pa-convs { margin-top: 1.5rem; }
 .pa-convs h3 { margin: 0 0 0.4rem; }
 .pa-delete-all { margin-top: 0.75rem; }

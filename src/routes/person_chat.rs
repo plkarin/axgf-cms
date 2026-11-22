@@ -5,7 +5,8 @@
 //!
 //! The tab is drawn by the record page (`/person/:id?tab=afg`), with
 //! [`tab`] for what it holds. The routes here begin a conversation, carry
-//! it on, show the answer being written, ask again, rename and delete.
+//! it on, show the answer being written and stop it (docs/adr/0050), ask
+//! again, rename and delete.
 //!
 //! Everything here is the signed-in account's own: the conversations live in
 //! its assistant space (`crate::assistant`), in the person's project, and a
@@ -202,11 +203,22 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
         person: me.as_ref().map(|(id, n)| (id.as_str(), n.as_str())),
         language: super::assistant::language_name(c.chrome.lang),
     };
-    let prompt = crate::person_chat::chat_prompt(&c.space, &asker, project, &d, &messages);
+    // The account's MCP servers, as for the assistant: with the viewer's
+    // role (docs/adr/0050), which also says whether a change they ask for
+    // may be made at all.
+    let mcp = state.site().afg.mcp_for(c.user.role.is_admin());
+    let commands = if c.user.role.may_write() {
+        assistant::Commands::Write
+    } else {
+        assistant::Commands::Read
+    };
+    let prompt =
+        crate::person_chat::chat_prompt(&c.space, &asker, project, &d, &messages, commands, mcp);
     tracing::info!(
         account = %c.user.username,
         person = %c.person,
         kind = state.site().afg.kind.slug(),
+        mcp,
         turns = prompt.turns.len(),
         notes = d.notes.len(),
         relatives = d.relatives.len(),
@@ -241,8 +253,9 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
                     })
                     .collect();
                 crate::person_chat::with_pdfs(prompt, read);
+                None
             }),
-            instead,
+            instead: Some(instead),
         }
     });
     super::assistant::run_answer(
@@ -255,8 +268,23 @@ fn start_answer(state: &Shared, c: &Chatter, project: &Project, cid: &str) -> bo
         prepare,
         live,
         false,
+        mcp,
     );
     true
+}
+
+/// The answer being written in a conversation about the person, as its
+/// thread draws it, with where to stop it.
+fn live_html(chrome: &render::Chrome, person: &str, cid: &str, live: &assistant::Live) -> String {
+    let partial = live.partial.lock().map(|s| s.clone()).unwrap_or_default();
+    let tools = live.tools.lock().map(|t| t.clone()).unwrap_or_default();
+    super::assistant::live_fragment(
+        chrome,
+        &partial,
+        live.since.elapsed().as_secs(),
+        &tools,
+        Some(&format!("/person/{person}/afg/{cid}/stop")),
+    )
 }
 
 /// The words of a message: the composer's `text`, files left aside (the
@@ -357,10 +385,7 @@ pub fn tab(
             live = state
                 .assistant_answering()
                 .get(account, &p.id, &c.id)
-                .map(|l| {
-                    let partial = l.partial.lock().map(|s| s.clone()).unwrap_or_default();
-                    super::assistant::live_fragment(chrome, &partial, l.since.elapsed().as_secs())
-                });
+                .map(|l| live_html(chrome, person, &c.id, &l));
             orphan = live.is_none() && messages.last().is_some_and(|m| m.role == Role::User);
             conversation = json!({"id": c.id, "title": c.title});
         }
@@ -382,6 +407,8 @@ pub fn tab(
         "conversation": conversation,
         "thread": thread,
         "live": live,
+        "live_template": (!conversation.is_null())
+            .then(|| super::assistant::live_fragment(chrome, "", 0, &[], None)),
         "orphan": orphan,
         "reads": reads,
         "notice": notice,
@@ -648,14 +675,8 @@ pub async fn state_of(
     let live = state
         .assistant_answering()
         .get(&c.user.id, &project.id, &cid);
-    let (answering, live_html) = match &live {
-        Some(l) => {
-            let partial = l.partial.lock().map(|s| s.clone()).unwrap_or_default();
-            (
-                true,
-                super::assistant::live_fragment(&c.chrome, &partial, l.since.elapsed().as_secs()),
-            )
-        }
+    let (answering, live) = match &live {
+        Some(l) => (true, live_html(&c.chrome, &c.person, &cid, l)),
         None => (false, String::new()),
     };
     json_reply(
@@ -664,7 +685,7 @@ pub async fn state_of(
             "count": messages.len(),
             "messages": new,
             "answering": answering,
-            "live": live_html,
+            "live": live,
         }),
     )
 }
@@ -688,11 +709,37 @@ pub async fn retry(
         .space
         .messages(&project.id, &cid)
         .last()
-        .is_some_and(|m| m.role != Role::Assistant);
+        .is_some_and(|m| m.role != Role::Assistant || m.stopped);
     let answering =
         waiting && super::assistant::ready(&state) && start_answer(&state, &c, &project, &cid);
     if wants_json(&headers) {
         return json_reply(StatusCode::OK, json!({"answering": answering}));
+    }
+    Redirect::to(&tab_url(&c.person, Some(&cid))).into_response()
+}
+
+/// `POST /person/:id/afg/:conversation/stop` — stop the answer being written
+/// (docs/adr/0050), as on the assistant's own pages: what it wrote is kept,
+/// marked as stopped; nothing being written changes nothing.
+/// `{"stopping": bool}` to a script.
+pub async fn stop(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path((person, cid)): Path<(String, String)>,
+) -> Response {
+    let c = match door(&state, &headers, &person) {
+        Ok(c) => c,
+        Err(r) => return r,
+    };
+    let (project, _) = match conversation_of(&c, &cid) {
+        Ok(found) => found,
+        Err(r) => return r,
+    };
+    let stopping = state
+        .assistant_answering()
+        .stop(&c.user.id, &project.id, &cid);
+    if wants_json(&headers) {
+        return json_reply(StatusCode::OK, json!({"stopping": stopping}));
     }
     Redirect::to(&tab_url(&c.person, Some(&cid))).into_response()
 }

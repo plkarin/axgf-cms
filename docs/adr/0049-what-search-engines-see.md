@@ -1,6 +1,6 @@
 # ADR 0049 — What search engines see
 
-**Status:** proposed (1.17.1) · **Builds on:** docs/adr/0046 (the site closed
+**Status:** accepted, v1.18.0 (2026-11-22) · **Builds on:** docs/adr/0046 (the site closed
 by default), docs/adr/0048 §7 (links that survive the sign-in) ·
 **Applies to:** `src/routes/mod.rs` (`search_engines`, `is_reading_page`),
 `src/routes/public.rs` (`river`, `document_view`), `src/site.rs`

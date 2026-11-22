@@ -1,6 +1,6 @@
 # ADR 0050 — The assistant composes, stops and knows
 
-**Status:** proposed (1.18.0) · **Amends:** docs/adr/0026 (my personal
+**Status:** accepted, v1.18.0 (2026-11-22) · **Amends:** docs/adr/0026 (my personal
 assistant: the microphone, §2 storage, §5 headers, §7 layout),
 docs/adr/0023 §4 (Claude Code's tools), docs/adr/0045 §2 (what needs tools)
 · **Builds on:** docs/adr/0031 (the AFG on a person's page), docs/adr/0040

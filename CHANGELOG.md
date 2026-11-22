@@ -4,40 +4,17 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-What search engines see, after Google Search Console told the operator on
-16 November 2026 that pages of ax-genealogy.com were left out as "Duplicate
-without user-selected canonical" (docs/adr/0049).
-
-### Fixed
-
-- **The sign-in no longer multiplies in search engines.** Since 1.17.0 every
-  closed page sends a visitor to `/admin/login?next=<page>`, so a crawler
-  revisiting a site that had been open found the same sign-in under as many
-  addresses as the site had pages. The sign-in, the registration, the pages
-  of mail, the search, the tools, the administration and every error page
-  now answer `X-Robots-Tag: noindex`; once the public address is set under
-  Connectivity, the pages a reader reads — the river, the family's page, the
-  tree, a record, Impact, a note — name their canonical address on it,
-  without the query that led there, in a `Link: …; rel="canonical"` header,
-  and a file opened through its viewer names its own address. Nothing is
-  built on the request's `Host`, and nothing is blocked in a `robots.txt`,
-  which would hide the `noindex` from the crawler.
-- **One page, one address.** With nobody in the archive yet, `/` shows the
-  family's page and names `/about` as its canonical address.
-- **A public address in letters beyond ASCII** (`rodzina-łukasiewicz.pl`)
-  goes out in the form links and headers take (punycode), its path
-  percent-encoded.
-
-### My personal assistant, reworked (docs/adr/0050)
+## [1.18.0] — 2026-11-22
 
 The operator's request of 22 November 2026: a composer that is pleasant to
 use and easy to tune, a photograph from the phone, dictation, a way to stop
 an answer, the AFG's answers in a block of their own, the account's MCP
-servers for the AFG, and a project's knowledge.
+servers for the AFG, and a project's knowledge (docs/adr/0050). And what
+search engines see, after Google Search Console told the operator on
+16 November 2026 that pages of ax-genealogy.com were left out as "Duplicate
+without user-selected canonical" (docs/adr/0049).
 
-### Added
+### Added — the personal assistant
 
 - **A project's knowledge.** Under the memory, a panel takes documents —
   texts, PDF documents, pictures — that go with every question of the
@@ -65,7 +42,7 @@ servers for the AFG, and a project's knowledge.
   nobody confirms a call; the AFG's room opens them to everyone or to
   nobody. The tools it used are named under its answer.
 
-### Changed
+### Changed — the personal assistant
 
 - **The composer.** One box that shows the focus, without the double yellow
   halo; quiet icon tools; one compact Send that keeps its icon while it
@@ -77,7 +54,7 @@ servers for the AFG, and a project's knowledge.
   fixed over the last answer; a button brings the reader back to the latest
   message; the column of projects stays in view under the masthead.
 
-### Fixed
+### Fixed — the personal assistant
 
 - Choosing files in the composer again adds to the ones chosen, instead of
   replacing them; pasting a picture with text keeps the text.
@@ -86,6 +63,26 @@ servers for the AFG, and a project's knowledge.
 - The finished answer takes the place of the one being written without
   coming in a second time.
 - Send no longer shows a second arrow in Arabic and Hebrew.
+
+### Fixed — what search engines see
+
+- **The sign-in no longer multiplies in search engines.** Since 1.17.0 every
+  closed page sends a visitor to `/admin/login?next=<page>`, so a crawler
+  revisiting a site that had been open found the same sign-in under as many
+  addresses as the site had pages. The sign-in, the registration, the pages
+  of mail, the search, the tools, the administration and every error page
+  now answer `X-Robots-Tag: noindex`; once the public address is set under
+  Connectivity, the pages a reader reads — the river, the family's page, the
+  tree, a record, Impact, a note — name their canonical address on it,
+  without the query that led there, in a `Link: …; rel="canonical"` header,
+  and a file opened through its viewer names its own address. Nothing is
+  built on the request's `Host`, and nothing is blocked in a `robots.txt`,
+  which would hide the `noindex` from the crawler.
+- **One page, one address.** With nobody in the archive yet, `/` shows the
+  family's page and names `/about` as its canonical address.
+- **A public address in letters beyond ASCII** (`rodzina-łukasiewicz.pl`)
+  goes out in the form links and headers take (punycode), its path
+  percent-encoded.
 
 ## [1.17.0] — 2026-11-12
 
@@ -5108,7 +5105,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.17.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.18.0...HEAD
+[1.18.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.18.0
 [1.17.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.17.0
 [1.16.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.16.0
 [1.15.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.15.0

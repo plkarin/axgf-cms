@@ -671,7 +671,7 @@ masthead offers each reader what is open to them, and the server refuses
 the rest. Why it works this way:
 [Who may open each part of the site](docs/adr/0046-who-may-open-each-part-of-the-site.md).
 
-*(New in 1.17.1.)* **What search engines keep.** Once the public address is
+*(New in 1.18.0.)* **What search engines keep.** Once the public address is
 set under **Connectivity**, the pages a reader reads — the river, the
 family's page, the tree, a record, Impact — name their address on it as the
 canonical one, whatever link led there; the sign-in, the registration, the
@@ -762,7 +762,17 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.17.0**: **mail from the site**. Give it a
+The latest release is **v1.18.0**: **the personal assistant, reworked**.
+Its composer shows the focus without a halo, takes a photograph from the
+phone and words dictated to the browser, and sends with one compact button
+that becomes *Stop* while the AFG writes; the AFG answers in a block of its
+own, in a conversation that grows down the page; a project has
+**knowledge**, documents that go with every question; and Claude Code brings
+the MCP servers of its account, for the administrators' questions by
+default. Search engines are told which pages to index, and the sign-in is
+kept out of them.
+
+v1.17.0 brought **mail from the site**. Give it a
 relay under **Connectivity** — a Gmail account made for the site, a
 provider's, or one on the machine — and *Forgot your password?* sends a link
 to choose a new one; an account you make with an address is welcomed in its
@@ -894,7 +904,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.17.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.18.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1253,7 +1263,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.17.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.17.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.18.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.18.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

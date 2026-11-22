@@ -64,6 +64,14 @@ without user-selected canonical" (docs/adr/0049).
   coming in a second time.
 - Send no longer shows a second arrow in Arabic and Hebrew.
 
+### Security
+
+- **lettre 0.11.24 and url 2.5.9**, for the advisories published since
+  1.17.0: SMTP command injection by a bare line feed, a STARTTLS reply
+  injection, a mail sent to another address for a quoted local part, and
+  denials of service in the SMTP client (RUSTSEC-2026-0560 to 0565); a stack
+  overflow on nested `blob:` URLs (RUSTSEC-2026-0592).
+
 ### Fixed — what search engines see
 
 - **The sign-in no longer multiplies in search engines.** Since 1.17.0 every

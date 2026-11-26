@@ -4,9 +4,9 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.19.0] — 2026-11-26
 
-The operator's requests of 26 November 2026.
+The operator's requests of 26 November 2026 (docs/adr/0051).
 
 ### Added
 
@@ -26,6 +26,10 @@ The operator's requests of 26 November 2026.
   person's card no longer opens the large card with their portrait: it
   only lights the card; a click (or Enter) opens it, a second click, a
   click elsewhere or Escape folds it.
+
+### Security
+
+- **cookie 0.18.3**, for RUSTSEC-2026-0594, published since 1.18.0.
 
 ## [1.18.0] — 2026-11-22
 
@@ -5136,7 +5140,8 @@ These are deliberate omissions, not oversights.
   links at 0.4 is not a fact about a family, and reporting it as one would be
   worse than not answering.
 
-[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.18.0...HEAD
+[Unreleased]: https://github.com/plkarin/axgf-cms/compare/v1.19.0...HEAD
+[1.19.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.19.0
 [1.18.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.18.0
 [1.17.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.17.0
 [1.16.0]: https://github.com/plkarin/axgf-cms/releases/tag/v1.16.0

@@ -1,6 +1,6 @@
 # ADR 0051 — Documents joined to a note
 
-**Status:** proposed (1.19.0) · **Builds on:** docs/adr/0014 (notes and
+**Status:** accepted, v1.19.0 (2026-11-26) · **Builds on:** docs/adr/0014 (notes and
 contributions), docs/adr/0041 (what a file may weigh and be) · **Applies
 to:** `src/notes.rs`, `src/routes/notes.rs`, `src/routes/public.rs`
 (`document_read`), `src/routes/mod.rs`, `templates/admin_note.html`,

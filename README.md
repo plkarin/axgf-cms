@@ -762,7 +762,14 @@ language follow them to every device.
 
 ## What is released
 
-The latest release is **v1.18.0**: **the personal assistant, reworked**.
+The latest release is **v1.19.0**: **documents joined to a note**. The
+notes' editor has an *Add a document* button: films, recordings, PDF
+documents, scans and texts are kept with the note and read with it — a PDF
+document opens in the browser, a film plays, a text is shown. And the
+tree's large card opens on a click only, no longer when the pointer passes
+over a person.
+
+v1.18.0 reworked **the personal assistant**.
 Its composer shows the focus without a halo, takes a photograph from the
 phone and words dictated to the browser, and sends with one compact button
 that becomes *Stop* while the AFG writes; the AFG answers in a block of its
@@ -904,7 +911,7 @@ sha256sum -c bootstrap.sh.sha256 && sudo bash bootstrap.sh --with-sample
 ```
 
 The installer is the one the release ships, checked against its checksum. It
-installs exactly that release. Today that is **v1.18.0**, and it reads AXGF 1.0
+installs exactly that release. Today that is **v1.19.0**, and it reads AXGF 1.0
 and 1.1 files.
 
 To install a particular release, fetch the same two files from
@@ -1263,7 +1270,7 @@ today, and it is honest to say so up front:
 
 | Your computer | Can you run it? |
 |---|---|
-| **Linux** | **Yes.** Download the current release, [`v1.18.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.18.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
+| **Linux** | **Yes.** Download the current release, [`v1.19.0`](https://github.com/plkarin/axgf-cms/releases/tag/v1.19.0), for x86-64 or ARM64; it opens AXGF 1.0 and 1.1 files alike. |
 | **Mac** (Apple Silicon or Intel) | **Not yet, without help.** There is no Mac download. The program *builds* for both kinds of Mac, but nobody has run it on one, so it is untested. Someone with Rust installed can build it with `cargo install --git https://github.com/plkarin/axgf-cms --locked`. |
 | **Windows** | **No.** It does not currently build for Windows: parts of it that check disk space and file permissions use Unix-only calls. Windows Subsystem for Linux (WSL) may run the Linux version, but that has not been tested either. |
 

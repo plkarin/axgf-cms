@@ -4179,6 +4179,27 @@ notes-person-add = Add
 notes-person-remove = Remove this person
 notes-field-text = Text
 notes-text-hint = Markdown, or the buttons above. Paste or drop pictures, up to { $mb } MB each.
+notes-tool-document = Add a document
+notes-files = Documents
+notes-files-add = Add documents: films, recordings, PDF documents, scans, texts
+notes-files-hint = They are kept with the note and read with it: a PDF document opens in the browser, a film or a recording plays, a text is shown. { $mb } MB a file at most, { $total } MB a save, { $n } documents a note.
+notes-file-remove = Remove when saving
+notes-file-read = Read
+notes-file-download = Download
+notes-file-pages = { $n ->
+        [one] { $n } page
+       *[other] { $n } pages
+    }
+notes-file-cut = only its beginning is shown
+notes-files-count = { $n ->
+        [one] { $n } document
+       *[other] { $n } documents
+    }
+notes-error-file = { $name }:
+notes-error-file-big = A document is larger than { $mb } MB: it was not joined. Choose the documents again.
+notes-error-files-many = A note holds { $n } documents at most.
+notes-error-files-heavy = The documents together weigh more than { $mb } MB, more than one save carries: join some now and the rest after.
+notes-file-unjoin = Take back
 notes-tool-bold = Bold
 notes-tool-italic = Italic
 notes-tool-heading = Heading

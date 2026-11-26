@@ -4036,6 +4036,27 @@ notes-person-add = Ongeza
 notes-person-remove = Ondoa mtu huyu
 notes-field-text = Maandishi
 notes-text-hint = Markdown, au vitufe vilivyo juu. Bandika au dondosha picha, hadi MB { $mb } kila moja.
+notes-tool-document = Ongeza hati
+notes-files = Hati
+notes-files-add = Ongeza hati: video, rekodi za sauti, hati za PDF, nakala zilizochanganuliwa, maandishi
+notes-files-hint = Zinahifadhiwa pamoja na dokezo na kusomwa pamoja nalo: hati ya PDF inafunguka kwenye kivinjari, video au rekodi ya sauti inachezwa, maandishi yanaonyeshwa. Hadi MB { $mb } kwa kila faili, MB { $total } kwa kila uhifadhi, hati { $n } kwa kila dokezo.
+notes-file-remove = Ondoa wakati wa kuhifadhi
+notes-file-read = Soma
+notes-file-download = Pakua
+notes-file-pages = { $n ->
+        [one] ukurasa { $n }
+       *[other] kurasa { $n }
+    }
+notes-file-cut = mwanzo wake tu ndio unaonyeshwa
+notes-files-count = { $n ->
+        [one] hati { $n }
+       *[other] hati { $n }
+    }
+notes-error-file = { $name }:
+notes-error-file-big = Hati moja ni kubwa kuliko MB { $mb }: haikuambatishwa. Chagua hati tena.
+notes-error-files-many = Dokezo linaweza kubeba hadi hati { $n } tu.
+notes-error-files-heavy = Hati zote pamoja zinazidi MB { $mb }, zaidi ya kile uhifadhi mmoja unachoweza kubeba: ambatisha baadhi sasa na zilizobaki baadaye.
+notes-file-unjoin = Ondoa
 notes-tool-bold = Herufi nzito
 notes-tool-italic = Herufi za mlalo
 notes-tool-heading = Kichwa

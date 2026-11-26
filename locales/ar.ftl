@@ -4588,6 +4588,35 @@ notes-person-add = إضافة
 notes-person-remove = إزالة هذا الشخص
 notes-field-text = النص
 notes-text-hint = Markdown أو الأزرار أعلاه. الصق الصور أو أفلتها، حتى { $mb } م.ب لكل منها.
+notes-tool-document = إضافة وثيقة
+notes-files = الوثائق
+notes-files-add = إضافة وثائق: أفلام، تسجيلات، وثائق PDF، صور ممسوحة، نصوص
+notes-files-hint = تُحفظ مع الملاحظة وتُقرأ معها: وثيقة PDF تُفتح في المتصفح، والفيلم أو التسجيل يُشغَّل، والنص يُعرض. { $mb } م.ب لكل ملف على الأكثر، و{ $total } م.ب لكل حفظ، و{ $n } وثيقة لكل ملاحظة.
+notes-file-remove = إزالة عند الحفظ
+notes-file-read = قراءة
+notes-file-download = تنزيل
+notes-file-pages = { $n ->
+        [zero] { $n } صفحة
+        [one] { $n } صفحة
+        [two] { $n } صفحتان
+        [few] { $n } صفحات
+        [many] { $n } صفحة
+       *[other] { $n } صفحة
+    }
+notes-file-cut = لا يُعرض إلا أوّلها
+notes-files-count = { $n ->
+        [zero] { $n } وثيقة
+        [one] { $n } وثيقة
+        [two] { $n } وثيقتان
+        [few] { $n } وثائق
+        [many] { $n } وثيقة
+       *[other] { $n } وثيقة
+    }
+notes-error-file = { $name }:
+notes-error-file-big = إحدى الوثائق أكبر من { $mb } م.ب: لم تُرفق. اختر الوثائق من جديد.
+notes-error-files-many = تتسع الملاحظة لـ { $n } وثيقة على الأكثر.
+notes-error-files-heavy = تزيد الوثائق مجتمعةً على { $mb } م.ب، وهذا أكثر مما يحمله الحفظ الواحد: أرفق بعضها الآن والباقي بعد ذلك.
+notes-file-unjoin = سحب
 notes-tool-bold = عريض
 notes-tool-italic = مائل
 notes-tool-heading = عنوان فرعي

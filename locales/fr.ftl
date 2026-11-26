@@ -4181,6 +4181,27 @@ notes-person-add = Ajouter
 notes-person-remove = Retirer cette personne
 notes-field-text = Texte
 notes-text-hint = Markdown, ou les boutons ci-dessus. Collez ou déposez des images, { $mb } Mo au plus chacune.
+notes-tool-document = Ajouter un document
+notes-files = Documents
+notes-files-add = Ajouter des documents : vidéos, enregistrements, documents PDF, scans, textes
+notes-files-hint = Ils sont gardés avec la note et se lisent avec elle : un document PDF s’ouvre dans le navigateur, une vidéo ou un enregistrement se lit, un texte s’affiche. { $mb } Mo par fichier au plus, { $total } Mo par enregistrement, { $n } documents par note.
+notes-file-remove = Retirer à l’enregistrement
+notes-file-read = Lire
+notes-file-download = Télécharger
+notes-file-pages = { $n ->
+        [one] { $n } page
+       *[other] { $n } pages
+    }
+notes-file-cut = seul le début est affiché
+notes-files-count = { $n ->
+        [one] { $n } document
+       *[other] { $n } documents
+    }
+notes-error-file = { $name } :
+notes-error-file-big = Un document dépasse { $mb } Mo : il n’a pas été joint. Choisissez de nouveau les documents.
+notes-error-files-many = Une note contient { $n } documents au plus.
+notes-error-files-heavy = Ensemble, les documents dépassent { $mb } Mo, plus qu’un enregistrement n’en porte : joignez-en une partie maintenant et le reste ensuite.
+notes-file-unjoin = Retirer
 notes-tool-bold = Gras
 notes-tool-italic = Italique
 notes-tool-heading = Intertitre

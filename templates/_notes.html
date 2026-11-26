@@ -1,3 +1,4 @@
+{% import "_icons.html" as ic %}
 {#- Notes and contributions (docs/adr/0014): a note as a card, and the
     window one opens in. `t` is passed in, as an imported macro does not see
     the including template's context. -#}
@@ -11,6 +12,7 @@
       </span>
       <span class="note-title"><bdi>{{ n.title }}</bdi></span>
       {%- if n.summary %}<span class="note-summary">{{ n.summary }}</span>{% endif %}
+      {%- if n.files %}<span class="note-files-count">{{ ic.icon("clip") }}<span>{{ t("notes-files-count", n=n.files) }}</span></span>{% endif %}
       <span class="note-foot">
         {%- if n.persons %}{% for p in n.persons %}<bdi>{{ p.name }}</bdi>{% if not loop.last %}, {% endif %}{% endfor %}
         {%- else %}{{ t("notes-family-wide") }}{% endif %}

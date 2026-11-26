@@ -8,7 +8,9 @@
 //! record, every picture pasted since the page opened, and the removal of the
 //! pictures the text no longer shows. A picture pasted waits in memory
 //! (`crate::notes::PendingImages`) until then, so a note abandoned leaves
-//! nothing in the family's archive.
+//! nothing in the family's archive. The documents joined to it (a film, a
+//! PDF document, a scan, docs/adr/0051) come with the form itself, which is
+//! multipart, and are saved in the same commit.
 
 use std::collections::HashMap;
 
@@ -205,6 +207,31 @@ fn form_page(
         (options, chosen, categories)
     });
     let preview = notes::to_html(&d.markdown, &notes::resolve_for_page);
+    // The documents already joined to the note, each with the way to take
+    // it away when the note is saved.
+    let joined: Vec<Value> = id
+        .map(|id| {
+            state.read(|flat| {
+                let docs = flat.get("documents");
+                docs.and_then(|d| d.get(id))
+                    .map(notes::files)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .filter_map(|f| {
+                        let doc = docs?.get(&f)?;
+                        let mime = doc.get("mime_type").and_then(Value::as_str).unwrap_or("");
+                        let size = doc.pointer("/file/size_bytes").and_then(Value::as_u64).unwrap_or(0);
+                        Some(json!({
+                            "id": f,
+                            "name": doc.get("filename").and_then(Value::as_str).unwrap_or("document"),
+                            "kind": notes::file_kind(mime),
+                            "size": crate::documents::human_size_in(size, chrome.lang),
+                        }))
+                    })
+                    .collect()
+            })
+        })
+        .unwrap_or_default();
     let mut resp = render::page_with(
         chrome,
         "admin_note.html",
@@ -222,6 +249,12 @@ fn form_page(
             preview,
             error,
             max_image_mb => state.limits().note_image_mb,
+            max_file_mb => state.limits().document_mb,
+            // What one save may carry: the request a record's file may
+            // weigh (`limits::document_request`), its form aside.
+            max_save_mb => 4 * state.limits().document_mb,
+            max_files => notes::MAX_FILES,
+            joined,
             // Not `back`: the page's chrome has one, the way a preference
             // form returns, and it would win.
             return_to => way.back,
@@ -372,31 +405,190 @@ pub(super) fn pictures(
     })
 }
 
+/// The documents a note's form joins (docs/adr/0051): each as it was
+/// chosen, and whether one was more than a file may weigh.
+#[derive(Default)]
+struct Joined {
+    files: Vec<(String, Vec<u8>)>,
+    too_large: bool,
+    /// The documents together weighed more than one save may carry.
+    too_heavy: bool,
+}
+
+/// What the note's form sent: its fields, and the documents it joins. The
+/// form is multipart since documents may be joined to a note; one sent as
+/// a plain form, by a page of an older version still open, is read too.
+async fn read_form(
+    state: &Shared,
+    headers: &HeaderMap,
+    req: axum::extract::Request,
+) -> (Vec<(String, String)>, Joined) {
+    use axum::extract::FromRequest;
+    let multipart = headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("multipart/form-data"));
+    let mut fields = Vec::new();
+    let mut joined = Joined::default();
+    if !multipart {
+        if let Ok(Form(f)) = Form::<Vec<(String, String)>>::from_request(req, state).await {
+            fields = f;
+        }
+        return (fields, joined);
+    }
+    let Ok(mut form) = Multipart::from_request(req, state).await else {
+        return (fields, joined);
+    };
+    let most = state.limits().document_bytes();
+    loop {
+        let field = match form.next_field().await {
+            Ok(Some(f)) => f,
+            Ok(None) => break,
+            Err(_) => {
+                // The request weighed more than the site allows.
+                joined.too_heavy = true;
+                break;
+            }
+        };
+        let name = field.name().unwrap_or_default().to_string();
+        if name == "attach" {
+            let file = field.file_name().unwrap_or("document").to_string();
+            match super::uploads::read_capped(field, most).await {
+                Ok(Some(b)) if !b.is_empty() => joined.files.push((file, b)),
+                Ok(Some(_)) => {}
+                Ok(None) => joined.too_large = true,
+                Err(_) => {
+                    joined.too_heavy = true;
+                    break;
+                }
+            }
+        } else {
+            let value = field.text().await.unwrap_or_default();
+            fields.push((name, value));
+        }
+    }
+    (fields, joined)
+}
+
 /// `POST /admin/notes` — a new note.
-pub async fn create(
-    State(state): State<Shared>,
-    headers: HeaderMap,
-    Form(fields): Form<Vec<(String, String)>>,
-) -> Response {
+pub async fn create(State(state): State<Shared>, req: axum::extract::Request) -> Response {
+    let headers = req.headers().clone();
     let (viewer, chrome) = match require(&state, &headers, Need::Write) {
         Ok(v) => v,
         Err(r) => return r,
     };
-    save(&state, &viewer, &chrome, None, &fields).await
+    let (fields, joined) = read_form(&state, &headers, req).await;
+    save(&state, &viewer, &chrome, None, &fields, joined).await
 }
 
 /// `POST /admin/notes/:id` — the note, changed.
 pub async fn update(
     State(state): State<Shared>,
-    headers: HeaderMap,
     Path(id): Path<String>,
-    Form(fields): Form<Vec<(String, String)>>,
+    req: axum::extract::Request,
 ) -> Response {
+    let headers = req.headers().clone();
     let (viewer, chrome) = match require(&state, &headers, Need::Write) {
         Ok(v) => v,
         Err(r) => return r,
     };
-    save(&state, &viewer, &chrome, Some(id), &fields).await
+    let (fields, joined) = read_form(&state, &headers, req).await;
+    save(&state, &viewer, &chrome, Some(id), &fields, joined).await
+}
+
+/// The documents joined to a note once saved: the ones it had and keeps,
+/// then the new ones, each with the operation that adds it, and the
+/// operations that take away the ones let go. Or why the new ones are
+/// refused, as a message.
+struct Files {
+    ids: Vec<String>,
+    add: Vec<Op>,
+    drop: Vec<Op>,
+}
+
+fn joined_files(
+    state: &Shared,
+    chrome: &render::Chrome,
+    note_id: &str,
+    stored: Option<&Value>,
+    fields: &[(String, String)],
+    joined: Joined,
+) -> Result<Files, String> {
+    let limits = state.limits();
+    if joined.too_heavy {
+        return Err(chrome.t_args(
+            "notes-error-files-heavy",
+            &[("mb", (4 * limits.document_mb as i64).into())],
+        ));
+    }
+    if joined.too_large {
+        return Err(chrome.t_args(
+            "notes-error-file-big",
+            &[("mb", (limits.document_mb as i64).into())],
+        ));
+    }
+    let had = stored.map(notes::files).unwrap_or_default();
+    let let_go: Vec<&str> = fields
+        .iter()
+        .filter(|(k, _)| k == "drop_file")
+        .map(|(_, v)| v.trim())
+        .collect();
+    let mut ids: Vec<String> = had
+        .iter()
+        .filter(|f| !let_go.contains(&f.as_str()))
+        .cloned()
+        .collect();
+    if ids.len() + joined.files.len() > notes::MAX_FILES {
+        return Err(chrome.t_args(
+            "notes-error-files-many",
+            &[("n", (notes::MAX_FILES as i64).into())],
+        ));
+    }
+    let mut add = Vec::new();
+    for (name, bytes) in joined.files {
+        // The type comes from the bytes: the name and what the browser said
+        // are the sender's to choose.
+        let Some(kind) = crate::documents::sniff(&bytes) else {
+            return Err(format!(
+                "{} {}",
+                chrome.t_args("notes-error-file", &[("name", name.into())]),
+                chrome.t("error-upload-unsupported")
+            ));
+        };
+        if !limits.allows(kind.mime) {
+            return Err(format!(
+                "{} {}",
+                chrome.t_args("notes-error-file", &[("name", name.into())]),
+                chrome.t_args(
+                    "error-upload-kind-refused",
+                    &[(
+                        "kind",
+                        crate::limits::kind_name(kind.mime).to_string().into()
+                    )]
+                )
+            ));
+        }
+        let file_id = uuid::Uuid::new_v4().to_string();
+        let filename = super::admin::clean_filename(&name, kind.ext);
+        add.push(Op::AddDocument {
+            entity: notes::file_entity(note_id, &file_id, &filename, &kind, &bytes),
+            payload: bytes,
+        });
+        ids.push(file_id);
+    }
+    let drop = state.read(|flat| {
+        had.iter()
+            .filter(|f| !ids.contains(f))
+            .filter_map(|f| {
+                let d = flat.get("documents")?.get(f)?;
+                Some(Op::DropDocument {
+                    expected_version: crate::state::version_of(d),
+                    id: f.clone(),
+                })
+            })
+            .collect()
+    });
+    Ok(Files { ids, add, drop })
 }
 
 async fn save(
@@ -405,6 +597,7 @@ async fn save(
     chrome: &render::Chrome,
     id: Option<String>,
     fields: &[(String, String)],
+    joined: Joined,
 ) -> Response {
     let version: u64 = fields
         .iter()
@@ -486,6 +679,21 @@ async fn save(
             )
         }
     };
+    let files = match joined_files(state, chrome, &note_id, stored.as_ref(), fields, joined) {
+        Ok(f) => f,
+        Err(message) => {
+            return form_page(
+                state,
+                viewer,
+                chrome,
+                id.as_deref(),
+                version,
+                &d,
+                &way,
+                Some((message, StatusCode::BAD_REQUEST)),
+            )
+        }
+    };
     // What the writer wrote, pending pictures and all: the form shows it again
     // if the save fails, and the pictures are still waiting for it.
     let written = std::mem::replace(&mut d.markdown, pics.markdown);
@@ -498,6 +706,7 @@ async fn save(
         next,
         &text,
         &pics.ids,
+        &files.ids,
         stored.as_ref(),
     );
     if stored.is_none() {
@@ -528,8 +737,10 @@ async fn save(
     ) {
         return r;
     }
-    // The pictures first, so that the note that names them follows them.
+    // The pictures and the documents first, so that the note that names
+    // them follows them.
     let mut ops = pics.ops;
+    ops.extend(files.add);
     ops.push(match &stored {
         None => Op::AddDocument {
             entity,
@@ -545,6 +756,7 @@ async fn save(
     if stored.is_some() {
         // What is dropped goes last, once the note no longer names it.
         ops.extend(pictures_dropped(state, &note_id, &d.markdown));
+        ops.extend(files.drop);
     }
     let (message, status) = match state.commit(ops, viewer.name(), |kind, e| {
         super::admin::label_for(kind, e)
@@ -640,7 +852,7 @@ pub async fn delete(
         expected_version: form.base_version,
     }];
     state.read(|flat| {
-        for i in notes::images(&doc) {
+        for i in notes::images(&doc).into_iter().chain(notes::files(&doc)) {
             if let Some(d) = flat.get("documents").and_then(|c| c.get(&i)) {
                 ops.push(Op::DropDocument {
                     expected_version: crate::state::version_of(d),
@@ -862,11 +1074,13 @@ fn full(
             .then(|| notes::resolve_for_page(dest))
             .flatten()
     });
+    let files = note_files(state, &doc, lang);
     Some((
         notes::NoteFull {
             view,
             html,
             markdown,
+            files,
             updated_at: doc
                 .get("updated_at")
                 .and_then(Value::as_str)
@@ -874,6 +1088,90 @@ fn full(
         },
         doc,
     ))
+}
+
+/// The documents joined to a note, as it shows them: a text's beginning
+/// read from the archive, a PDF document's pages counted.
+fn note_files(state: &Shared, doc: &Value, lang: &str) -> Vec<notes::NoteFile> {
+    let found: Vec<(String, Value)> = state.read(|flat| {
+        notes::files(doc)
+            .into_iter()
+            .filter_map(|f| {
+                let d = flat.get("documents")?.get(&f)?.clone();
+                Some((f, d))
+            })
+            .collect()
+    });
+    found
+        .into_iter()
+        .map(|(id, d)| {
+            let mime = d
+                .get("mime_type")
+                .and_then(Value::as_str)
+                .unwrap_or("application/octet-stream")
+                .to_string();
+            let kind = notes::file_kind(&mime);
+            let path = notes::text_path(&d);
+            // A text's beginning only, read as far as it needs: a character
+            // is four bytes at most.
+            let (text, cut) = match (kind, path.as_deref()) {
+                ("text", Some(p)) => match state.payloads().path_of(p) {
+                    Some(file) => {
+                        use std::io::Read;
+                        let mut head = Vec::new();
+                        let read = std::fs::File::open(file).and_then(|f| {
+                            f.take((notes::TEXT_SHOWN * 4 + 4) as u64)
+                                .read_to_end(&mut head)
+                        });
+                        match read {
+                            Ok(_) => {
+                                let all = String::from_utf8_lossy(&head);
+                                let shown: String = all.chars().take(notes::TEXT_SHOWN).collect();
+                                let size = d.pointer("/file/size_bytes").and_then(Value::as_u64);
+                                let cut = shown.len() < all.len()
+                                    || size.is_some_and(|s| s > head.len() as u64);
+                                (Some(shown), cut)
+                            }
+                            Err(_) => (None, false),
+                        }
+                    }
+                    None => (None, false),
+                },
+                _ => (None, false),
+            };
+            // A PDF document's pages, counted once for its bytes
+            // (docs/adr/0040's cache), not read again with every opening.
+            let sha = d
+                .pointer("/file/sha256")
+                .and_then(Value::as_str)
+                .unwrap_or_default()
+                .to_string();
+            let pages = (kind == "pdf" && !sha.is_empty())
+                .then(|| {
+                    state.pdf_pages(&sha, || path.as_deref().and_then(|p| state.attachment(p)))
+                })
+                .flatten();
+            let size = d
+                .pointer("/file/size_bytes")
+                .and_then(Value::as_u64)
+                .unwrap_or(0);
+            notes::NoteFile {
+                size_text: crate::documents::human_size_in(size, lang),
+                name: d
+                    .get("filename")
+                    .and_then(Value::as_str)
+                    .unwrap_or("document")
+                    .to_string(),
+                kind,
+                size,
+                pages,
+                text,
+                cut,
+                mime,
+                id,
+            }
+        })
+        .collect()
 }
 
 /// `GET /notes/:id` — the note: a page, or the window's content with

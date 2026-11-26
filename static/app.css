@@ -1692,7 +1692,7 @@ abbr.presumed { text-decoration: none; }
     width: auto !important;
   }
   .tree-row .tcard .tc-more,
-  .tree-row .tcard:is(:hover, :focus-within, .is-open) .tc-more {
+  .tree-row .tcard.is-open .tc-more {
     position: fixed;
     inset: auto 12px 12px 12px !important;
     inline-size: auto;
@@ -1951,9 +1951,10 @@ abbr.presumed { text-decoration: none; }
 .tcard.is-dup { border-style: dashed; }
 .tc-dup { flex: none; font-size: var(--type-small); color: var(--text-tertiary); }
 
-/* Open: the same card grown over its neighbours — on the pointer after a
-   short wait, so that moving across the chart opens nothing; at once on
-   focus, or pinned by a click. The portrait in its laurels (the kit's, a
+/* Open: the same card grown over its neighbours, only when it is clicked
+   (or pressed from the keyboard), never on the pointer passing over it: the
+   operator's request of 26 November 2026. A second click, a click elsewhere
+   or Escape folds it (tree.js). The portrait in its laurels (the kit's, a
    mask in the accent), the full name, the dates, and two ways on. */
 .tc-more {
   position: absolute;
@@ -1977,22 +1978,21 @@ abbr.presumed { text-decoration: none; }
   transition: opacity 140ms var(--ease), transform 160ms var(--ease), visibility 0s linear 160ms;
 }
 [dir="rtl"] .tc-more { transform: translateX(50%) translateY(6px) scale(0.97); }
-.tcard:is(:hover, :focus-within, .is-open) { z-index: 30; }
-.tcard:is(:hover, :focus-within, .is-open) .tc-more {
+.tcard.is-open { z-index: 30; }
+.tcard.is-open .tc-more {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateX(-50%);
-  transition: opacity 160ms var(--ease) 0.22s, transform 180ms var(--ease) 0.22s, visibility 0s linear 0.22s;
+  transition: opacity 160ms var(--ease), transform 180ms var(--ease), visibility 0s linear 0s;
 }
-[dir="rtl"] .tcard:is(:hover, :focus-within, .is-open) .tc-more { transform: translateX(50%); }
-.tcard:is(:focus-within, .is-open) .tc-more { transition-delay: 0s; }
+[dir="rtl"] .tcard.is-open .tc-more { transform: translateX(50%); }
 /* Near the chart's edges the open card grows the other way (tree.js). */
 .tcard.tc-up .tc-more { inset-block-start: auto; inset-block-end: -12px; }
 .tcard.tc-start .tc-more,
-.tcard.tc-start:is(:hover, :focus-within, .is-open) .tc-more { inset-inline-start: -10px; transform: none; }
+.tcard.tc-start.is-open .tc-more { inset-inline-start: -10px; transform: none; }
 .tcard.tc-end .tc-more,
-.tcard.tc-end:is(:hover, :focus-within, .is-open) .tc-more { inset-inline-start: auto; inset-inline-end: -10px; transform: none; }
+.tcard.tc-end.is-open .tc-more { inset-inline-start: auto; inset-inline-end: -10px; transform: none; }
 .tc-portrait {
   position: relative;
   inline-size: 88px;
@@ -3891,6 +3891,34 @@ a.notes-letter:not([aria-current]):hover { border-color: var(--accent); color: v
 .note-source { inline-size: 100%; min-block-size: 22rem; font-family: var(--mono); font-size: var(--type-minor); line-height: 1.55; }
 .note-preview { min-block-size: 22rem; padding: 1rem; border: 1px dashed var(--border-strong); border-radius: var(--radius); }
 .note-delete { margin-block-start: 1.5rem; }
+/* The documents joined to a note (docs/adr/0051): listed in the form, each
+   with the way to let it go, and shown in the note, each as what it is. */
+.note-files-list { display: grid; gap: 0.35rem; margin: 0 0 0.8rem; padding: 0; list-style: none; }
+.note-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.8rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+.note-file-row.is-new { border-style: dashed; }
+.note-file-name { display: inline-flex; align-items: center; gap: 0.45rem; min-width: 0; overflow-wrap: anywhere; }
+.note-file-name .ico { flex: none; color: var(--accent); }
+.note-file-drop { margin-inline-start: auto; }
+.note-toolbar [data-md="document"] .ico { inline-size: 1.1em; block-size: 1.1em; }
+.note-files { display: grid; gap: 0.9rem; margin-block-start: 1.5rem; padding-block-start: 1rem; border-block-start: 1px solid var(--border-hairline); }
+.note-files h3 { margin: 0; }
+.note-file { display: grid; gap: 0.5rem; margin: 0; padding: 0.75rem; border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); background: var(--surface-sunken); }
+.note-file-media { display: block; inline-size: 100%; max-block-size: 70vh; border-radius: var(--radius); }
+.note-file-image .note-file-media img { display: block; max-inline-size: 100%; max-block-size: 70vh; margin-inline: auto; border-radius: var(--radius); }
+.note-file-audio .note-file-media { max-block-size: none; }
+.note-file-pre { max-block-size: 24rem; margin: 0; padding: 0.75rem; overflow: auto; border-radius: var(--radius); background: var(--surface-page); font-family: var(--mono); font-size: var(--type-minor); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-file-cap { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; }
+.note-file-actions { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; margin-inline-start: auto; }
+.note-files-count { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--text-secondary); font-size: var(--type-minor); }
 
 /* What a file may weigh and be (docs/adr/0041): the kinds, by family. */
 .uploads-kinds > summary { margin-block-end: 0.6rem; }

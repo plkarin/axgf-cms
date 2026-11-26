@@ -837,3 +837,241 @@ async fn the_dashboard_and_the_record_lead_a_writer_to_the_notes() {
         .collect();
     assert_eq!(chosen, [LUC], "the person is already chosen");
 }
+
+/// A one-page PDF document, enough for its pages to be counted.
+fn pdf() -> Vec<u8> {
+    b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n\
+      2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n\
+      3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] >>\nendobj\n\
+      trailer\n<< /Root 1 0 R >>\n%%EOF\n"
+        .to_vec()
+}
+
+/// The note's form as a browser sends it: multipart, its fields and the
+/// documents it joins (`attach`).
+async fn send_note(
+    app: &axum::Router,
+    cookie: &str,
+    uri: &str,
+    fields: &[(&str, &str)],
+    files: &[(&str, Vec<u8>)],
+) -> axum::response::Response {
+    let b = "----axgfnoteform";
+    let mut body = Vec::new();
+    for (k, v) in fields {
+        body.extend(
+            format!("--{b}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n{v}\r\n").bytes(),
+        );
+    }
+    for (name, bytes) in files {
+        body.extend(
+            format!(
+                "--{b}\r\nContent-Disposition: form-data; name=\"attach\"; filename=\"{name}\"\r\n\
+                 Content-Type: application/octet-stream\r\n\r\n"
+            )
+            .bytes(),
+        );
+        body.extend_from_slice(bytes);
+        body.extend(b"\r\n");
+    }
+    body.extend(format!("--{b}--\r\n").bytes());
+    app.clone()
+        .oneshot(
+            Request::builder()
+                .uri(uri)
+                .method("POST")
+                .header(
+                    header::CONTENT_TYPE,
+                    format!("multipart/form-data; boundary={b}"),
+                )
+                .header(header::COOKIE, cookie)
+                .body(Body::from(body))
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+/// Documents joined to a note (docs/adr/0051): a PDF document read in the
+/// browser, a film played, a text shown, kept with the note in the archive,
+/// read by those who read the note and nobody else, let go one by one, and
+/// taken away with it.
+#[tokio::test]
+async fn documents_are_joined_to_a_note_read_with_it_and_go_with_it() {
+    let src = bundle("notes-files-src");
+    let (app, _p) = app_with_bundle("notes-files", &src);
+    let admin = admin_cookie(&app).await;
+    let vera = account(&app, "vera", "viewer").await;
+
+    // The form says how, and its button sits in the editor's toolbar.
+    let page = body_string(get_with_cookie(&app, "/admin/notes/new", &admin).await).await;
+    assert!(
+        page.contains(r#"enctype="multipart/form-data" data-note-form"#),
+        "{page}"
+    );
+    assert!(page.contains(r#"data-md="document""#));
+    assert!(page.contains(r#"name="attach" multiple data-note-attach"#));
+
+    let film = {
+        let mut f = b"\0\0\0\x18ftypmp42\0\0\0\0mp42isom".to_vec();
+        f.extend(std::iter::repeat_n(0u8, 64));
+        f
+    };
+    let resp = send_note(
+        &app,
+        &admin,
+        "/admin/notes",
+        &[
+            ("title", "Le mariage de 1848"),
+            ("markdown", "L’acte, le film et les notes."),
+        ],
+        &[
+            ("acte.pdf", pdf()),
+            ("film.mp4", film),
+            (
+                "notes.txt",
+                "Recensement de 1851, rue Mercière.".as_bytes().to_vec(),
+            ),
+        ],
+    )
+    .await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::SEE_OTHER,
+        "{}",
+        body_string(resp).await
+    );
+    let id = documents(&app, &admin)
+        .await
+        .as_object()
+        .unwrap()
+        .iter()
+        .find(|(_, d)| d["caption"] == "Le mariage de 1848")
+        .map(|(k, _)| k.clone())
+        .unwrap();
+    let docs = documents(&app, &admin).await;
+    let files: Vec<String> = docs[&id]["extensions"]["axgf-cms:note/v1"]["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap().to_string())
+        .collect();
+    assert_eq!(files.len(), 3);
+    let kinds: Vec<&str> = files
+        .iter()
+        .map(|f| docs[f]["mime_type"].as_str().unwrap())
+        .collect();
+    assert_eq!(kinds, ["application/pdf", "video/mp4", "text/plain"]);
+    for f in &files {
+        assert_eq!(docs[f]["tags"], json!(["note-file"]));
+        assert_eq!(
+            docs[f]["extensions"]["axgf-cms:note-file/v1"]["note"],
+            id.as_str()
+        );
+    }
+
+    // A member reads them with the note; a visitor is not told they exist.
+    let note = body_string(get_with_cookie(&app, &format!("/notes/{id}"), &vera).await).await;
+    assert!(
+        note.contains(&format!(r#"href="/document/{}/read""#, files[0])),
+        "{note}"
+    );
+    assert!(note.contains("1 page"), "{note}");
+    assert!(note.contains(&format!(
+        r#"<video class="note-file-media" controls preload="metadata" src="/document/{}/raw">"#,
+        files[1]
+    )));
+    assert!(note.contains("Recensement de 1851, rue Mercière."));
+    let read = get_with_cookie(&app, &format!("/document/{}/read", files[0]), &vera).await;
+    assert_eq!(read.status(), StatusCode::OK);
+    assert!(read.headers()[header::CONTENT_DISPOSITION]
+        .to_str()
+        .unwrap()
+        .starts_with("inline"));
+    let csp = read.headers()[header::CONTENT_SECURITY_POLICY]
+        .to_str()
+        .unwrap();
+    assert!(
+        csp.starts_with("default-src 'none'; object-src 'self'"),
+        "{csp}"
+    );
+    for f in &files {
+        assert_eq!(
+            get(&app, &format!("/document/{f}/raw")).await.status(),
+            StatusCode::NOT_FOUND
+        );
+    }
+    // The notes' list says how many it holds.
+    let about = body_string(get_with_cookie(&app, "/about", &vera).await).await;
+    assert!(about.contains("3 documents"), "{about}");
+
+    // A file that is a program is refused, and nothing is saved.
+    let resp = send_note(
+        &app,
+        &admin,
+        "/admin/notes",
+        &[("title", "Piège"), ("markdown", "x")],
+        &[(
+            "page.html",
+            b"<html><script>alert(1)</script></html>".to_vec(),
+        )],
+    )
+    .await;
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    assert!(body_string(resp).await.contains("page.html"));
+
+    // Changed: the text let go, a picture joined; the others kept.
+    let version = docs[&id]["version_num"].as_u64().unwrap_or(1).to_string();
+    let edit =
+        body_string(get_with_cookie(&app, &format!("/admin/notes/{id}/edit"), &admin).await).await;
+    assert!(
+        edit.contains(&format!(r#"name="drop_file" value="{}""#, files[2])),
+        "{edit}"
+    );
+    let resp = send_note(
+        &app,
+        &admin,
+        &format!("/admin/notes/{id}"),
+        &[
+            ("title", "Le mariage de 1848"),
+            ("markdown", "L’acte et le film."),
+            ("base_version", &version),
+            ("drop_file", &files[2]),
+        ],
+        &[("portrait.png", png(120))],
+    )
+    .await;
+    assert_eq!(
+        resp.status(),
+        StatusCode::SEE_OTHER,
+        "{}",
+        body_string(resp).await
+    );
+    let docs = documents(&app, &admin).await;
+    let now: Vec<String> = docs[&id]["extensions"]["axgf-cms:note/v1"]["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| v.as_str().unwrap().to_string())
+        .collect();
+    assert_eq!(now.len(), 3);
+    assert_eq!(now[..2], files[..2]);
+    assert!(
+        docs.get(&files[2]).is_none(),
+        "the text is gone from the archive"
+    );
+    assert_eq!(docs[&now[2]]["mime_type"], "image/png");
+
+    // Deleted: the note takes its documents with it.
+    let version = docs[&id]["version_num"].as_u64().unwrap().to_string();
+    let resp = post_form_as(
+        &app,
+        &admin,
+        &format!("/admin/notes/{id}/delete"),
+        &form(&[("base_version", &version)]),
+    )
+    .await;
+    assert!(resp.status().is_redirection());
+    let docs = documents(&app, &admin).await;
+    assert!(now.iter().all(|f| docs.get(f).is_none()) && docs.get(&id).is_none());
+}

@@ -451,7 +451,9 @@ fn security_headers(router: Router, csp: &str) -> Router {
     router
         // Unless the route said its own, which it does only to say more: a
         // file sent to the personal assistant is served sandboxed, stricter
-        // on every directive (`assistant::file`).
+        // on every directive (`assistant::file`), and a PDF document read in
+        // the browser is let into its viewer and nothing else
+        // (`public::document_read`).
         .layer(SetResponseHeaderLayer::if_not_present(
             header::CONTENT_SECURITY_POLICY,
             HeaderValue::from_str(csp)
@@ -588,6 +590,7 @@ fn routes(state: Shared) -> Router {
         .route("/person/:id/afg/:cid/delete", post(person_chat::delete))
         .route("/document/:id/raw", get(public::document_raw))
         .route("/document/:id/view", get(public::document_view))
+        .route("/document/:id/read", get(public::document_read))
         .route("/document/:id/thumb", get(public::document_thumb))
         .route("/convert", get(convert::form))
         .route(
@@ -599,7 +602,12 @@ fn routes(state: Shared) -> Router {
         // members, written from the administration.
         .route("/notes/:id", get(notes::show))
         .route("/notes/:id/pdf", get(notes::pdf))
-        .route("/admin/notes", get(notes::list).post(notes::create))
+        // A note's form carries the documents joined to it (docs/adr/0051):
+        // as heavy as a record's file and the form around it.
+        .route(
+            "/admin/notes",
+            get(notes::list).merge(weighs!(state, Weight::Document, post(notes::create))),
+        )
         .route("/admin/notes/new", get(notes::new_form))
         .route(
             "/admin/notes/images",
@@ -610,9 +618,7 @@ fn routes(state: Shared) -> Router {
         .route("/admin/notes/:id/edit", get(notes::edit_form))
         .route(
             "/admin/notes/:id",
-            post(notes::update).layer(DefaultBodyLimit::max(
-                crate::notes::MAX_TEXT * 4 + 64 * 1024,
-            )),
+            weighs!(state, Weight::Document, post(notes::update)),
         )
         .route("/admin/notes/:id/delete", post(notes::delete))
         .route("/health", get(public::health))

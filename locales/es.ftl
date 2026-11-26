@@ -4182,6 +4182,27 @@ notes-person-add = Añadir
 notes-person-remove = Quitar a esta persona
 notes-field-text = Texto
 notes-text-hint = Markdown, o los botones de arriba. Pegue o suelte imágenes, de hasta { $mb } MB cada una.
+notes-tool-document = Añadir un documento
+notes-files = Documentos
+notes-files-add = Añadir documentos: vídeos, grabaciones, documentos PDF, escaneos, textos
+notes-files-hint = Se guardan con la nota y se leen con ella: un documento PDF se abre en el navegador, un vídeo o una grabación se reproduce, un texto se muestra. { $mb } MB por archivo como máximo, { $total } MB por guardado, { $n } documentos por nota.
+notes-file-remove = Quitar al guardar
+notes-file-read = Leer
+notes-file-download = Descargar
+notes-file-pages = { $n ->
+        [one] { $n } página
+       *[other] { $n } páginas
+    }
+notes-file-cut = solo se muestra el comienzo
+notes-files-count = { $n ->
+        [one] { $n } documento
+       *[other] { $n } documentos
+    }
+notes-error-file = { $name }:
+notes-error-file-big = Un documento supera { $mb } MB: no se ha adjuntado. Elija de nuevo los documentos.
+notes-error-files-many = Una nota contiene { $n } documentos como máximo.
+notes-error-files-heavy = Juntos, los documentos superan { $mb } MB, más de lo que admite un guardado: adjunte algunos ahora y el resto después.
+notes-file-unjoin = Quitar
 notes-tool-bold = Negrita
 notes-tool-italic = Cursiva
 notes-tool-heading = Título

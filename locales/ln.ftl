@@ -4044,6 +4044,27 @@ notes-person-add = Bakisa
 notes-person-remove = Longola moto oyo
 notes-field-text = Makomi
 notes-text-hint = Markdown, to babuto oyo ezali likolo. Kanga to tika bilili, kino { $mb } MB mokomoko.
+notes-tool-document = Bakisa mokanda
+notes-files = Mikanda
+notes-files-add = Bakisa mikanda: bafilme, mangomba oyo ekangami, mikanda PDF, mikanda oyo escannami, makomi
+notes-files-hint = Ebombamaka elongo na likomi mpe etangamaka elongo na yango: mokanda PDF efungwamaka na navigateur, filme to mongongo oyo ekangami ebetamaka, makomi emonanaka. { $mb } MB kaka mpo na fisyé moko, { $total } MB kaka mpo na kobomba mbala moko, mikanda { $n } kaka mpo na likomi moko.
+notes-file-remove = Longola ntango ya kobomba
+notes-file-read = Tanga
+notes-file-download = Kitisa
+notes-file-pages = { $n ->
+        [one] lokasa { $n }
+       *[other] nkasa { $n }
+    }
+notes-file-cut = ebandeli na yango kaka nde emonisami
+notes-files-count = { $n ->
+        [one] mokanda { $n }
+       *[other] mikanda { $n }
+    }
+notes-error-file = { $name }:
+notes-error-file-big = Mokanda moko eleki { $mb } MB: ekangisamaki te. Pona mikanda lisusu.
+notes-error-files-many = Likomi esimbaka mikanda { $n } kaka.
+notes-error-files-heavy = Mikanda nyonso esangani eleki { $mb } MB, koleka oyo kobomba mbala moko ekoki komema: kangisa mosusu sikoyo mpe oyo etikali na nsima.
+notes-file-unjoin = Longola
 notes-tool-bold = Makomi minene
 notes-tool-italic = Makomi ya kogumbama
 notes-tool-heading = Motó

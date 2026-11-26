@@ -1301,6 +1301,35 @@ fn set_header(headers: &mut header::HeaderMap, name: header::HeaderName, value: 
     }
 }
 
+/// `GET /document/:id/read` — a PDF document read in the browser's own
+/// viewer, in a tab of its own, rather than downloaded (docs/adr/0051):
+/// the bytes of `/raw`, under the same rule, inline. Its own policy lets
+/// the viewer in (`object-src 'self'`) and nothing else; not sandboxed,
+/// since a browser refuses to show a PDF document in a sandbox. Anything
+/// that is not a PDF document goes to `/raw`.
+pub async fn document_read(
+    State(state): State<Shared>,
+    headers: HeaderMap,
+    Path(id): Path<String>,
+) -> Response {
+    let viewer = auth::viewer(&state, &headers);
+    let pdf = stored_document(&state, &viewer, &id).is_some_and(|d| d.mime == "application/pdf");
+    let mut res = document_raw(State(state), headers, Path(id)).await;
+    if pdf && res.status().is_success() {
+        let h = res.headers_mut();
+        if let Some(d) = h.get(header::CONTENT_DISPOSITION).cloned() {
+            let inline = d.to_str().unwrap_or("").replacen("attachment", "inline", 1);
+            set_header(h, header::CONTENT_DISPOSITION, &inline);
+        }
+        set_header(
+            h,
+            header::CONTENT_SECURITY_POLICY,
+            "default-src 'none'; object-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+        );
+    }
+    res
+}
+
 /// `GET /document/:id/view` — a full-size image, EXIF-orientation corrected,
 /// for display in the page. Non-images and images already upright stream their
 /// stored bytes unchanged; a rotated image is re-encoded so it shows upright.

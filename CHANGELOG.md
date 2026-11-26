@@ -4,6 +4,29 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+The operator's requests of 26 November 2026.
+
+### Added
+
+- **Documents joined to a note.** The notes' editor has an *Add a document*
+  button beside *Add a picture*: films, recordings, PDF documents, scans and
+  texts are joined to the note, several at a time, and kept with it in the
+  family's archive (docs/adr/0051). In the note, a picture is drawn, a film
+  or a recording plays, a text is shown, and a PDF document opens in the
+  browser's own viewer with *Read*; each can be downloaded. They are read
+  by whoever reads the note and nobody else, can be let go one by one when
+  the note is changed, and go with it when it is deleted. A note's card
+  says how many it holds.
+
+### Changed
+
+- **The tree's cards open on a click only.** Passing the pointer over a
+  person's card no longer opens the large card with their portrait: it
+  only lights the card; a click (or Enter) opens it, a second click, a
+  click elsewhere or Escape folds it.
+
 ## [1.18.0] — 2026-11-22
 
 The operator's request of 22 November 2026: a composer that is pleasant to

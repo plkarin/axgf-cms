@@ -1,3 +1,4 @@
+{% import "_icons.html" as ic %}
 {#- One note, whole: the window's content (`?frame=1`) and the body of its
     own page (note.html). -#}
 <article class="note-frame">
@@ -14,6 +15,35 @@
     </p>
   </header>
   <div class="note-text">{{ note.html|safe }}</div>
+  {%- if note.files %}
+  {#- The documents joined to it (docs/adr/0051): a picture drawn, a film or
+      a recording played, a text shown, a PDF document read in the browser's
+      viewer, anything else downloaded. -#}
+  <section class="note-files" aria-labelledby="note-files-{{ note.id }}">
+    <h3 id="note-files-{{ note.id }}">{{ t("notes-files") }}</h3>
+    {%- for f in note.files %}
+    <figure class="note-file note-file-{{ f.kind }}">
+      {%- if f.kind == "image" %}
+      <a class="note-file-media" href="/document/{{ f.id }}/view"><img src="/document/{{ f.id }}/view" alt="{{ f.name }}" loading="lazy"></a>
+      {%- elif f.kind == "video" %}
+      <video class="note-file-media" controls preload="metadata" src="/document/{{ f.id }}/raw"></video>
+      {%- elif f.kind == "audio" %}
+      <audio class="note-file-media" controls preload="metadata" src="/document/{{ f.id }}/raw"></audio>
+      {%- elif f.kind == "text" %}
+      <pre class="note-file-pre" dir="auto">{{ f.text }}</pre>
+      {%- endif %}
+      <figcaption class="note-file-cap">
+        <span class="note-file-name">{% if f.kind == "image" %}{{ ic.icon("preserved") }}{% elif f.kind == "pdf" or f.kind == "text" %}{{ ic.icon("document") }}{% else %}{{ ic.icon("clip") }}{% endif %}<bdi>{{ f.name }}</bdi></span>
+        <span class="small muted">{{ f.size_text }}{% if f.pages %} · {{ t("notes-file-pages", n=f.pages) }}{% endif %}{% if f.cut %} · {{ t("notes-file-cut") }}{% endif %}</span>
+        <span class="note-file-actions">
+          {%- if f.kind == "pdf" %}<a class="btn small" href="/document/{{ f.id }}/read" target="_blank" rel="noopener">{{ t("notes-file-read") }}</a>{% endif %}
+          <a class="btn small ghost" href="/document/{{ f.id }}/raw" download>{{ t("notes-file-download") }}</a>
+        </span>
+      </figcaption>
+    </figure>
+    {%- endfor %}
+  </section>
+  {%- endif %}
   <footer class="note-actions">
     <a class="btn primary" href="/notes/{{ note.id }}/pdf" download>{{ t("notes-pdf") }}</a>
     {%- if may_change %}<a class="btn" href="/admin/notes/{{ note.id }}/edit{% if return_to %}?back={{ return_to | urlencode }}{% endif %}">{{ t("notes-edit") }}</a>{% endif %}

@@ -4278,6 +4278,31 @@ notes-person-add = הוספה
 notes-person-remove = הסרת האדם הזה
 notes-field-text = טקסט
 notes-text-hint = Markdown, או הכפתורים למעלה. הדביקו או גררו תמונות, עד { $mb } MB כל אחת.
+notes-tool-document = הוספת מסמך
+notes-files = מסמכים
+notes-files-add = הוספת מסמכים: סרטים, הקלטות, מסמכי PDF, סריקות, טקסטים
+notes-files-hint = הם נשמרים עם ההערה ונקראים יחד איתה: מסמך PDF נפתח בדפדפן, סרט או הקלטה מתנגנים, טקסט מוצג. עד { $mb } MB לקובץ, עד { $total } MB לשמירה, עד { $n } מסמכים להערה.
+notes-file-remove = הסרה בשמירה
+notes-file-read = קריאה
+notes-file-download = הורדה
+notes-file-pages = { $n ->
+        [one] { $n } עמוד
+        [two] { $n } עמודים
+        [many] { $n } עמודים
+       *[other] { $n } עמודים
+    }
+notes-file-cut = מוצגת רק ההתחלה
+notes-files-count = { $n ->
+        [one] { $n } מסמך
+        [two] { $n } מסמכים
+        [many] { $n } מסמכים
+       *[other] { $n } מסמכים
+    }
+notes-error-file = { $name }:
+notes-error-file-big = מסמך גדול מ-{ $mb } MB: הוא לא צורף. בחרו שוב את המסמכים.
+notes-error-files-many = הערה מכילה { $n } מסמכים לכל היותר.
+notes-error-files-heavy = יחד המסמכים שוקלים יותר מ-{ $mb } MB, יותר ממה ששמירה אחת נושאת: צרפו חלק עכשיו ואת השאר אחר כך.
+notes-file-unjoin = ביטול צירוף
 notes-tool-bold = מודגש
 notes-tool-italic = נטוי
 notes-tool-heading = כותרת

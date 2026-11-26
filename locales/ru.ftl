@@ -4429,6 +4429,31 @@ notes-person-add = Добавить
 notes-person-remove = Убрать этого человека
 notes-field-text = Текст
 notes-text-hint = Markdown или кнопки выше. Вставляйте или перетаскивайте изображения, до { $mb } МБ каждое.
+notes-tool-document = Добавить документ
+notes-files = Документы
+notes-files-add = Добавить документы: видео, записи, документы PDF, сканы, тексты
+notes-files-hint = Они хранятся вместе с заметкой и читаются вместе с ней: документ PDF открывается в браузере, видео или запись воспроизводится, текст показывается. Не более { $mb } МБ на файл, { $total } МБ на одно сохранение, { $n } документов на заметку.
+notes-file-remove = Убрать при сохранении
+notes-file-read = Читать
+notes-file-download = Скачать
+notes-file-pages = { $n ->
+        [one] { $n } страница
+        [few] { $n } страницы
+        [many] { $n } страниц
+       *[other] { $n } страницы
+    }
+notes-file-cut = показано только начало
+notes-files-count = { $n ->
+        [one] { $n } документ
+        [few] { $n } документа
+        [many] { $n } документов
+       *[other] { $n } документа
+    }
+notes-error-file = { $name }:
+notes-error-file-big = Документ больше { $mb } МБ: он не прикреплён. Выберите документы снова.
+notes-error-files-many = В заметке может быть не более { $n } документов.
+notes-error-files-heavy = Вместе документы весят больше { $mb } МБ, больше, чем вмещает одно сохранение: прикрепите часть сейчас, а остальные потом.
+notes-file-unjoin = Убрать
 notes-tool-bold = Жирный
 notes-tool-italic = Курсив
 notes-tool-heading = Заголовок

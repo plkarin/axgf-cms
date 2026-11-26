@@ -537,7 +537,7 @@ pub async fn read(
     }
     let note_id = uuid::Uuid::new_v4().to_string();
     let bytes = d.markdown.clone().into_bytes();
-    let mut entity = notes::entity(&note_id, &d, viewer.name(), 1, &bytes, &[], None);
+    let mut entity = notes::entity(&note_id, &d, viewer.name(), 1, &bytes, &[], &[], None);
     entity["created_at"] = json!(crate::view::now_iso8601());
     entity["updated_at"] = json!(crate::view::now_iso8601());
     entity["version_num"] = json!(1);
@@ -711,7 +711,7 @@ pub async fn summary(
                 return failed(&chrome, StatusCode::UNPROCESSABLE_ENTITY, key, &[], &back);
             }
             let sid = uuid::Uuid::new_v4().to_string();
-            let mut entity = notes::entity(&sid, &d, viewer.name(), 1, &bytes, &[], None);
+            let mut entity = notes::entity(&sid, &d, viewer.name(), 1, &bytes, &[], &[], None);
             entity["created_at"] = json!(crate::view::now_iso8601());
             entity["updated_at"] = json!(crate::view::now_iso8601());
             entity["version_num"] = json!(1);
@@ -754,6 +754,8 @@ pub async fn summary(
                 version + 1,
                 &bytes,
                 &[],
+                // A summary rewritten keeps the documents joined to it.
+                &notes::files(&doc),
                 Some(&doc),
             );
             rec::mark_summary(&mut entity, &id, Some(target.tag), Some(&generator));

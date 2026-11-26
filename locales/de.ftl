@@ -4139,6 +4139,27 @@ notes-person-add = Hinzufügen
 notes-person-remove = Diese Person entfernen
 notes-field-text = Text
 notes-text-hint = Markdown oder die Schaltflächen oben. Bilder einfügen oder ablegen, je bis { $mb } MB.
+notes-tool-document = Dokument hinzufügen
+notes-files = Dokumente
+notes-files-add = Dokumente hinzufügen: Videos, Aufnahmen, PDF-Dokumente, Scans, Texte
+notes-files-hint = Sie werden mit der Notiz aufbewahrt und mit ihr gelesen: Ein PDF-Dokument öffnet sich im Browser, ein Video oder eine Aufnahme wird abgespielt, ein Text wird angezeigt. Höchstens { $mb } MB pro Datei, { $total } MB pro Speichervorgang, { $n } Dokumente pro Notiz.
+notes-file-remove = Beim Speichern entfernen
+notes-file-read = Lesen
+notes-file-download = Herunterladen
+notes-file-pages = { $n ->
+        [one] { $n } Seite
+       *[other] { $n } Seiten
+    }
+notes-file-cut = nur der Anfang wird angezeigt
+notes-files-count = { $n ->
+        [one] { $n } Dokument
+       *[other] { $n } Dokumente
+    }
+notes-error-file = { $name }:
+notes-error-file-big = Ein Dokument ist größer als { $mb } MB: Es wurde nicht angehängt. Wählen Sie die Dokumente erneut aus.
+notes-error-files-many = Eine Notiz enthält höchstens { $n } Dokumente.
+notes-error-files-heavy = Zusammen sind die Dokumente größer als { $mb } MB, mehr als ein Speichervorgang trägt: Hängen Sie jetzt einige an und den Rest danach.
+notes-file-unjoin = Zurücknehmen
 notes-tool-bold = Fett
 notes-tool-italic = Kursiv
 notes-tool-heading = Überschrift

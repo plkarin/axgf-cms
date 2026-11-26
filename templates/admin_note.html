@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_md_editor.html" as md %}
+{% import "_icons.html" as ic %}
 {% block title %}{{ t("notes-edit-title") if id else t("notes-new-title") }} — {{ t("app-name") }}{% endblock %}
 {% block content %}
 {#- Opened from a person's record (docs/adr/0029): saving, cancelling and
@@ -9,7 +10,7 @@
 <h1>{{ t("summary-edit-title") if summary else (t("notes-edit-title") if id else t("notes-new-title")) }}</h1>
 {% if error %}<div class="notice error" role="alert"><p>{{ error }}</p></div>{% endif %}
 
-<form method="post" action="{{ '/admin/notes/' ~ id if id else '/admin/notes' }}" class="note-form" data-note-form>
+<form method="post" action="{{ '/admin/notes/' ~ id if id else '/admin/notes' }}" class="note-form" enctype="multipart/form-data" data-note-form>
   <input type="hidden" name="base_version" value="{{ note_version }}">
   {%- if return_to %}<input type="hidden" name="back" value="{{ return_to }}">{% endif %}
   {%- if summary %}<input type="hidden" name="kind" value="summary">{% endif %}
@@ -43,11 +44,32 @@
 
   <section class="rec-section" id="note-text" data-md-editor>
     <h2>{{ t("notes-field-text") }}</h2>
-    {{ md.toolbar(t, t("notes-field-text"), true) }}
+    {{ md.toolbar(t, t("notes-field-text"), true, true) }}
     <textarea name="markdown" rows="18" class="note-source" dir="auto" data-note-text data-uploading="{{ t('notes-uploading') }}" data-upload-failed="{{ t('notes-error-image') }}">{{ markdown }}</textarea>
     <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple data-note-file hidden>
     <div class="note-preview note-text" data-note-preview hidden>{{ preview|safe }}</div>
     <p class="hint">{{ t("notes-text-hint", mb=max_image_mb) }}</p>
+  </section>
+
+  {#- The documents joined to the note (docs/adr/0051): read with it, kept
+      with it. The ones it has can be let go; new ones come with the form. -#}
+  <section class="rec-section" id="note-files" data-note-files>
+    <h2>{{ t("notes-files") }}</h2>
+    {%- if joined %}
+    <ul class="note-files-list">
+      {%- for f in joined %}
+      <li class="note-file-row">
+        <span class="note-file-name">{% if f.kind == "image" %}{{ ic.icon("preserved") }}{% elif f.kind == "pdf" or f.kind == "text" %}{{ ic.icon("document") }}{% else %}{{ ic.icon("clip") }}{% endif %}<bdi>{{ f.name }}</bdi></span>
+        <span class="small muted">{{ f.size }}</span>
+        <label class="inline note-file-drop"><input type="checkbox" name="drop_file" value="{{ f.id }}"> {{ t("notes-file-remove") }}</label>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+    <ul class="note-files-list" data-note-files-chosen data-remove="{{ t('notes-file-unjoin') }}" hidden></ul>
+    <label class="field note-attach"><span class="field-label">{{ t("notes-files-add") }}</span>
+      <input type="file" name="attach" multiple data-note-attach data-max-bytes="{{ max_file_mb * 1048576 }}" data-max-total="{{ max_save_mb * 1048576 }}" data-too-large="{{ t('notes-error-file-big', mb=max_file_mb) }}" data-too-heavy="{{ t('notes-error-files-heavy', mb=max_save_mb) }}"></label>
+    <p class="hint">{{ t("notes-files-hint", mb=max_file_mb, total=max_save_mb, n=max_files) }}</p>
   </section>
 
   <div class="cta-row">

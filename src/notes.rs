@@ -30,6 +30,14 @@
 //! which this module turns into the address the site serves it at; another
 //! reader of the format finds the same id in the archive.
 //!
+//! A document joined to a note (docs/adr/0051) — a film, a recording, a
+//! PDF document, a scan, a text — is a Document of its own too, its bytes in
+//! the archive at `notes/<note>/files/<id>.<ext>`, tagged [`FILE_TAG`] and
+//! marked `extensions[`[`FILE_EXT_KEY`]`]` with the note it belongs to; the
+//! note lists them under `files` in its own extension. They are read with
+//! the note, in the window and on its page, and taken away with it when it
+//! is deleted.
+//!
 //! # Who reads them
 //!
 //! The family's members: a reader who is signed in, never a visitor. A note
@@ -56,6 +64,15 @@ pub const ROLE: &str = "note_subject";
 pub const IMAGE_EXT_KEY: &str = "axgf-cms:note-image/v1";
 /// The tag a note's picture carries.
 pub const IMAGE_TAG: &str = "note-image";
+/// Namespaced key on a document joined to a note: `{"note": <id>}`.
+pub const FILE_EXT_KEY: &str = "axgf-cms:note-file/v1";
+/// The tag a document joined to a note carries.
+pub const FILE_TAG: &str = "note-file";
+/// How many documents may be joined to one note.
+pub const MAX_FILES: usize = 20;
+/// The most of a joined text shown in the note, in characters: the rest is
+/// read in the file itself.
+pub const TEXT_SHOWN: usize = 20_000;
 /// How a note's text names one of its pictures.
 pub const DOCUMENT_REF: &str = "axgf:document/";
 /// How a note being written names a picture not saved yet.
@@ -97,9 +114,18 @@ pub fn is_note_image(doc: &Value) -> bool {
         || has_tag(doc, IMAGE_TAG)
 }
 
-/// A note, or one of its pictures: never one of a record's files.
+/// Whether a stored Document is a document joined to a note.
+pub fn is_note_file(doc: &Value) -> bool {
+    doc.get("extensions")
+        .and_then(|e| e.get(FILE_EXT_KEY))
+        .is_some()
+        || has_tag(doc, FILE_TAG)
+}
+
+/// A note, one of its pictures or a document joined to it: never one of a
+/// record's files.
 pub fn is_note_part(doc: &Value) -> bool {
-    is_note(doc) || is_note_image(doc)
+    is_note(doc) || is_note_image(doc) || is_note_file(doc)
 }
 
 /// Whether the Document with this id is a note or a note's picture.
@@ -171,6 +197,20 @@ pub fn images(doc: &Value) -> Vec<String> {
         .unwrap_or_default()
 }
 
+/// The documents joined to a note, by id, in the order they were joined.
+pub fn files(doc: &Value) -> Vec<String> {
+    ext(doc)
+        .and_then(|e| e.get("files"))
+        .and_then(Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(Value::as_str)
+                .map(str::to_string)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// The note a picture belongs to.
 pub fn note_of_image(doc: &Value) -> Option<String> {
     doc.get("extensions")
@@ -178,6 +218,17 @@ pub fn note_of_image(doc: &Value) -> Option<String> {
         .and_then(|e| e.get("note"))
         .and_then(Value::as_str)
         .map(str::to_string)
+}
+
+/// The note a picture, or a joined document, belongs to.
+pub fn note_of_part(doc: &Value) -> Option<String> {
+    note_of_image(doc).or_else(|| {
+        doc.get("extensions")
+            .and_then(|e| e.get(FILE_EXT_KEY))
+            .and_then(|e| e.get("note"))
+            .and_then(Value::as_str)
+            .map(str::to_string)
+    })
 }
 
 /// Where the note's text is, inside the archive.
@@ -211,8 +262,9 @@ pub fn part_readable(
     if is_note(doc) {
         return readable(flat, lens, signed_in, doc);
     }
-    let Some(note) = note_of_image(doc) else {
-        // A picture that has lost its note is nobody's: refused.
+    let Some(note) = note_of_part(doc) else {
+        // A picture or a document that has lost its note is nobody's:
+        // refused.
         return false;
     };
     flat.get("documents")
@@ -255,8 +307,11 @@ pub struct NoteView {
     pub summary: String,
     /// The letter its title is filed under: A to Z, or `#`.
     pub letter: String,
-    /// Its first picture, small.
+    /// Its first picture, small: one of its text's, or else a picture
+    /// joined to it.
     pub thumb: Option<String>,
+    /// How many documents are joined to it.
+    pub files: usize,
     /// What the list's filter matches: title, category, people, author and
     /// summary, in lower case.
     pub haystack: String,
@@ -270,6 +325,43 @@ pub struct NoteFull {
     pub html: String,
     pub markdown: String,
     pub updated_at: Option<String>,
+    /// The documents joined to it.
+    pub files: Vec<NoteFile>,
+}
+
+/// A document joined to a note, as the note shows it: a picture drawn, a
+/// film or a recording played, a PDF document read in the browser, a text
+/// shown, anything else downloaded.
+#[derive(Debug, Clone, Serialize)]
+pub struct NoteFile {
+    pub id: String,
+    pub name: String,
+    /// `image`, `video`, `audio`, `pdf`, `text` or `other`.
+    pub kind: &'static str,
+    pub mime: String,
+    pub size: u64,
+    /// Its size, in the reader's language.
+    pub size_text: String,
+    /// A PDF document's pages, when they could be counted.
+    pub pages: Option<usize>,
+    /// A text's beginning, shown in the note.
+    pub text: Option<String>,
+    /// Whether the text shown is only its beginning.
+    pub cut: bool,
+}
+
+/// What a note does with a document of this type.
+pub fn file_kind(mime: &str) -> &'static str {
+    if crate::documents::serve_inline(mime) {
+        return "image";
+    }
+    match crate::documents::plays_as(mime) {
+        Some("video") => "video",
+        Some(_) => "audio",
+        None if mime == "application/pdf" => "pdf",
+        None if mime == "text/plain" => "text",
+        None => "other",
+    }
 }
 
 /// The letter a title is filed under: its first letter without its accent,
@@ -315,8 +407,21 @@ pub fn view_of(flat: &Value, id: &str, doc: &Value, lang: &str) -> NoteView {
         .or_else(|| doc.get("created_at").and_then(Value::as_str))
         .unwrap_or_default()
         .to_string();
+    let joined = files(doc);
     let thumb = images(doc)
         .into_iter()
+        .chain(
+            joined
+                .iter()
+                .filter(|i| {
+                    flat.get("documents")
+                        .and_then(|d| d.get(i.as_str()))
+                        .and_then(|d| d.get("mime_type"))
+                        .and_then(Value::as_str)
+                        .is_some_and(crate::documents::serve_inline)
+                })
+                .cloned(),
+        )
         .find(|i| {
             flat.get("documents")
                 .and_then(|d| d.get(i))
@@ -351,6 +456,7 @@ pub fn view_of(flat: &Value, id: &str, doc: &Value, lang: &str) -> NoteView {
         persons,
         summary,
         thumb,
+        files: joined.len(),
         haystack: fold(&haystack),
     }
 }
@@ -512,6 +618,7 @@ pub fn image_path_for(note_id: &str, image_id: &str, ext: &str) -> String {
 
 /// The note's Document, from a draft. `version` is the version this record
 /// will have once saved (1 when it is new): the text's file is named by it.
+#[allow(clippy::too_many_arguments)]
 pub fn entity(
     id: &str,
     d: &Draft,
@@ -519,6 +626,7 @@ pub fn entity(
     version: u64,
     text: &[u8],
     images: &[String],
+    joined: &[String],
     stored: Option<&Value>,
 ) -> Value {
     let mut linked: Vec<Value> = Vec::new();
@@ -531,6 +639,9 @@ pub fn entity(
         "summary": summary_of(&d.markdown),
         "images": images,
     });
+    if !joined.is_empty() {
+        ext["files"] = json!(joined);
+    }
     if !d.category.trim().is_empty() {
         ext["category"] = Value::from(d.category.trim());
     }
@@ -596,6 +707,44 @@ pub fn image_entity(note_id: &str, image_id: &str, img: &PendingImage) -> Value 
         },
         "tags": [IMAGE_TAG],
         "extensions": { IMAGE_EXT_KEY: { "note": note_id } },
+    })
+}
+
+/// The path of a document joined to a note, inside the archive.
+pub fn file_path_for(note_id: &str, file_id: &str, ext: &str) -> String {
+    format!("notes/{note_id}/files/{file_id}.{ext}")
+}
+
+/// A joined document's Document. Its type comes from its bytes, never from
+/// its name or what the browser said (`crate::documents::sniff`).
+pub fn file_entity(
+    note_id: &str,
+    file_id: &str,
+    filename: &str,
+    kind: &crate::documents::Kind,
+    bytes: &[u8],
+) -> Value {
+    let document_type = match file_kind(kind.mime) {
+        "image" => "photo",
+        "video" => "video",
+        "audio" => "audio",
+        _ => "other",
+    };
+    json!({
+        "id": file_id,
+        "type": "document",
+        "axgf_version": "1.0",
+        "filename": filename,
+        "mime_type": kind.mime,
+        "document_type": document_type,
+        "status": "present",
+        "file": {
+            "path": file_path_for(note_id, file_id, kind.ext),
+            "size_bytes": bytes.len(),
+            "sha256": crate::documents::sha256_hex(bytes),
+        },
+        "tags": [FILE_TAG],
+        "extensions": { FILE_EXT_KEY: { "note": note_id } },
     })
 }
 

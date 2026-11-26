@@ -91,6 +91,8 @@
     var preview = root.querySelector('[data-note-preview]');
     var mode = root.querySelector('[data-note-mode]');
     var file = root.querySelector('[data-note-file]');
+    // The documents joined to the note (docs/adr/0051): the form's own field.
+    var attach = document.querySelector('[data-note-attach]');
     if (!text) return;
     if (toolbar) toolbar.hidden = false;
 
@@ -121,6 +123,7 @@
         case 'quote': linePrefix('> '); break;
         case 'link': insert('[', '](https://)'); break;
         case 'image': if (file) file.click(); break;
+        case 'document': if (attach) attach.click(); break;
       }
     });
 
@@ -158,7 +161,11 @@
       text.addEventListener('dragover', function (e) { e.preventDefault(); });
       text.addEventListener('drop', function (e) {
         var files = e.dataTransfer && e.dataTransfer.files;
-        if (files && files.length && upload(files)) e.preventDefault();
+        if (!files || !files.length) return;
+        // Pictures go into the text; any other document is joined.
+        var others = Array.prototype.filter.call(files, function (f) { return !/^image\//.test(f.type); });
+        if (upload(files)) e.preventDefault();
+        if (others.length && attach && attach.joinFiles) { e.preventDefault(); attach.joinFiles(others); }
       });
       file.addEventListener('change', function () { upload(file.files); file.value = ''; });
     }
@@ -191,6 +198,71 @@
 
   var form = document.querySelector('[data-note-form]');
   if (!form) return;
+
+  // Documents joined to the note: chosen, or dropped on the text, several
+  // times over, each listed with the way to take it back before saving.
+  var attachInput = form.querySelector('[data-note-attach]');
+  var attachList = form.querySelector('[data-note-files-chosen]');
+  if (attachInput && attachList && typeof DataTransfer !== 'undefined') {
+    var joined = [];
+    var most = parseInt(attachInput.getAttribute('data-max-bytes') || '0', 10);
+    var total = parseInt(attachInput.getAttribute('data-max-total') || '0', 10);
+    function size(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return Math.ceil(bytes / 1024) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+    function sync() {
+      try {
+        var dt = new DataTransfer();
+        joined.forEach(function (f) { dt.items.add(f); });
+        attachInput.files = dt.files;
+      } catch (err) { /* an older browser: the field keeps its own choice */ }
+      attachList.textContent = '';
+      attachList.hidden = joined.length === 0;
+      joined.forEach(function (f, i) {
+        var li = document.createElement('li');
+        li.className = 'note-file-row is-new';
+        var name = document.createElement('bdi');
+        name.className = 'note-file-name';
+        name.textContent = f.name;
+        var weight = document.createElement('span');
+        weight.className = 'small muted';
+        weight.textContent = size(f.size);
+        var x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'note-person-remove';
+        x.textContent = '×';
+        x.setAttribute('aria-label', (attachList.getAttribute('data-remove') || '') + ' ' + f.name);
+        x.addEventListener('click', function () { joined.splice(i, 1); sync(); });
+        li.appendChild(name); li.appendChild(weight); li.appendChild(x);
+        attachList.appendChild(li);
+      });
+    }
+    attachInput.joinFiles = function (files) {
+      var refused = '';
+      var weight = joined.reduce(function (n, j) { return n + j.size; }, 0);
+      Array.prototype.forEach.call(files, function (f) {
+        if (most && f.size > most) { refused = 'data-too-large'; return; }
+        var same = joined.some(function (j) { return j.name === f.name && j.size === f.size && j.lastModified === f.lastModified; });
+        if (same) return;
+        // One save carries so much: the rest waits for the next.
+        if (total && weight + f.size > total) { refused = 'data-too-heavy'; return; }
+        weight += f.size;
+        joined.push(f);
+      });
+      sync();
+      if (refused) {
+        attachInput.setCustomValidity(attachInput.getAttribute(refused) || '');
+        attachInput.reportValidity();
+        attachInput.setCustomValidity('');
+      }
+    };
+    attachInput.addEventListener('change', function () {
+      var chosen = Array.prototype.slice.call(attachInput.files || []);
+      attachInput.joinFiles(chosen);
+    });
+  }
 
   // The people a note is about, as chips.
   var people = form.querySelector('[data-note-people]');

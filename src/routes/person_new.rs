@@ -251,8 +251,16 @@ pub async fn create(State(state): State<Shared>, headers: HeaderMap, req: Reques
             return refuse(chrome.t(key), Some("note"));
         }
         let text = draft.markdown.clone().into_bytes();
-        let mut entity =
-            crate::notes::entity(&note_id, &draft, viewer.name(), 1, &text, &pics.ids, None);
+        let mut entity = crate::notes::entity(
+            &note_id,
+            &draft,
+            viewer.name(),
+            1,
+            &text,
+            &pics.ids,
+            &[],
+            None,
+        );
         entity["created_at"] = json!(now);
         entity["updated_at"] = json!(now);
         entity["version_num"] = json!(1);

@@ -592,12 +592,15 @@ async fn the_welcome_goes_again_and_a_member_who_signed_in_gets_a_reset() {
         "{html}"
     );
     site.settle().await;
-    let kinds: Vec<_> = rec.sent().iter().map(|m| (m.kind, m.to.clone())).collect();
+    // Each goes on its own way to the relay: in whichever order they get
+    // there.
+    let mut kinds: Vec<_> = rec.sent().iter().map(|m| (m.kind, m.to.clone())).collect();
+    kinds.sort();
     assert_eq!(
         kinds,
         [
-            ("welcome", "quiet@example.org".to_string()),
-            ("reset", "seen@example.org".to_string())
+            ("reset", "seen@example.org".to_string()),
+            ("welcome", "quiet@example.org".to_string())
         ]
     );
 

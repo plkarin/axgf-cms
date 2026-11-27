@@ -477,6 +477,12 @@ pub async fn logout(State(state): State<Shared>, headers: HeaderMap) -> Response
             (header::SET_COOKIE, crate::session::clear_cookie()),
             // The emergency cookie too, so "sign out" means it.
             (header::SET_COOKIE, auth::clear_cookie()),
+            // And what the browser kept of the session's pages and files:
+            // signed out, nothing it was shown opens again from its cache.
+            (
+                header::HeaderName::from_static("clear-site-data"),
+                "\"cache\"".to_string(),
+            ),
         ],
         Redirect::to("/"),
     )

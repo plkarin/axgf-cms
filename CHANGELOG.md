@@ -4,6 +4,34 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+A security review of the whole site, on 27 November 2026, after the
+operator found a document's `/read` address open in a browser without a
+session.
+
+### Security
+
+- **The personal assistant no longer sends the whole archive for every
+  account.** A project that gives the AFG the family's archive sent all of
+  it — private and living people included — for any account the AFG is open
+  to, viewers too, and the AFG could then answer about people the account
+  may not see. The archive now goes only for an account that sees every
+  person and every link at its own ceiling, to whom the records are open;
+  the sensitive classes only for an administrator's. Otherwise the project's
+  page says it cannot go, and it is not sent.
+- **A document is no longer kept by the browser to be shown again without
+  asking.** `/document/:id/raw`, `/read`, `/view` and `/thumb` answered with
+  `Cache-Control: private, max-age=3600`: a document a member opened on a
+  shared computer opened again from the browser's cache for an hour after
+  they signed out, with no session — most likely what was seen. They now
+  answer `private, no-cache` and `Vary: Cookie`; a file of the personal
+  assistant, `no-store`; and signing out sends `Clear-Site-Data: "cache"`.
+- **A document no person attaches stays the members'** even when every
+  person of the archive is public: a visitor could fetch the file of a
+  person since deleted, or one detached from its record, when no person was
+  hidden.
+
 ## [1.19.0] — 2026-11-26
 
 The operator's requests of 26 November 2026 (docs/adr/0051).

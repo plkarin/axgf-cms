@@ -5669,6 +5669,7 @@ assistant-settings = Ustawienia
 assistant-archive = Daj AFG archiwum rodziny w tym projekcie
 assistant-archive-hint = Każdy rekord archiwum, łącznie z żyjącymi, trafia wtedy z każdą wiadomością tam, gdzie AFG liczy. Klasy wrażliwe zostają poza nim, chyba że administrator zdecydował inaczej.
 assistant-archive-size = Pliki JSON: { $files }; tokeny na wiadomość: około { $tokens }.
+assistant-archive-refused = Nie wysłano: Twoje konto nie widzi każdego rekordu archiwum, więc nie może ono trafić do AFG.
 assistant-avatar-upload = Własny obraz jako awatar
 assistant-avatar-send = Użyj tego obrazu
 assistant-delete-project = Usuń projekt

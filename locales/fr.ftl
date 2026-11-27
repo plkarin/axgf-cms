@@ -5349,6 +5349,7 @@ assistant-settings = Réglages
 assistant-archive = Donner l’archive de la famille à l’AFG dans ce projet
 assistant-archive-hint = Toutes les fiches de l’archive, vivants compris, partent alors avec chaque message vers le calcul de l’AFG. Les classes sensibles restent dehors, sauf si un administrateur en a décidé autrement.
 assistant-archive-size = Fichiers JSON : { $files } ; jetons par message : environ { $tokens }.
+assistant-archive-refused = Non envoyée : votre compte ne voit pas toutes les fiches de l’archive, elle ne peut donc pas partir vers l’AFG.
 assistant-avatar-upload = Une image à vous comme avatar
 assistant-avatar-send = Utiliser cette image
 assistant-delete-project = Supprimer le projet

@@ -5096,6 +5096,7 @@ assistant-settings = Mabongisi ya kosalela
 assistant-archive = Pesá AFG ebombelo ya libota na libongisi oyo
 assistant-archive-hint = Na yango, mokanda nyonso ya ebombelo, ata ya bato ya bomoi, ekendaka na nsango nyonso epai AFG esalaka kalkile. Mitindo ya makambo ya kobombama etikalaka libanda, longola se soki mokambi azwaki mokano mosusu.
 assistant-archive-size = Ba-fisyé JSON: { $files }; ba-token na nsango: pene na { $tokens }.
+assistant-archive-refused = Etindami te: compte na yo emonaka te mokanda nyonso ya ebombelo, yango wana ekoki kokende epai ya AFG te.
 assistant-avatar-upload = Elilingi na yo moko lokola avatar
 assistant-avatar-send = Salelá elilingi oyo
 assistant-delete-project = Longolá libongisi

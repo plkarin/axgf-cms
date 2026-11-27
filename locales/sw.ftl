@@ -5074,6 +5074,7 @@ assistant-settings = Mipangilio
 assistant-archive = Ipe AFG kifurushi cha familia katika mradi huu
 assistant-archive-hint = Kisha kila rekodi ya kifurushi, pamoja na walio hai, huenda na kila ujumbe kule AFG inakochakata. Madaraja nyeti hubaki nje, isipokuwa msimamizi ameamua vinginevyo.
 assistant-archive-size = Faili za JSON: { $files }; tokeni kwa kila ujumbe: takriban { $tokens }.
+assistant-archive-refused = Hakikutumwa: akaunti yako haioni kila rekodi ya kifurushi, kwa hivyo hakiwezi kwenda kwa AFG.
 assistant-avatar-upload = Picha yako mwenyewe kama avatari
 assistant-avatar-send = Tumia picha hii
 assistant-delete-project = Futa mradi

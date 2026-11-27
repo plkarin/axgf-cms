@@ -995,6 +995,11 @@ async fn documents_are_joined_to_a_note_read_with_it_and_go_with_it() {
         csp.starts_with("default-src 'none'; object-src 'self'"),
         "{csp}"
     );
+    // Not kept by the browser to be shown again without asking: whether it
+    // may be read depends on who asks (the security review of 27 November
+    // 2026).
+    assert_eq!(read.headers()[header::CACHE_CONTROL], "private, no-cache");
+    assert_eq!(read.headers()[header::VARY], "Cookie");
     for f in &files {
         assert_eq!(
             get(&app, &format!("/document/{f}/raw")).await.status(),
@@ -1074,4 +1079,17 @@ async fn documents_are_joined_to_a_note_read_with_it_and_go_with_it() {
     assert!(resp.status().is_redirection());
     let docs = documents(&app, &admin).await;
     assert!(now.iter().all(|f| docs.get(f).is_none()) && docs.get(&id).is_none());
+}
+
+/// Signing out empties what the browser kept of the session (the security
+/// review of 27 November 2026): no document a member opened opens again
+/// from its cache.
+#[tokio::test]
+async fn signing_out_clears_what_the_browser_kept() {
+    let src = bundle("notes-logout-src");
+    let (app, _p) = app_with_bundle("notes-logout", &src);
+    let vera = account(&app, "vera", "viewer").await;
+    let resp = post_form_as(&app, &vera, "/admin/logout", "").await;
+    assert!(resp.status().is_redirection());
+    assert_eq!(resp.headers()["clear-site-data"], "\"cache\"");
 }

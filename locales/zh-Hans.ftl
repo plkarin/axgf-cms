@@ -4963,6 +4963,7 @@ assistant-settings = 设置
 assistant-archive = 在此项目中把家族归档交给 AI 家谱师
 assistant-archive-hint = 这样，归档中的每条记录，包括在世者，都会随每条消息发送到 AI 家谱师的计算之处。除非管理员另有决定，敏感类别不会包含在内。
 assistant-archive-size = JSON 文件：{ $files } 个；每条消息的词元：约 { $tokens }。
+assistant-archive-refused = 未发送：您的账户看不到归档中的每条记录，因此不能把它交给 AI 家谱师。
 assistant-avatar-upload = 用你自己的图片作头像
 assistant-avatar-send = 使用这张图片
 assistant-delete-project = 删除项目

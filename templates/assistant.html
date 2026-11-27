@@ -176,7 +176,7 @@
             <input type="text" name="name" value="{{ project.name }}" maxlength="{{ limits.name }}" required autocomplete="off"></label>
           {% with picker_current = project.avatar %}{% include "_assistant_avatars.html" %}{% endwith %}
           <label class="inline"><input type="checkbox" name="archive"{% if project.archive %} checked{% endif %}> {{ t("assistant-archive") }}</label>
-          <p class="hint">{{ t("assistant-archive-hint") }}{% if archive %} {{ t("assistant-archive-size", files=archive.count, tokens=archive.tokens) }}{% endif %}</p>
+          <p class="hint">{{ t("assistant-archive-hint") }}{% if archive and archive.refused %} <strong>{{ t("assistant-archive-refused") }}</strong>{% elif archive %} {{ t("assistant-archive-size", files=archive.count, tokens=archive.tokens) }}{% endif %}</p>
           <button class="btn" type="submit" data-busy="{{ t('busy-saving') }}">{{ t("assistant-save") }}</button>
         </form>
         <form method="post" action="/account/assistant/{{ project.id }}/avatar" enctype="multipart/form-data" class="as-form as-upload">

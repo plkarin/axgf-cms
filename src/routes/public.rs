@@ -1245,9 +1245,13 @@ pub async fn document_raw(
         header::HeaderName::from_static("x-content-type-options"),
         "nosniff",
     );
-    // The payload is immutable: a different file means a different document id,
-    // because uploads never overwrite in place.
-    set_header(&mut headers, header::CACHE_CONTROL, "private, max-age=3600");
+    // Whether these bytes may be read depends on who asks, and that can
+    // change: a reader who signs out, a person made private. So the browser
+    // keeps them only to ask again each time (the security review of
+    // 27 November 2026): kept an hour, a document a member opened on a
+    // shared computer opened again after they signed out, with no session.
+    set_header(&mut headers, header::CACHE_CONTROL, "private, no-cache");
+    set_header(&mut headers, header::VARY, "Cookie");
     if let Some(len) = len {
         set_header(&mut headers, header::CONTENT_LENGTH, &len.to_string());
     }
@@ -1372,7 +1376,8 @@ pub async fn document_view(
                         header::HeaderName::from_static("x-content-type-options"),
                         "nosniff".to_string(),
                     ),
-                    (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
+                    (header::CACHE_CONTROL, "private, no-cache".to_string()),
+                    (header::VARY, "Cookie".to_string()),
                 ],
                 png,
             )
@@ -1436,7 +1441,8 @@ pub async fn document_thumb(
                 header::HeaderName::from_static("x-content-type-options"),
                 "nosniff".to_string(),
             ),
-            (header::CACHE_CONTROL, "private, max-age=3600".to_string()),
+            (header::CACHE_CONTROL, "private, no-cache".to_string()),
+            (header::VARY, "Cookie".to_string()),
         ],
         png,
     )

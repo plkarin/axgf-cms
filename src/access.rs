@@ -540,7 +540,10 @@ pub fn may_read_document(flat: &Value, lens: &Lens, signed_in: bool, document_id
         return true;
     }
     let vis = lens.visible();
-    if vis.is_all() {
+    // Everyone visible settles it for a signed-in reader. Not for a visitor:
+    // a document no person attaches is the members' (below), even when every
+    // person is public (the security review of 27 November 2026).
+    if vis.is_all() && signed_in {
         return true;
     }
     let Some(persons) = flat.get("persons").and_then(Value::as_object) else {
@@ -938,6 +941,29 @@ mod tests {
             may_read_document(&flat, &vis, true, "orphan"),
             "…but a signed-in account may fetch it"
         );
+    }
+
+    #[test]
+    fn an_unattached_document_stays_the_members_when_everyone_is_public() {
+        // Every person public: the lens sees all of them, and that must not
+        // make a document nobody attaches a visitor's (the security review
+        // of 27 November 2026) — the file of a person since deleted, a
+        // document detached from its record.
+        let flat = json!({
+            "persons": {
+                "seen": {"identity": {"visibility": "public"},
+                         "documents": [{"document_id": "open"}]}
+            },
+            "documents": {
+                "gone": {"linked_to": [{"entity_type": "person", "entity_id": "deleted"}]}
+            }
+        });
+        let vis = Lens::resolve(&flat, Visibility::Public);
+        assert!(vis.is_all());
+        assert!(may_read_document(&flat, &vis, false, "open"));
+        assert!(!may_read_document(&flat, &vis, false, "orphan"));
+        assert!(!may_read_document(&flat, &vis, false, "gone"));
+        assert!(may_read_document(&flat, &vis, true, "gone"));
     }
 
     /// A family's emblem follows the family's people; the archive's is

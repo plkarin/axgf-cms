@@ -595,13 +595,14 @@ fn render_view(
         }
         _ => (Vec::new(), None),
     };
-    let archive = project.filter(|p| p.archive).map(|_| {
-        let cfg = state.site().afg;
-        state
-            .read(|flat| crate::afg::archive(flat, cfg.sensitive))
-            .ok()
-            .map(|a| json!({"count": a.count, "tokens": a.tokens}))
-    });
+    // What the archive weighs, or that it cannot go: the account does not
+    // see all of it.
+    let archive = project
+        .filter(|p| p.archive)
+        .map(|_| match archive_for(state, &m.user) {
+            Some(a) => json!({"count": a.count, "tokens": a.tokens}),
+            None => json!({"refused": true}),
+        });
     // The project's knowledge, on the project's own page (docs/adr/0050).
     // The project a person's page keeps its conversations in has none.
     let knowledge = project
@@ -1167,6 +1168,37 @@ fn keep_message(space: &Space, pid: &str, cid: &str, sent: Sent) -> std::io::Res
     Ok(msg)
 }
 
+/// The family's archive as a project of this account may send it to the
+/// AFG (docs/adr/0026), or `None` when this account may not read all of
+/// it. The archive is the whole archive: sent for an account whose lens
+/// leaves someone out, it would hand the model, and through its answers
+/// the account, the private and living people the account may not see
+/// (the security review of 27 November 2026). So it goes only for an
+/// account that sees every person and every link at its own ceiling, to
+/// whom the records are open; the sensitive classes, when the AFG's room
+/// sends them, only for an administrator's.
+fn archive_for(state: &Shared, user: &crate::acl::User) -> Option<crate::afg::Archive> {
+    let role = user.role;
+    let records = state.acl_read(|acl| acl.site.doors.level(crate::site::Part::Records));
+    if !records.admits(true, role.may_write(), role.is_admin()) {
+        return None;
+    }
+    let ceiling = role.ceiling();
+    let sensitive = state.site().afg.sensitive && role.is_admin();
+    state.read_as(ceiling, |flat, lens| {
+        let links_seen = flat
+            .get("links")
+            .and_then(Value::as_object)
+            .is_none_or(|ls| {
+                ls.values()
+                    .all(|l| crate::access::link_visibility(l) <= ceiling)
+            });
+        (lens.is_all() && links_seen)
+            .then(|| crate::afg::archive(flat, sensitive).ok())
+            .flatten()
+    })
+}
+
 /// Start writing a conversation's next answer, in the background. `false`
 /// when it is already being answered, or the site answers as many as it may.
 fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> bool {
@@ -1179,9 +1211,7 @@ fn start_answer(state: &Shared, m: &Member, project: &Project, cid: &str) -> boo
     let cfg = state.site().afg;
     let messages = m.space.messages(&project.id, cid);
     let archive = if project.archive {
-        state
-            .read(|flat| crate::afg::archive(flat, cfg.sensitive))
-            .ok()
+        archive_for(state, &m.user)
     } else {
         None
     };
@@ -2019,7 +2049,9 @@ fn served(f: &assistant::FileRef, bytes: Vec<u8>) -> Response {
         [
             (header::CONTENT_TYPE, f.mime.clone()),
             (header::CONTENT_DISPOSITION, disposition),
-            (header::CACHE_CONTROL, "private, max-age=86400".to_string()),
+            // An account's own file: not kept by the browser past the page,
+            // so that nobody opens it again there after a sign-out.
+            (header::CACHE_CONTROL, "private, no-store".to_string()),
             (
                 header::HeaderName::from_static("x-content-type-options"),
                 "nosniff".to_string(),

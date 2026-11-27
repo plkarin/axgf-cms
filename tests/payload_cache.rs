@@ -87,7 +87,12 @@ async fn a_served_document_matches_the_bytes_in_the_original_bundle() {
     let (path, png, id, _zip) = bundle_with_image("pc-serve");
     let app = build_app(&path).expect("app");
 
+    // A document no person attaches is the members' (the security review of
+    // 27 November 2026): a visitor is not served it, a signed-in reader is.
     let resp = get(&app, &format!("/document/{id}/raw")).await;
+    assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+    let admin = admin_cookie(&app).await;
+    let resp = get_with_cookie(&app, &format!("/document/{id}/raw"), &admin).await;
     assert_eq!(resp.status(), StatusCode::OK);
     let served = body_bytes(resp).await;
     assert_eq!(

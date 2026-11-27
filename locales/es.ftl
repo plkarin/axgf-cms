@@ -5387,6 +5387,7 @@ assistant-settings = Ajustes
 assistant-archive = Dar al AFG el archivo de la familia en este proyecto
 assistant-archive-hint = Cada registro del archivo, incluidos los vivos, va entonces con cada mensaje adonde calcula el AFG. Las clases sensibles quedan fuera, salvo que un administrador haya decidido otra cosa.
 assistant-archive-size = Archivos JSON: { $files }; tokens por mensaje: unos { $tokens }.
+assistant-archive-refused = No enviado: su cuenta no ve todos los registros del archivo, así que no puede ir al AFG.
 assistant-avatar-upload = Una imagen suya como avatar
 assistant-avatar-send = Usar esta imagen
 assistant-delete-project = Eliminar el proyecto

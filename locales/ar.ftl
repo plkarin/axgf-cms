@@ -5903,6 +5903,7 @@ assistant-settings = الإعدادات
 assistant-archive = إعطاء النسّابة الاصطناعي أرشيف العائلة في هذا المشروع
 assistant-archive-hint = عندها يذهب كل سجل في الأرشيف، الأحياء منهم أيضًا، مع كل رسالة إلى حيث يحسب النسّابة الاصطناعي. تبقى الفئات الحساسة خارجًا ما لم يقرر مسؤول غير ذلك.
 assistant-archive-size = ملفات JSON: { $files }؛ الرموز لكل رسالة: نحو { $tokens }.
+assistant-archive-refused = لم يُرسَل: حسابك لا يرى كل سجلات الأرشيف، لذا لا يمكن أن يذهب إلى النسّابة الاصطناعي.
 assistant-avatar-upload = صورة خاصة بك صورةً رمزية
 assistant-avatar-send = استخدام هذه الصورة
 assistant-delete-project = حذف المشروع

@@ -4857,6 +4857,7 @@ assistant-settings = 設定
 assistant-archive = このプロジェクトで AI 家系研究家に家族のアーカイブを渡す
 assistant-archive-hint = その場合、アーカイブのすべての記録が、存命の人も含めて、メッセージのたびに AI 家系研究家の計算先へ送られます。機微な分類は、管理者が別に決めない限り含まれません。
 assistant-archive-size = JSON ファイル：{ $files } 件、メッセージあたりのトークン：約 { $tokens }。
+assistant-archive-refused = 送信されていません：あなたのアカウントではアーカイブのすべての記録を閲覧できないため、AI 家系研究家に渡すことはできません。
 assistant-avatar-upload = 自分の画像をアバターにする
 assistant-avatar-send = この画像を使う
 assistant-delete-project = プロジェクトを削除

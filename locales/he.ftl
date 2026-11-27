@@ -5505,6 +5505,7 @@ assistant-settings = הגדרות
 assistant-archive = לתת לגנאלוג המלאכותי את הארכיון של המשפחה בפרויקט הזה
 assistant-archive-hint = כל רשומה בארכיון, כולל החיים, נשלחת אז עם כל הודעה למקום שבו הגנאלוג המלאכותי מחשב. המחלקות הרגישות נשארות בחוץ, אלא אם מנהל החליט אחרת.
 assistant-archive-size = קובצי JSON: { $files }; אסימונים להודעה: כ־{ $tokens }.
+assistant-archive-refused = לא נשלח: החשבון שלך לא רואה את כל הרשומות בארכיון, ולכן הוא לא יכול לעבור לגנאלוג המלאכותי.
 assistant-avatar-upload = תמונה משלך כאווטאר
 assistant-avatar-send = להשתמש בתמונה הזו
 assistant-delete-project = מחיקת הפרויקט

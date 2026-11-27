@@ -131,10 +131,28 @@ fn slow_ollama(method: &str, path: &str, body: &str) -> (u16, String) {
 /// An app over the sample, its AFG an Ollama at `url`, with an account the
 /// AFG is open to (vera), another (marie), and one it is not (paul).
 async fn app_with_afg(tag: &str, url: &str) -> (axum::Router, Scratch, Vec<String>) {
+    app_with_afg_on(tag, url, None).await
+}
+
+/// The same, on an archive of one's own instead of the sample.
+async fn app_with_afg_on(
+    tag: &str,
+    url: &str,
+    bundle: Option<&Value>,
+) -> (axum::Router, Scratch, Vec<String>) {
     use axgf_cms::acl::{new_user, Acl, Role};
     let dir = scratch(tag);
     let path = dir.join("family.axgf");
-    std::fs::copy(sample(), &path).unwrap();
+    match bundle {
+        Some(flat) => std::fs::write(
+            &path,
+            axgf_cms::state::export_to_bytes(&flat.to_string()).unwrap(),
+        )
+        .unwrap(),
+        None => {
+            std::fs::copy(sample(), &path).unwrap();
+        }
+    }
     let mut acl = Acl::default();
     for (name, afg) in [("vera", true), ("marie", true), ("paul", false)] {
         let mut u = new_user(name, PASSWORD, Role::Viewer).unwrap();
@@ -1440,4 +1458,57 @@ async fn a_projects_knowledge_goes_with_every_question_and_stays_its_own() {
     .await;
     assert_eq!(resp.status(), StatusCode::SEE_OTHER);
     assert!(!knowledge.exists());
+}
+
+/// The family's archive goes with a project only for an account that sees
+/// all of it (the security review of 27 November 2026): a viewer, whose
+/// lens leaves out a private person, is told it cannot go, and the AFG is
+/// never sent that person.
+#[tokio::test]
+async fn the_archive_goes_only_to_an_account_that_sees_all_of_it() {
+    let person = |id: &str, name: &str, visibility: &str| {
+        json!({"id": id, "type": "person", "axgf_version": "1.1",
+               "identity": {"name": {"display": name, "components": []},
+                            "is_living": false, "visibility": visibility}})
+    };
+    let pub_id = "e1000000-0000-4000-8000-000000000001";
+    let priv_id = "e1000000-0000-4000-8000-000000000002";
+    let flat = json!({
+        "manifest": {"axgf": "1.1", "family": {"name": "Fabre"}},
+        "persons": {
+            pub_id: person(pub_id, "Lucien Fabre", "public"),
+            priv_id: person(priv_id, "Hortense Secrète", "private"),
+        },
+        "families": {}, "events": {}, "links": {}, "occupations": {}, "places": {},
+        "sources": {}, "documents": {}
+    });
+    let (url, seen) = fake_service(ollama);
+    let (app, _dir, c) = app_with_afg_on("assistant-archive-lens", &url, Some(&flat)).await;
+    let vera = &c[0];
+    let pid = project(&app, vera, "Archive", "").await;
+    let resp = post_form_as(
+        &app,
+        vera,
+        &format!("/account/assistant/{pid}"),
+        "part=settings&name=Archive&avatar=&archive=on",
+    )
+    .await;
+    assert!(resp.status().is_redirection() || resp.status().is_success());
+    let page = page_of(&app, &format!("/account/assistant/{pid}"), vera).await;
+    assert!(
+        page.contains("your account does not see every record"),
+        "{page}"
+    );
+    let to = begin(&app, vera, &pid, "Qui est Hortense ?").await;
+    let cid = to.rsplit('/').next().unwrap().to_string();
+    answered(&app, vera, &pid, &cid).await;
+    let sent = seen.lock().unwrap().clone();
+    assert!(
+        sent.iter().any(|(m, p, _)| m == "POST" && p == "/api/chat"),
+        "the question was asked"
+    );
+    assert!(
+        sent.iter().all(|(_, _, b)| !b.contains("Secr")),
+        "the private person never reaches the AFG"
+    );
 }
